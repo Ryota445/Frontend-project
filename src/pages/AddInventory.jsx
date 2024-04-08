@@ -25,6 +25,30 @@ function AddInventory() {
 
   const [companyOptions, setCompanyOptions] = useState([]);
   const [responsibleOptions, setResponsibleOptions] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [buildingOptions, setBuildingOptions] = useState([]);
+  const [howToGetOptions, setHowToGetOptions] = useState([]);
+  const [yearMoneyGetOptions, setYearMoneyGetOptions] = useState([]);
+  const [sourceMoneyOptions, setSourceMoneyOptions] = useState([]);
+
+  const [searchValue, setSearchValue] = useState('');
+
+
+  const [inventoryCount, setInventoryCount] = useState(1); // เก็บจำนวนครุภัณฑ์
+  const [startInventoryNumber, setStartInventoryNumber] = useState(''); // เก็บหมายเลขครุภัณฑ์เริ่มต้น
+
+  const [activeButton,setActiveButton] = useState('single');
+
+
+  useEffect(() => {
+    // สร้างหมายเลขครุภัณฑ์ตามจำนวนที่ระบุ
+    const endInventoryNumber = parseInt(startInventoryNumber) + parseInt(inventoryCount) - 1; // เปลี่ยนเป็น parseInt(inventoryCount)
+    form.setFieldsValue({
+      inventory_number_m_start: startInventoryNumber,
+      inventory_number_m_end: endInventoryNumber.toString(),
+    });
+  }, [inventoryCount, startInventoryNumber]);
+  
 
 
   useEffect(() => {
@@ -35,7 +59,7 @@ function AddInventory() {
             const companyData = await companyResponse.json();
             setCompanyOptions(companyData.data.map(item => ({
                 id: item.id,
-                name: item.attributes.Cname,
+                name: item.attributes.contactName   + " / " + item.attributes.Cname,
             })));
 
             // Fetch responsibles
@@ -45,6 +69,52 @@ function AddInventory() {
                 id: item.id,
                 name: item.attributes.responsibleName,
             })));
+
+            // Fetch categories
+            const categoryResponse = await fetch('http://localhost:1337/api/categories');
+            const categoryData = await categoryResponse.json();
+            setCategoryOptions(categoryData.data.map(item => ({
+                id: item.id,
+                name: item.attributes.CategoryName,
+            })));
+
+            // Fetch buildings
+            const buildingResponse = await fetch('http://localhost:1337/api/buildings');
+            const buildingData = await buildingResponse.json();
+            setBuildingOptions(buildingData.data.map(item => ({
+                id: item.id,
+                name: item.attributes.buildingName,
+            })));
+            
+            // Fetch howToGet
+            const howToGetResponse = await fetch('http://localhost:1337/api/how-to-gets');
+            const howToGetData = await howToGetResponse.json();
+            setHowToGetOptions(howToGetData.data.map(item => ({
+                id: item.id,
+                name: item.attributes.howToGetName,
+            })));
+
+            // Fetch howToGet
+            const sourceMoneyResponse = await fetch('http://localhost:1337/api/source-monies');
+            const sourceMoneyData = await sourceMoneyResponse.json();
+            setSourceMoneyOptions(sourceMoneyData.data.map(item => ({
+                id: item.id,
+                name: item.attributes.sourceMoneyName,
+            })));
+            
+            // Fetch yearMoneyGet options
+            const yearMoneyGetResponse = await fetch('http://localhost:1337/api/year-money-gets');
+            const yearMoneyGetData = await yearMoneyGetResponse.json();
+            
+            // Sort yearMoneyGet options by name
+            const sortedYearMoneyGetOptions = yearMoneyGetData.data.map(item => ({
+                id: item.id,
+                name: item.attributes.yearMoneyGetName,
+            })).sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Set sorted options to state
+            setYearMoneyGetOptions(sortedYearMoneyGetOptions);
+
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -53,52 +123,54 @@ function AddInventory() {
   }, []);
 
 
+
     
 
   const onFinish = async (values) => {
-    console.log('ค่าที่ได้จากฟอร์ม:', values);
-
-    const formData = new FormData();
-    formData.append("data", JSON.stringify({
-      name: values.name,
-      id_inv: values.id_inv,
-      // เพิ่มข้อมูลอื่น ๆ ที่ต้องการส่งไปยังเซิร์ฟเวอร์
-      inventory_number_m_start: values.inventory_number_m_start,
-      inventory_number_m_end: values.inventory_number_m_end,
-      // Inventory_number_faculty: values.Inventory_number_faculty,
-      category: values.category,
-      building: values.building,
-      floor: values.floor,
-      room: values.room,
-      responsible: values.responsible,
-      howToGet: values.howToGet,
-      YearMoneyGet: values.YearMoneyGet,
-      DateOrder: values.DateOrder ? values.DateOrder.format('YYYY-MM-DD') : null, // ตรวจสอบว่ามีการเลือกวันที่
-      DateRecive: values.DateRecive ? values.DateRecive.format('YYYY-MM-DD') : null, // ตรวจสอบว่ามีการเลือกวันที่
-      company_inventory: values.company_inventory,
-      serialNumber: values.serialNumber,
-      model: values.model,
-      brand: values.brand,
-      prize: values.prize,
-      "age-use": values["age-use"],
-      information: values.information,
-      // อื่นๆ ตามที่มีในฟอร์ม
-    }));
-
-    if (values.img_inv && values.img_inv.length > 0) {
-      // ตรวจสอบและเพิ่มไฟล์รูปภาพเข้าไปใน formData
-      formData.append("files.img_inv", values.img_inv[0].originFileObj);
+    for (let i = 0; i < inventoryCount; i++) {
+      const formData = new FormData();
+      formData.append("data", JSON.stringify({
+        name: values.name,
+        id_inv: ((parseInt(startInventoryNumber) || parseInt(values.id_inv) ) + i).toString(), // Use parseInt and fallback to 0 if NaN
+        // เพิ่มข้อมูลอื่น ๆ ที่ต้องการส่งไปยังเซิร์ฟเวอร์
+        // inventory_number_m_start: values.inventory_number_m_start,
+        // inventory_number_m_end: values.inventory_number_m_end,
+        // Inventory_number_faculty: values.Inventory_number_faculty,
+        category: values.category,
+        building: values.building,
+        floor: values.floor,
+        rooms: values.room,
+        responsible: values.responsible,
+        how_to_get: values.howToGet,
+        sourceMoney:values.sourceMoney,
+        year_money_get: values.YearMoneyGet,
+        DateOrder: values.DateOrder ? values.DateOrder.format('YYYY-MM-DD') : null, // ตรวจสอบว่ามีการเลือกวันที่
+        DateRecive: values.DateRecive ? values.DateRecive.format('YYYY-MM-DD') : null, // ตรวจสอบว่ามีการเลือกวันที่
+        company_inventory: values.company_inventory,
+        serialNumber: values.serialNumber,
+        model: values.model,
+        brand: values.brand,
+        prize: values.prize,
+        age_use: values["age-use"],
+        information: values.information,
+        // อื่นๆ ตามที่มีในฟอร์ม
+      }));
+  
+      if (values.img_inv && values.img_inv.length > 0) {
+        // ตรวจสอบและเพิ่มไฟล์รูปภาพเข้าไปใน formData
+        formData.append("files.img_inv", values.img_inv[0].originFileObj);
+      }
+  
+      // ส่งข้อมูลฟอร์มไปยัง API
+      const response = await postInventoryData(formData); // ใช้ formData แทน object
+      if (response) {
+        message.success('บันทึกข้อมูลสำเร็จ');
+        form.resetFields(); // เคลียร์ฟอร์มหลังจากการส่งข้อมูลสำเร็จ
+      } else {
+        message.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+      }
     }
-
-    // ส่งข้อมูลฟอร์มไปยัง API
-    const response = await postInventoryData(formData); // ใช้ formData แทน object
-    if (response) {
-      message.success('บันทึกข้อมูลสำเร็จ');
-      form.resetFields(); // เคลียร์ฟอร์มหลังจากการส่งข้อมูลสำเร็จ
-    } else {
-      message.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-    }
-  };
+  }; // Add this closing brace
 
   // ฟังก์ชัน postInventoryData แก้ไขให้รองรับ FormData
   const postInventoryData = async (formData) => {
@@ -122,7 +194,7 @@ function AddInventory() {
     form.resetFields();
   };
 
-  const [activeButton,setActiveButton] = useState(null);
+
 
   const handleClickMenuAdd = (buttonName)=> {
     setActiveButton(buttonName)
@@ -183,10 +255,10 @@ function AddInventory() {
 
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
+          <div className='mt-5'>
             {/* คอลัมน์ซ้าย */}
             
-            <Form.Item name="name" label="ชื่ออุปกรณ์" rules={[{ required: true, message: 'กรุณากรอกชื่ออุปกรณ์' }]}>
+            <Form.Item name="name" label="ชื่อครุภัณฑ์" rules={[{ required: true, message: 'กรุณากรอกชื่ออุปกรณ์' }]}>
               <Input />
             </Form.Item>
 
@@ -195,19 +267,20 @@ function AddInventory() {
             <Form.Item name="id_inv" label="หมายเลขครุภัณฑ์">
               <Input />
             </Form.Item>
-          ) : (
+          ) : ( 
             <>
               <Form.Item name="inventory_count" label="จำนวนครุภัณฑ์">
-                <Input value={count} onChange={(e) => setCount(e.target.value)} />
+                <Input value={inventoryCount} onChange={(e) => setInventoryCount(e.target.value)} />
               </Form.Item>
 
               <Form.Item name="inventory_number_m_start" label="หมายเลขครุภัณฑ์ ตั้งแต่ ->">
-                <Input />
+                <Input value={startInventoryNumber} onChange={(e) => setStartInventoryNumber(e.target.value)} />
               </Form.Item>
 
               <Form.Item name="inventory_number_m_end" label="ถึง: หมายเลข">
-                <Input />
+                <Input disabled />
               </Form.Item>
+
             </>
           )}
 
@@ -217,9 +290,9 @@ function AddInventory() {
 
             <Form.Item name="category" label="หมวดหมู่ครุภัณฑ์" rules={[{ required: false, message: 'กรุณาเลือกหมวดหมู่' }]}>
               <Select>
-                <Option value="electric">เครื่องใช้ไฟฟ้า</Option>
-                <Option value="ferniger">เฟอร์นิเจอร์</Option>
-                {/* ... ตัวเลือกอื่นๆ */}
+                      {categoryOptions.map(category => (
+                            <Option key={category.id} value={category.id}>{category.name}</Option>
+                        ))}
               </Select>
             </Form.Item>
           </div>
@@ -231,16 +304,17 @@ function AddInventory() {
 
             <Form.Item name="building" label="อาคาร" className="w-full" rules={[{ required: false, message: 'กรุณาเลือกอาคาร' }]}>
               <Select>
-                <Option value="math">MATH</Option>
-                <Option value="mhmk">MHMK</Option>
-                {/* ... ตัวเลือกอื่นๆ */}
+                  {buildingOptions.map(building => (
+                                <Option key={building.id} value={building.id}>{building.name}</Option>
+                            ))}
               </Select>
             </Form.Item>
             
           
             <Form.Item name="floor" label="ชั้น" className="w-full" rules={[{ required: false, message: 'กรุณาเลือกชั้น' }]}>
               <Select>
-                <Option value="1">1</Option>
+                <Option value="B">B</Option>
+                <Option value="G">G</Option>
                 <Option value="2">2</Option>
                 <Option value="3">3</Option>
                 <Option value="4">4</Option>
@@ -250,7 +324,16 @@ function AddInventory() {
                 <Option value="8">8</Option>
                 <Option value="9">9</Option>
                 <Option value="10">10</Option>
-                <Option value="10++">10++</Option>
+                <Option value="11">11</Option>
+                <Option value="12">12</Option>
+                <Option value="13">13</Option>
+                <Option value="14">14</Option>
+                <Option value="15">15</Option>
+                <Option value="16">16</Option>
+                <Option value="17">17</Option>
+                <Option value="18">18</Option>
+                <Option value="19">19</Option>
+                <Option value="20">20</Option>
                 
                 {/* ... ตัวเลือกอื่นๆ */}
               </Select>
@@ -261,7 +344,7 @@ function AddInventory() {
             </Form.Item>
           </div>
 
-          <Form.Item name="responsible" label="ผู้รับผิดชอบ" rules={[{ required: false, message: 'กรุณาเลือกผู้รับผิดชอบ' }]}>
+          <Form.Item name="responsible" label="ผู้ดูแล" rules={[{ required: false, message: 'กรุณาเลือกผู้รับผิดชอบ' }]}>
               <Select>
                         {responsibleOptions.map(responsible => (
                             <Option key={responsible.id} value={responsible.id}>{responsible.name}</Option>
@@ -281,7 +364,7 @@ function AddInventory() {
             type="button"
           >
             <PlusOutlined />
-            <div style={{ marginTop: 8 }}>อัพโหลด</div>
+            <div style={{ marginTop: 8 }}>อัปโหลด</div>
           </button>
         </Upload>
       </Form.Item>
@@ -303,23 +386,25 @@ function AddInventory() {
             {/* คอลัมน์ซ้าย */}
             <Form.Item name="howToGet" label="วิธีได้มา" className="w-full" rules={[{ required: false, message: 'กรุณาเลือกวิธีได้มา' }]}>
               <Select>
-                <Option value="buy">จัดซื้อ</Option>
-                <Option value="donate">ได้รับบริจาค</Option>
-                {/* ... ตัวเลือกอื่นๆ */}
+              {howToGetOptions.map(howToget => (
+                            <Option key={howToget.id} value={howToget.id}>{howToget.name}</Option>
+                        ))}
               </Select>
             </Form.Item>
 
+            {/* <Form.Item name="sourceMoney" label="แหล่งงบประมาณ" className="w-full" rules={[{ required: false, message: 'กรุณาเลือกแหล่งงบประมาณ' }]}>
+              <Select>
+              {sourceMoneyOptions.map(sourceMoney => (
+                            <Option key={sourceMoney.id} value={sourceMoney.id}>{sourceMoney.name}</Option>
+                        ))}
+              </Select>
+            </Form.Item> */}
+
             <Form.Item name="YearMoneyGet" label="ปีงบประมาณ" className="w-full" rules={[{ required: false, message: 'กรุณาเลือกปีงบประมาณ' }]}>
               <Select>
-                <Option value="2563">2563</Option>
-                <Option value="2564">2564</Option>
-                <Option value="2565">2565</Option>
-                <Option value="2566">2566</Option>
-                <Option value="2567">2567</Option>
-                <Option value="2568">2568</Option>
-                <Option value="2569">2569</Option>
-                <Option value="2570">2570</Option>
-                {/* ... ตัวเลือกอื่นๆ */}
+                    {yearMoneyGetOptions.map(yearMoneyGet => (
+                                  <Option key={yearMoneyGet.id} value={yearMoneyGet.id}>{yearMoneyGet.name}</Option>
+                              ))}
               </Select>
             </Form.Item>
             
@@ -341,7 +426,7 @@ function AddInventory() {
               </Form.Item>
 
               <Form.Item
-                label="วันที่ตรวจรับ"
+                label="วันที่ตรวจรับ/วันที่รับโอน"
                 name="DateRecive"
                 rules={[
                   {
@@ -356,13 +441,33 @@ function AddInventory() {
         </div>
 
 
-        <Form.Item name="company_inventory" label="บริษัทที่ติดต่อซื้อขาย" className="w-full" rules={[{ required: false, message: 'กรุณาเลือกบริษัท' }]}>
-                    <Select>
-                        {companyOptions.map(company => (
-                            <Option key={company.id} value={company.id}>{company.name}</Option>
-                        ))}
-                    </Select>
-                </Form.Item>
+            <Form.Item
+                name="company_inventory"
+                label="ตัวแทนบริษัท"
+                className="w-full"
+                rules={[{ required: false, message: 'กรุณาเลือกตัวแทน' }]}
+              >
+                <Select
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  optionFilterProp="children"
+                  showSearch
+                  onSearch={setSearchValue}
+                  value={searchValue}
+                  onChange={(value) => {
+                    setSearchValue(value);
+                  }}
+                >
+                {companyOptions.map((company) => (
+                  <Option key={company.id} value={company.id}>
+                    {company.name}
+                  </Option>
+                ))}
+              </Select>
+
+
+              </Form.Item>
 
 
         <div className='border-b-2 border-black mb-10 mt-10'>
@@ -376,15 +481,18 @@ function AddInventory() {
               <Input />
             </Form.Item>
 
-            <Form.Item name="model" label="รุ่น">
-              <Input />
-            </Form.Item>
 
             <Form.Item name="brand" label="ยี่ห้อ">
               <Input />
             </Form.Item>
 
-            <Form.Item name="prize" label="ราคาที่ซื้อ">
+            <Form.Item name="model" label="รุ่น">
+              <Input />
+            </Form.Item>
+
+            
+
+            <Form.Item name="prize" label="ราคาที่ซื้อ (บาท)">
               <Input type='number'/>
             </Form.Item>
 
@@ -410,12 +518,12 @@ function AddInventory() {
             </Form.Item>
 
        
-            <div className=" mb-2">
+            {/* <div className=" mb-2">
               <span className="text-sm font-medium">อายุการใช้งานเครื่อง</span>
             </div>
             <div className="flex items-center border-1  border-black rounded-lg bg-gray-200 p-2  w-48">
               <span className="text-sm font-medium">{daysPassed} วัน 0 เดือน 0 ปี</span>
-            </div>
+            </div> */}
             
             <Form.Item name="information" label="รายละเอียดเพิ่มเติม">
               <Input className='pb-10'/>

@@ -1,8 +1,16 @@
 import React from 'react'
 import { Button } from 'antd';
 import { MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons';
+import logo_1 from '../assets/img/logo_1.jpg';
+
 
 function NavComponent({ collapsed, setCollapsed }) {
+  const imgStyle = {
+    width: '120px',
+    height: 'auto',
+    borderRadius: '5px'
+    
+};
   return (
     <>
 
@@ -26,8 +34,12 @@ function NavComponent({ collapsed, setCollapsed }) {
 
 
   </div>
+
+  
   <div className="navbar-center">
-    <a className="btn btn-ghost text-xl ">CU SAP</a>
+    <a className="btn btn-ghost text-xl ">
+    <img src={logo_1} alt="โลโก้" style={imgStyle} /> {/* ใช้ตัวแปร logo แทนการระบุ path โดยตรง */}
+</a>
   </div>
   <div className="navbar-end">
     <button className="btn btn-ghost btn-circle">

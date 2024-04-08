@@ -6,21 +6,43 @@ const AddInventoryItem = ({ index, remove }) => (
   <Space key={index} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
     <Form.Item
       name={[index, 'inventoryNumber']}
-      rules={[{ required: true, message: 'กรุณากรอกเลขครุภัณฑ์' }]}
+      rules={[{ required: false, message: 'กรุณากรอกเลขครุภัณฑ์' }]}
     >
-      <Input placeholder="เลขครุภัณฑ์" />
+      <Input placeholder="หมายเลขครุภัณฑ์" />
     </Form.Item>
     <Form.Item
       name={[index, 'name']}
       rules={[{ required: true, message: 'กรุณากรอกชื่อ' }]}
     >
-      <Input placeholder="ชื่อ" />
+      <Input placeholder="ชื่อครุภัณฑ์" />
     </Form.Item>
+
     <Form.Item
-      name={[index, 'amount']}
-      rules={[{ required: true, message: 'กรุณากรอกจำนวน' }]}
+      name={[index, 'numberSN']}
+      rules={[{ required: false, message: 'กรุณากรอกหมายเลขSN' }]}
     >
-      <Input placeholder="จำนวน" />
+      <Input placeholder="หมายเลข SN" />
+    </Form.Item>
+
+    <Form.Item
+      name={[index, 'brand2']}
+      rules={[{ required: false, message: 'กรุณากรอกจำนวน' }]}
+    >
+      <Input placeholder="ยี่ห้อ" />
+    </Form.Item>
+
+    <Form.Item
+      name={[index, 'model2']}
+      rules={[{ required: false, message: 'กรุณากรอกจำนวน' }]}
+    >
+      <Input placeholder="รุ่น" />
+    </Form.Item>
+
+    <Form.Item
+      name={[index, 'detail']}
+      rules={[{ required: false, message: 'กรุณากรอกจำนวน' }]}
+    >
+      <Input placeholder="รายละเอียด" />
     </Form.Item>
     <Button onClick={() => remove(index)} type="danger" className='bg-red-500'>
       ลบ

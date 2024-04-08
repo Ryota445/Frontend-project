@@ -12,6 +12,7 @@ import {
   
 } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu,  Button ,theme } from 'antd';
+import './index.css';
 
 // component
 import NavComponent from './components/NavComponent';
@@ -31,7 +32,11 @@ import AddMaintenant from './pages/AddMaintenant';
 import AddMaintenant2 from './pages/AddMaintenant2';
 import TestAddInventory from './pages/TestAddInventory';
 import AddTeacherPage from './pages/AddTeacherPage';
-
+import ViewInventory from './pages/ViewInventory';
+import ManagementAdmin from './pages/ManagementAdmin';
+import DetailInventory from './pages/detailInventory';
+import Detailtest from './pages/Detailtest';
+import UserDetail from './pages/UserDetail';
 
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
@@ -46,14 +51,16 @@ function getItem(label, key, icon, children) {
 
 
 const items = [
-  getItem('หน้าหลัก', '1', <Link to="/"><PieChartOutlined /></Link>),
-  getItem('ครุภัณฑ์', 'sub1', <DesktopOutlined />, [
-      getItem('จัดการครุภัณฑ์', '3',<Link to="/manageInventory"></Link>),
-      getItem('การบำรุงรักษา', '4' ,<Link to="/maintenanceInventory"></Link>),
-      getItem('การทำจำหน่าย', '5' ,<Link to="/disposeMain"></Link>),
-    ]),
-    getItem('ทำรายงาน', 'sub2', <FileOutlined />, [getItem('ทำรายงานตรวจเช็คครุภัณฑ์', '6',<Link to="/ReportCheckInventory"></Link>), getItem('นำข้อมูลออก', '8',<Link to="/ReportAll"></Link>)]),
-    getItem('เพิ่มข้อมูลอาจารย์', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
+  // getItem('หน้าหลัก', '1', <Link to="/"><PieChartOutlined /></Link>),
+  // getItem('ครุภัณฑ์', 'sub1', <DesktopOutlined />, [
+  //     getItem('จัดการครุภัณฑ์', '3',<Link to="/manageInventory"></Link>),
+  //     getItem('การบำรุงรักษา', '4' ,<Link to="/maintenanceInventory"></Link>),
+  //     getItem('การทำจำหน่าย', '5' ,<Link to="/disposeMain"></Link>),
+  //   ]),
+    getItem('จัดการครุภัณฑ์', '3', <Link to="/manageInventory"><DesktopOutlined /></Link>),
+    // getItem('ทำรายงาน', 'sub2', <FileOutlined />, [getItem('ทำรายงานตรวจเช็คครุภัณฑ์', '6',<Link to="/ReportCheckInventory"></Link>), getItem('นำข้อมูลออก', '8',<Link to="/ReportAll"></Link>)]),
+    
+    getItem('เพิ่มข้อมูลผู้รับผิดชอบ', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
     getItem('เพิ่มข้อมูลบริษัท', '9', <Link to="/AddInformationCompany"><TeamOutlined /></Link>),
     getItem('Logout', '2', <Link><UserOutlined /></Link>),
 ];
@@ -142,8 +149,9 @@ const items = [
           
 
             <Routes>
-                <Route path="/" element={<HomePage/>}></Route>
-                <Route path="/manageInventory" element={<ManageInventoryMain/>}></Route>
+                {/* <Route path="/" element={<HomePage/>}></Route> */}
+                <Route path="/" element={<ManagementAdmin/>}></Route>
+                <Route path="/manageInventory" element={<ManagementAdmin/>}></Route>
                 <Route path="/maintenanceInventory" element={<MaintenanceInventoryMain/>}></Route>
                 <Route path="/disposeMain" element={<DisposeMain/>}></Route>
                 <Route path="/ReportCheckInventory" element={<ReportCheckInventory/>}></Route>
@@ -155,6 +163,9 @@ const items = [
                 <Route path="/AddCompany" element={<AddCompany/>}></Route>
                 <Route path="/AddMaintenant" element={<AddMaintenant/>}></Route>
                 <Route path="/AddTeacherPage" element={<AddTeacherPage/>}></Route>
+                <Route path="/ViewInventory" element={<AddTeacherPage/>}></Route>
+                <Route path="/DetailInventory" element={<Detailtest/>}></Route>
+                <Route path="/UserDetailInventory" element={<UserDetail/>}></Route>
                 
                 
             </Routes>
@@ -163,7 +174,7 @@ const items = [
           </div>
         </Content>
         
-           <FooterComponent/>
+           {/* <FooterComponent/> */}
        
       </Layout>
     </Layout>
