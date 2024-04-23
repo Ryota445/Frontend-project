@@ -37,6 +37,7 @@ import ManagementAdmin from './pages/ManagementAdmin';
 import DetailInventory from './pages/detailInventory';
 import Detailtest from './pages/Detailtest';
 import UserDetail from './pages/UserDetail';
+import MantinantAdmin from './pages/MantinantAdmin';
 
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
@@ -127,7 +128,7 @@ const items = [
 
         
 
-          <div className="text-sm breadcrumbs" style={{
+          {/* <div className="text-sm breadcrumbs" style={{
               margin: '20px 0',
             }}>
             <ul>
@@ -135,7 +136,7 @@ const items = [
               <li><a>ระบบจัดการครุภัณฑ์</a></li> 
               <li>หน้าหลัก</li>
             </ul>
-          </div>
+          </div> */}
 
           
           <div
@@ -166,6 +167,7 @@ const items = [
                 <Route path="/ViewInventory" element={<AddTeacherPage/>}></Route>
                 <Route path="/DetailInventory" element={<Detailtest/>}></Route>
                 <Route path="/UserDetailInventory" element={<UserDetail/>}></Route>
+                <Route path="/MantinantAdmin" element={<MantinantAdmin/>}></Route>
                 
                 
             </Routes>

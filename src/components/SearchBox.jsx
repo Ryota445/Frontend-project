@@ -123,7 +123,7 @@ function SearchBox({ onSearch }) {
                                     ))}
                                 </Select>
                             </div>
-                            <div className='border-2 border-blue-500 p-2 rounded-md'>
+                            <div className='border-4 border-gray-200 p-2 rounded-md'>
                             <label htmlFor="asset-type" className="block text-sm font-medium text-gray-700 ">ที่ตั้ง</label>
                                 <div className='flex flex-row'>
                                     <div className='flex flex-col mr-2'>

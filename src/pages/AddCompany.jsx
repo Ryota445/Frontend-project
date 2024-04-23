@@ -32,13 +32,16 @@ function AddCompany() {
       onFinishFailed={onFinishFailed}
       className="max-w-lg m-auto bg-white p-4 shadow rounded"
     >
+
+
       <Form.Item
-        label="ชื่อบริษัท"
-        name="company"
-        rules={[{ required: true, message: 'กรุณากรอกชื่อบริษัทด้วย!' }]}
+        label="ชื่อผู้ติดต่อ"
+        name="contactName"
+        rules={[{ required: true, message: 'Please input the contact name!' }]}
       >
         <Input />
       </Form.Item>
+
 
       <Form.Item
         label="เลขประจำตัวผู้เสียภาษี"
@@ -48,13 +51,16 @@ function AddCompany() {
         <Input type='number'/>
       </Form.Item>
 
+
       <Form.Item
-        label="ชื่อผู้ติดต่อในการต่อขาย"
-        name="contactName"
-        rules={[{ required: false, message: 'Please input the contact name!' }]}
+        label="ชื่อบริษัท"
+        name="company"
+        rules={[{ required: true, message: 'กรุณากรอกชื่อบริษัทด้วย!' }]}
       >
         <Input />
       </Form.Item>
+
+
 
       <Form.Item
         label="เบอร์โทร"

@@ -24,39 +24,7 @@ function Detailtest() {
     <>
 
     <div className='w-full '>
-        <div className=' w-full  grid grid-cols-5 '>
-            <div>
-                {/* col-1 */}
-            </div>
-
-            <div className=' col-span-3'>
-                <div className=' w-full '>
-                <button className={`font-bold rounded-t-lg text-lg w-48 h-16 bg-[#8dd15c] text-[#ffffff] justify-center ${
-                                    statusBTN === 'mantenant' ? 'opacity-100' : 'opacity-50'
-                                }`} onClick={handelMantenantBTN}>ประวัติการบำรุงรักษา</button>
-                <button className={`font-bold rounded-t-lg text-lg w-48 h-16 bg-[#2d6eca] text-[#ffffff] justify-center ${
-                                    statusBTN === 'repair' ? 'opacity-100' : 'opacity-50'
-                                }`} onClick={handelRepairBTN}>ประวัติการซ่อมแซม</button>
-                </div>
-                { statusBTN === 'mantenant' ?(
-                <TableDetailMantenant/>
-                ):(
-                    <>
-                    <TableDetailRepair/>
-                    </>
-                )
-}
-
-            </div>
-
-            <div >     
-                {/* col-3 */}
-             </div>
-
-
-            
-
-        </div>
+       
         <div className=' w-full h-[300px] mt-5 grid grid-cols-8 '>
                     <div></div>
                     <div className=' col-span-6 grid grid-cols-6 gap-1 border-2 border-blue-500 rounded-md'>
@@ -77,7 +45,7 @@ function Detailtest() {
                                 </div>
 
                                 <div className='flex flex-row'>
-                                <div className='flex flex-col w-1/2 mt-2 border-2 border-blue-500 rounded-md'>
+                                <div className='flex flex-col w-1/2 mt-2 border-2 border-gray-300 rounded-md'>
                                     <h1 className='text-lg text-gray-400 '>ที่ตั้งครุภัณฑ์</h1>
                                     <div className='flex flex-row'>
                                         <h1 className='text-lg text-gray-400 mr-4 '>อาคาร</h1> <h1 className='text-lg'>MHMK</h1> 
@@ -97,12 +65,13 @@ function Detailtest() {
 
                                 </div>
 
-                                <div className='mt-4 flex flex-row-reverse'>
+                            
+                                <div className='border-2 border-gray-300 rounded-md   p-2 mt-4 flex flex-row-reverse w-3/4'>
 
                                     <button class="font-bold rounded-lg text-sm   mt-2 mr-24 w-24 h-8 bg-[#92abd9] hover:bg-[#1161f5] text-[#ffffff] justify-center">บันทึก</button>
  
 
-                                    <select className="select select-bordered w-1/3 mr-4">
+                                    <select className="select select-bordered w-1/4 mr-2">
                                     <option>ปกติ</option>
                                     <option>เสีย</option>
                                     <option>ไม่ได้ใช้งาน</option>
@@ -110,6 +79,7 @@ function Detailtest() {
 
                                     <h1 className='text-lg text-gray-400 mr-4 mt-2  '>สถานะครุภัณฑ์</h1>  
                                 </div>
+                                
 
                                 
 
@@ -255,8 +225,47 @@ function Detailtest() {
                 </div>
                 <div className=''></div>
                 </div>
+
+
+
+
+                
    
-    <div className='w-full h-[300px]'></div>
+    <div className='w-full h-[100px]'></div>
+
+    <div className=' w-full  grid grid-cols-5 '>
+            <div>
+                {/* col-1 */}
+            </div>
+
+            <div className=' col-span-3'>
+                <div className=' w-full '>
+                <button className={`font-bold rounded-t-lg text-lg w-48 h-16 bg-[#8dd15c] text-[#ffffff] justify-center ${
+                                    statusBTN === 'mantenant' ? 'opacity-100' : 'opacity-50'
+                                }`} onClick={handelMantenantBTN}>ประวัติการบำรุงรักษา</button>
+                <button className={`font-bold rounded-t-lg text-lg w-48 h-16 bg-[#2d6eca] text-[#ffffff] justify-center ${
+                                    statusBTN === 'repair' ? 'opacity-100' : 'opacity-50'
+                                }`} onClick={handelRepairBTN}>ประวัติการซ่อมแซม</button>
+                </div>
+                { statusBTN === 'mantenant' ?(
+                <TableDetailMantenant/>
+                ):(
+                    <>
+                    <TableDetailRepair/>
+                    </>
+                )
+}
+
+            </div>
+
+            <div >     
+                {/* col-3 */}
+             </div>
+
+
+            
+
+        </div>
     </>
   )
 }
