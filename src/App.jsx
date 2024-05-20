@@ -38,6 +38,7 @@ import DetailInventory from './pages/detailInventory';
 import Detailtest from './pages/Detailtest';
 import UserDetail from './pages/UserDetail';
 import MantinantAdmin from './pages/MantinantAdmin';
+// import maintenantTWO from './pages/maintenantTWO'
 
 const { Header, Content, Footer, Sider } = Layout;
 function getItem(label, key, icon, children) {
@@ -168,6 +169,7 @@ const items = [
                 <Route path="/DetailInventory" element={<Detailtest/>}></Route>
                 <Route path="/UserDetailInventory" element={<UserDetail/>}></Route>
                 <Route path="/MantinantAdmin" element={<MantinantAdmin/>}></Route>
+                {/* <Route path="/maintenantTWO" element={<maintenantTWO/>}></Route> */}
                 
                 
             </Routes>
