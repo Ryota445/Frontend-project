@@ -1,4 +1,5 @@
 import React from 'react'
+import ThaiDateFormat from '../components/ThaiDateFormat'
 
 function TableDetailMantenant() {
   return (
@@ -18,7 +19,7 @@ function TableDetailMantenant() {
                             </thead>
                             <tbody class="bg-white text-gray-500">
                                 <tr class="py-4">
-                                    <td class="py-4 border text-center  p-4" contenteditable="false">31/08/62</td>
+                                    <td class="py-4 border text-center  p-4" contenteditable="false"><ThaiDateFormat dateString={'2019-02-18'}/></td>
                                     <td class="py-4 border text-center  p-4" contenteditable="false">12331312</td>
                                     <td class="py-4 border text-center  p-4" contenteditable="false">เครื่องทำความเย็น</td>
                                     <td class="py-4 border text-center  p-4" contenteditable="false">เช็คสภาพ</td>

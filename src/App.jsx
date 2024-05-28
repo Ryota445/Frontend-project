@@ -9,6 +9,7 @@ import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   IdcardOutlined,
+  MonitorOutlined,
   
 } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu,  Button ,theme } from 'antd';
@@ -38,6 +39,11 @@ import DetailInventory from './pages/detailInventory';
 import Detailtest from './pages/Detailtest';
 import UserDetail from './pages/UserDetail';
 import MantinantAdmin from './pages/MantinantAdmin';
+import MainPageMantenant from './pages/MainPageMantenant';
+import MantenantPage1 from './pages/MantenantPage1';
+import MantenantPage2 from './pages/MantenantPage2';
+import ManagePage1 from './pages/ManagePage1';
+import FixMantenantPage2 from './pages/FixMantenantPage2';
 // import maintenantTWO from './pages/maintenantTWO'
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -60,6 +66,7 @@ const items = [
   //     getItem('การทำจำหน่าย', '5' ,<Link to="/disposeMain"></Link>),
   //   ]),
     getItem('จัดการครุภัณฑ์', '3', <Link to="/manageInventory"><DesktopOutlined /></Link>),
+    getItem('ดูแลครุภัณฑ์', '4', <Link to="/MantenantPage1"><MonitorOutlined /></Link>),
     // getItem('ทำรายงาน', 'sub2', <FileOutlined />, [getItem('ทำรายงานตรวจเช็คครุภัณฑ์', '6',<Link to="/ReportCheckInventory"></Link>), getItem('นำข้อมูลออก', '8',<Link to="/ReportAll"></Link>)]),
     
     getItem('เพิ่มข้อมูลผู้รับผิดชอบ', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
@@ -123,7 +130,7 @@ const items = [
 
         <Content
           style={{
-            margin: '0 16px',
+            margin: '26px 16px',
           }}
         >
 
@@ -167,8 +174,15 @@ const items = [
                 <Route path="/AddTeacherPage" element={<AddTeacherPage/>}></Route>
                 <Route path="/ViewInventory" element={<AddTeacherPage/>}></Route>
                 <Route path="/DetailInventory" element={<Detailtest/>}></Route>
-                <Route path="/UserDetailInventory" element={<UserDetail/>}></Route>
+                <Route path="/UserDetailInventory/:id" element={<UserDetail/>}></Route> {/* เส้นทางแบบไดนามิก */}
                 <Route path="/MantinantAdmin" element={<MantinantAdmin/>}></Route>
+                <Route path="/MainPageMantenant" element={<MainPageMantenant/>}></Route>
+                <Route path="/MantenantPage1" element={<MantenantPage1  />}></Route>
+                <Route path="/MantenantPage2" element={<MantenantPage2/>}></Route>
+                <Route path="/ManagePage1" element={<ManagePage1/>}></Route>
+                <Route path="/FixMantenantPage2" element={<FixMantenantPage2/>}></Route>
+               
+
                 {/* <Route path="/maintenantTWO" element={<maintenantTWO/>}></Route> */}
                 
                 

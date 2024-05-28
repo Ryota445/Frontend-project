@@ -7,7 +7,7 @@ function ManagementAdmin() {
     const [searchData, setSearchData] = useState(null);
     const [filteredInventoryList, setFilteredInventoryList] = useState([]);
     const [inventoryList, setInventoryList] = useState([]); // เพิ่ม state สำหรับรายการทั้งหมด
-
+    const [foundDataNumber, setFoundDataNumber] = useState(0)
     useEffect(() => {
         fetchItems();
     }, []);
@@ -21,7 +21,8 @@ function ManagementAdmin() {
             const result = await response.json();
             setFilteredInventoryList(result.data); // เซ็ตรายการทั้งหมดเป็นรายการที่ถูกกรองแล้ว
             setInventoryList(result.data); // เซ็ตรายการทั้งหมด
-            console.log(result);
+            setFoundDataNumber(result.data.length); // อัปเดตจำนวนรายการที่พบ
+            console.log("InventoryData :",result);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -30,27 +31,33 @@ function ManagementAdmin() {
     const handleSearch = (searchData) => {
         setSearchData(searchData); // เซ็ตข้อมูลการค้นหา
         filterInventoryList(searchData); // กรองรายการโดยใช้ข้อมูลการค้นหา
+        console.log("searchData :",searchData);
     };
 
     const filterInventoryList = (searchData) => {
         if (!searchData) {
-            // หากไม่มีข้อมูลการค้นหา ให้ใช้รายการทั้งหมด
-            setFilteredInventoryList(inventoryList);
-            return;
+             // หากไม่มีข้อมูลการค้นหา ให้ใช้รายการทั้งหมด
+             setFilteredInventoryList(inventoryList);
+             setFoundDataNumber(inventoryList.length); // อัปเดตจำนวนรายการที่พบ
+             return;
         }
     
         const filteredList = inventoryList.filter(inventory => {
             // กรองรายการตามเงื่อนไขของการค้นหา
+            console.log("inventory?.attributes?.category?.data?.attributes?.id",inventory?.attributes?.category?.data?.id)
             return (
                 (searchData.id_inv ? inventory.attributes.id_inv.includes(searchData.id_inv) : true) &&
                 (searchData.name ? inventory.attributes.name.includes(searchData.name) : true) &&
-                (searchData.responsible ? inventory.attributes.responsible && inventory.attributes.responsible.data.attributes.responsibleName === searchData.responsible : true) &&
-                (searchData.category ? inventory.attributes.category && inventory.attributes.category.data.attributes.CategoryName === searchData.category : true)
+                (searchData.responsible ? inventory?.attributes?.responsible?.data?.id === searchData.responsible : true) &&
+                (searchData.category ? inventory?.attributes?.category?.data?.id === searchData.category : true)
             );
         });
         
     
-        setFilteredInventoryList(filteredList); // เซ็ตรายการที่ถูกกรอง
+        
+
+        setFilteredInventoryList(filteredList);
+        setFoundDataNumber(filteredList.length);
     };
 
     const handleDeleteSuccess = () => {
@@ -76,25 +83,7 @@ function ManagementAdmin() {
             <Link to="/AddInventory"><button className="btn btn-outline btn-success">เพิ่มครุภัณฑ์</button></Link>
             </div>
 
-            {/* <div className='ml-5 my-5'> */}
-            {/* ปุ่มบำรุงรักษา */}
-            {/* <Link to=""><button className="btn btn-outline btn-info">บำรุงรักษา</button></Link>
-            </div> */}
-
-            {/* <div className='ml-5 my-5'> */}
-            {/* ปุ่มซ่อมแซม */}
-            {/* <Link to=""><button className="btn btn-outline btn-error">ซ่อมแซม</button></Link>
-            </div> */}
-
-            <div className='ml-5 my-5'>
-            {/* ปุ่มทำจำหน่าย */}
-            {/* <Link to=""><button className="btn btn-outline ">ทำจำหน่าย</button></Link> */}
-            </div>
-
-            <div className='ml-5 my-5'>
-            {/* ปุ่มซ่อมแซม */}
-            {/* <Link to=""><button className="btn btn-outline btn-warning">เปลี่ยนที่ตั้ง</button></Link> */}
-            </div>
+          
 
             </div>
 
@@ -102,6 +91,7 @@ function ManagementAdmin() {
                 <TableViewInventory
                 inventoryList={filteredInventoryList}
                 onDeleteSuccess={handleDeleteSuccess}
+                foundDataNumber={foundDataNumber}
                 onView={handleViewInventory} // ส่ง handleViewInventory ไปยัง TableViewInventory เพื่อให้สามารถเรียกใช้งาน handleView ได้
             />
             
