@@ -14,7 +14,7 @@ function ManagementAdmin() {
 
     const fetchItems = async () => {
         try {
-            const response = await fetch("http://localhost:1337/api/inventories?populate=responsible,category");
+            const response = await fetch("http://localhost:1337/api/inventories?populate=responsible,category,company_inventory,building,status_inventory");
             if (!response.ok) {
                 throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
             }

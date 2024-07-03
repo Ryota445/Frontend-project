@@ -1,147 +1,201 @@
-import React, { useState } from 'react';
-import { Input, Select, DatePicker, Button, Table, Checkbox } from 'antd';
-
+import React, { useState, useEffect } from 'react';
+import { Select, Button } from 'antd';
+import { FileOutlined } from '@ant-design/icons';
+import { Link } from 'react-router-dom';
 import SearchBox from '../components/SearchBox';
+import DateIsoToThai from '../components/DateIsoToThai';
+import RepairReportTable from '../components/RepairReportTable'; 
+import FilteredMaintenanceTable from '../components/FilteredMaintenanceTable';
+import MaintenancePage3 from './MaintenancePage3';
 
 const { Option } = Select;
-const { RangePicker } = DatePicker;
 
-const columns = [
-  { title: 'วันที่', dataIndex: 'date', key: 'date' },
-  { title: 'หมายเลขครุภัณฑ์', dataIndex: 'id', key: 'id' },
-  { title: 'ชื่อครุภัณฑ์', dataIndex: 'name', key: 'name' },
-  { title: 'แจ้งโดย', dataIndex: 'reportedBy', key: 'reportedBy' },
-  { title: 'รายละเอียดการแจ้งเตือน', dataIndex: 'description', key: 'description' },
-  { title: 'วันที่นัดหมาย', dataIndex: 'appointmentDate', key: 'appointmentDate' },
-  { title: 'ประเภทการดูแล', dataIndex: 'maintenanceType', key: 'maintenanceType' },
-  { title: 'สถานะการดูแลครุภัณฑ์', dataIndex: 'status', key: 'status' },
-  {
-    title: '',
-    dataIndex: 'action',
-    key: 'action',
-    render: (text, record) => (
-      <Button type={record.status === 'แจ้งซ่อม' ? 'primary' : 'default'}>
-        {record.status === 'แจ้งซ่อม' ? 'แจ้งซ่อม' : 'ยังไม่ได้ดำเนินการ'}
-      </Button>
-    ),
-  },
-];
+const MantenantPage1 = () => {
+  const [data, setData] = useState([]);
+  const [dataMaintenance, setDataMaintenance] = useState([]);
+  const [isRepairActive, setIsRepairActive] = useState(true);
+  const [isMaintenanceActive, setIsMaintenanceActive] = useState(false);
+  const [statusRepair_inventoryOptions, setStatusRepair_inventoryOptions] = useState([]);
+  const [selectedStatus, setSelectedStatus] = useState({});
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedRepairReportId, setSelectedRepairReportId] = useState(null);
 
-const data = [
-  {
-    key: '1',
-    date: '20-2-2566',
-    id: '121212323',
-    name: 'เครื่องวิเคราะห์สาร',
-    reportedBy: 'ผศ.ดร.สมนาย ใจดี',
-    description: 'แจ้งซ่อมเนื่องจากเครื่องวิเคราะห์สารเสียไฟไม่เข้า',
-    appointmentDate: '-',
-    maintenanceType: 'ซ่อมแซม',
-    status: 'แจ้งซ่อม',
-  },
-  {
-    key: '2',
-    date: '18-2-2566',
-    id: '315432151',
-    name: 'เครื่องอบแห้งด้วยความเย็น',
-    reportedBy: 'ระบบ',
-    description: 'ปรับรักษาเครื่องทำความเย็น',
-    appointmentDate: '25-2-2566',
-    maintenanceType: 'บำรุงรักษา',
-    status: 'ยังไม่ได้ดำเนินการ',
-  },
-];
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-function MantenantPage1() {
-    const [filter, setFilter] = useState({});
+  const fetchData = async () => {
+    try {
+      const statusRepairResponse = await fetch("http://localhost:1337/api/status-repairs");
+      const statusRepairData = await statusRepairResponse.json();
+      setStatusRepair_inventoryOptions(
+        statusRepairData.data.map(item => ({
+          id: item.id,
+          name: item.attributes.nameStatusRepair,
+        }))
+      );
+    } catch (error) {
+      console.error("Error Fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetch('http://localhost:1337/api/repair-reports?populate=*')
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.data) {
+          const formattedData = data.data
+            .filter(item => !item.attributes.isDone)
+            .map(item => {
+              const inventory = item.attributes.inventory?.data?.attributes;
+              const inventoryId = item.attributes.inventory?.data?.id;
+              const user = item.attributes.users_permissions_user?.data?.attributes;
+              const statusRepair = item.attributes.status_repair?.data?.attributes;
+
+              const currentStatus = item.attributes.status_repair?.data?.id;
+
+              return {
+                key: item.id,
+                date: <DateIsoToThai isoDate={item.attributes.createdAt} typeTime={1} />,
+                id: <Link to={`/UserDetailInventory/${inventoryId}`}>{inventory?.id_inv}</Link> ?? 'N/A',
+                name: <Link to={`/UserDetailInventory/${inventoryId}`}>{inventory?.name}</Link> ?? 'N/A',
+                reportedBy: user?.username ?? 'N/A',
+                description: item.attributes.RepairReasonByResponsible ?? 'N/A',
+                FileReport: <a href={`http://localhost:1337${item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url}`} target="_blank" rel="noopener noreferrer"><FileOutlined /><span className='ml-2'>{item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.name || "ไฟล์"}</span></a>,
+                appointmentDate: 'DueDateRepair',
+                maintenanceType: 'repair',
+                
+                status: (
+                  <select
+                    className="select select-bordered w-40 mr-4"
+                    onChange={(e) => handleStatusChange(e, item.id)}
+                    value={selectedStatus[item.id] || currentStatus}
+                  >
+                    {statusRepair_inventoryOptions.map(status => (
+                      <option
+                        key={status.id}
+                        value={status.id}
+                        disabled={status.id <= currentStatus}
+                      >
+                        {status.name}
+                      </option>
+                    ))}
+                  </select>
+                ),
+                action: (
+                  <Button
+                    className="bg-gray-300"
+                    type="primary"
+                    onClick={() => {
+                      setSelectedRepairReportId(item.id);
+                      setModalVisible(true);
+                    }}
+                    disabled={!isStatusChanged(item.id, currentStatus)}
+                  >
+                    ดำเนินการต่อ
+                  </Button>
+                ),
+              };
+            });
+          setData(formattedData);
+        } else {
+          console.error('Unexpected API response structure:', data);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, [statusRepair_inventoryOptions, selectedStatus]);
+
+  useEffect(() => {
+    fetch('http://localhost:1337/api/maintenance-reports?populate=*')
+      .then(response => response.json())
+      .then(data => {
+        if (data && data.data) {
+          const formattedData = data.data.map(item => {
+            const inventory = item.attributes.inventory?.data?.attributes;
+            const inventoryId = item.attributes.inventory?.data?.id;
+
+            return {
+              key: item.id,
+              date: <DateIsoToThai isoDate={item.attributes.createdAt} typeTime={1} />,
+              appointmentDate: <DateIsoToThai isoDate={item.attributes.DueDate} typeTime={1} />,
+              id: <Link to={`/UserDetailInventory/${inventoryId}`}>{inventory?.id_inv}</Link> ?? 'N/A',
+              name: <Link to={`/UserDetailInventory/${inventoryId}`}>{inventory?.name}</Link> ?? 'N/A',
+              description: item.attributes.FileMaintenanceByAdmin ? (
+                <Link to={`/MaintenanceDetail/${item.id}`}>กดดูเพิ่มเติม</Link>
+              ) : 'N/A',
+              action: (
+                <Button className="bg-gray-300" type="primary">
+                  ดำเนินการต่อ
+                </Button>
+              ),
+            };
+          });
+          setDataMaintenance(formattedData);
+        } else {
+          console.error('Unexpected API response structure:', data);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
+
+  const handleStatusChange = (e, id) => {
+    const newStatus = e.target.value;
+    setSelectedStatus({ ...selectedStatus, [id]: newStatus });
+  };
+
+  const isStatusChanged = (id, currentStatus) => {
+    return selectedStatus[id] && selectedStatus[id] !== currentStatus;
+  };
 
   return (
     <>
-    
-    <div className="">
-      <h1 className="text-2xl font-bold mb-8">ดูแลครุภัณฑ์</h1>
-      <div className="bg-white shadow-md rounded-lg p-6 mb-8">
-        <SearchBox />
-        
-        
-        <div className="grid grid-cols-8 "> 
-        <div>
-          {/* col-1 */}
+      <div className="">
+        <h1 className="text-2xl font-bold mb-8">ดูแลครุภัณฑ์</h1>
+        <div className="bg-white shadow-md rounded-lg p-6 mb-2">
+          <SearchBox />
         </div>
 
-        <div className='col-span-3 mt-2 m-1  p-3  border-4 border-gray-200 rounded-md'>
-        {/* col-2 */}
-        
-                  <div className="flex items-center space-x-4 mt-4">
-                    <Checkbox>ภายใน 7 วัน</Checkbox>
-                  
-                  </div>
-                  <div className="flex items-center space-x-4 mt-4">
-                    <Checkbox><RangePicker /></Checkbox>
-                  </div>
-
-        </div>
-
-        <div className='col-span-3 grid grid-cols-2 mt-2 border-4 border-gray-200 rounded-md'>
-          {/* col-3 */}
-          <div className='mt-4 mx-8 '> 
-            {/* col-3-1 */}
-            <div className='my-2 mb-4 '>
-              <h1 className='block text-md font-medium text-gray-700'>ประเภทการดูแล</h1>
-            </div>
-            
-            <div className='my-2  '>
-              <h1 className='block text-md font-medium text-gray-700'>สถานะการดูแลครุภัณฑ์</h1>
-            </div>
-          
-          
+        <div className='flex flex-row justify-end align-middle'>
+          <div>
+            <Button
+              className={`text-md text-gray-700 ${isRepairActive ? 'bg-blue-500 text-white' : 'bg-gray-300'} h-[40px] mr-2`}
+              type='primary'
+              onClick={() => {
+                setIsRepairActive(true);
+                setIsMaintenanceActive(false);
+              }}
+            >
+              แสดงคำร้องซ่อมแซมครุภัณฑ์
+            </Button>
+            <Button
+              className={`text-md text-gray-700 ${isMaintenanceActive ? 'bg-blue-500 text-white' : 'bg-gray-300'} h-[40px]`}
+              type='primary'
+              onClick={() => {
+                setIsRepairActive(false);
+                setIsMaintenanceActive(true);
+              }}
+            >
+              แสดงแจ้งเตือนบำรุงรักษาครุภัณฑ์
+            </Button>
           </div>
-          <div className='mt-4 '> 
-          {/* col-3-2 */}
-                    <div className='my-1 '>
-                      <Select placeholder="ประเภทการดูแล">
-                          <Option value="ทั้งหมด">ทั้งหมด</Option>
-                          <Option value="ซ่อมแซม">ซ่อมแซม</Option>
-                          <Option value="บำรุงรักษา">บำรุงรักษา</Option>
-                        </Select>
-                    </div>
-                    <div>
-                        <Select placeholder="สถานะการดูแลครุภัณฑ์">
-                          <Option value="ทั้งหมด">ทั้งหมด</Option>
-                          <Option value="แจ้งซ่อม">แจ้งซ่อม</Option>
-                          <Option value="ยังไม่ได้ดำเนินการ">ยังไม่ได้ดำเนินการ</Option>
-                        </Select>
-                    </div>
-          </div>
-          
-
-
-
-
-
-                      
-
-                        <div>
-                        
-                        
-                        </div>
-        </div>
-        <div>
-          {/* col-4 */}
         </div>
 
+        {isRepairActive && <RepairReportTable data={data} />}
+        {isMaintenanceActive && <FilteredMaintenanceTable data={dataMaintenance} />}
 
-        </div>
-        
-        
+        <MaintenancePage3
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          repairReportId={selectedRepairReportId}
+          selectedStatus={selectedStatus[selectedRepairReportId]}
+        />
       </div>
-      
-      <Table columns={columns} dataSource={data} pagination={false} />
-    </div>
-    
-    
     </>
-  )
-}
+  );
+};
 
-export default MantenantPage1
+export default MantenantPage1;

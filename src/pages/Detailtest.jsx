@@ -211,7 +211,7 @@ function Detailtest() {
                 <div className=''></div>
                 <div className='col-span-6 border-2 border-blue-500 rounded-md'>
                 <div className='border-b-2 m-4 '>
-                <h1 className='text-xl font-thin text-blue-800 '>องค์ประกอบในชุดครุภัณฑ์</h1>
+                <h1 className='text-xl font-thin text-blue-800 '>ข้อมูลครุภัณฑ์ภายในชุด</h1>
                 </div>
 
 

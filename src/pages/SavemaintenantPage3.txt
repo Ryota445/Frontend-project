@@ -1,0 +1,184 @@
+import React ,{ useState,useEffect }  from 'react'
+import { Button, message, Steps, theme } from 'antd';
+
+import { useParams } from "react-router-dom";
+
+
+
+import MaintenanceState1 from '../components/MaintenanceState1'
+import MaintenanceState2 from '../components/MaintenanceState2'
+import MaintenanceState3 from '../components/MaintenanceState3'
+import MaintenanceState4 from '../components/MaintenanceState4'
+import MaintenanceState5 from '../components/MaintenanceState5';
+
+
+
+
+
+function MaintenancePage3() {
+  const { id } = useParams();
+  const [dataInv, setDataInv] = useState(null);
+  const [dataRepairReport, setDataRepairReport] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+
+
+  const { token } = theme.useToken();
+  const [current, setCurrent] = useState(0);
+  const next = () => {
+    setCurrent(current + 1);
+  };
+  const prev = () => {
+    setCurrent(current - 1);
+  };
+ 
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (dataRepairReport) {
+      // console.log("DataRepairReport state has been updated:", dataRepairReport);
+    }
+  }, [dataRepairReport]);
+
+  useEffect(() => {
+    if (dataInv) {
+      // console.log("DataInv state has been updated:", dataInv);
+    }
+  }, [dataInv]);
+
+  const fetchData = async () => {
+    try {
+      // ดึงข้อมูล Repair Report
+      const response = await fetch(
+        `http://localhost:1337/api/repair-reports/${id}?populate=*`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP Error status: ${response.status}`);
+      }
+      const repairReportData = await response.json();
+      setDataRepairReport(repairReportData.data);
+
+      // ดึงข้อมูล Inventory
+      const inventoryId = repairReportData.data.attributes.inventory.data.id;
+      const inventoryResponse = await fetch(
+        `http://localhost:1337/api/inventories/${inventoryId}?populate=*`
+      );
+      if (!inventoryResponse.ok) {
+        throw new Error(`HTTP Error status: ${inventoryResponse.status}`);
+      }
+      const inventoryData = await inventoryResponse.json();
+      setDataInv(inventoryData.data);
+    } catch (error) {
+      console.error("Error Fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return <div>กำลังโหลด...</div>;
+  }
+
+  if (!dataInv || !dataRepairReport) {
+    return <div>เกิดข้อผิดพลาดในการโหลดข้อมูล</div>;
+  }
+
+  
+const steps = [
+  {
+    title: 'ทำเรื่องพิจารณาการซ่อมแซม',
+    content: <MaintenanceState2 dataInvForCard={dataInv} dataRepairReport={dataRepairReport} />,
+  },
+  {
+    title: 'บันทึกผลการพิจารณา',
+    content: <MaintenanceState3/>,
+  },
+  {
+    title: 'ดำเนินการซ่อมแซม',
+    content: <MaintenanceState4/>,
+  },
+  {
+    title: 'เสร็จสิ้นการซ่อมครุภัณฑ์',
+    content: <MaintenanceState5/>,
+  },
+];
+
+
+
+
+  const items = steps.map((item) => ({
+    key: item.title,
+    title: item.title,
+  }));
+  const contentStyle = {
+    // lineHeight: '500px',
+    // textAlign: 'center',
+    padding: '10px',
+    minHeight: '500px',
+    color: token.colorTextTertiary,
+    backgroundColor: token.colorFillAlter,
+    borderRadius: token.borderRadiusLG,
+    border: `1px dashed ${token.colorBorder}`,
+    marginTop: 16,
+  };
+  
+  return (
+    <>
+
+
+    <Steps current={current} items={items}  
+    //  status="error"
+    />
+      <div style={contentStyle}>{steps[current].content}</div>
+      <div className='flex flex-row justify-end'
+        style={{
+          marginTop: 24,
+        }}
+      >
+         {current > 0 && (
+          <Button
+            style={{
+              margin: '0 8px',
+            }}
+            onClick={() => prev()}
+          >
+            ก่อนหน้านี้
+          </Button>
+        )}
+        {current === 0 &&  (
+          
+          
+          <Button className="bg-blue-300" type="primary" onClick={() => next()}>
+            ดำเนินการต่อไป
+          </Button>
+        )}
+        {current === 0 &&  (
+          
+          
+          <Button  className="bg-blue-300" type="primary" onClick={() => {setCurrent(2)}}>
+            เจ้าหน้าที่เห็นควรอนุมัติ
+          </Button>
+        )}
+        {(current < steps.length - 1) &&(current!== 0) && (
+          <Button className="bg-blue-300" type="primary" onClick={() => next()}>
+            บันทึกและดำเนินการถัดไป
+          </Button>
+        )}
+        {current === steps.length - 1 && (
+          <Button className="bg-blue-300" type="primary" onClick={() => message.success('Processing complete!')}>
+            บันทึกและเสร็จสิ้น
+          </Button>
+        )}
+       
+      </div>
+      
+    </>
+
+   
+  )
+}
+
+export default MaintenancePage3

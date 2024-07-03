@@ -1,67 +1,134 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Badge, Card, List } from 'antd';
 import { MenuUnfoldOutlined, MenuFoldOutlined, BellOutlined, ToolOutlined, ToolFilled, SyncOutlined, DeleteOutlined } from '@ant-design/icons';
 import logo_1 from '../assets/img/logo_1.jpg';
+import { Link } from 'react-router-dom';
 
 function NavComponent({ collapsed, setCollapsed }) {
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: 'การแจ้งเตือนซ่อมบำรุงคอมพิวเตอร์', category: 'maintenance' },
-    { id: 2, message: 'การแจ้งเตือนการซ่อมคอมพิวเตอร์', category: 'repair' },
-    { id: 3, message: 'การแจ้งเตือนการเปลี่ยนที่ตั้ง', category: 'location' },
-    { id: 4, message: 'การแจ้งเตือนการทำลายคอมพิวเตอร์', category: 'decommission' },
-    // เพิ่มการแจ้งเตือนเพิ่มเติมตามต้องการ
-  ]);
+  // const [notifications, setNotifications] = useState([]);
   const [acknowledgedNotifications, setAcknowledgedNotifications] = useState([]);
+
+  // useEffect(() => {
+  //   fetch('/api/notifications')
+  //     .then(response => response.json())
+  //     .then(data => {
+  //       setNotifications(data);
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching notifications:', error);
+  //       setNotifications([
+  //         {
+  //           "id": 1,
+  //           "message": "การแจ้งเตือนซ่อมบำรุงคอมพิวเตอร์",
+  //           "category": "maintenance",
+  //           "link": "/MantenantPage1/"
+  //         },
+  //         {
+  //           "id": 2,
+  //           "message": "การแจ้งเตือนการซ่อมคอมพิวเตอร์",
+  //           "category": "repair",
+  //           "link": "/MantenantPage1/"
+  //         },
+  //         {
+  //           "id": 3,
+  //           "message": "การแจ้งเตือนการเปลี่ยนที่ตั้ง",
+  //           "category": "location",
+  //           "link": "/location"
+  //         },
+  //         {
+  //           "id": 4,
+  //           "message": "การแจ้งเตือนการทำลายคอมพิวเตอร์",
+  //           "category": "decommission",
+  //           "link": "/decommission"
+  //         }
+  //       ]);
+  //     });
+  // }, []);
+  const [notifications, setNotifications] = useState([
+    // {
+    //   "id": 1,
+    //   "message": "การแจ้งเตือนซ่อมบำรุงคอมพิวเตอร์",
+    //   "category": "maintenance",
+    //   "link": "/MantenantPage1/"
+    // },
+    // {
+    //   "id": 2,
+    //   "message": "การแจ้งเตือนการซ่อมคอมพิวเตอร์",
+    //   "category": "repair",
+    //   "link": "/MantenantPage1/"
+    // },
+    // {
+    //   "id": 3,
+    //   "message": "การแจ้งเตือนการเปลี่ยนที่ตั้ง",
+    //   "category": "location",
+    //   "link": "/location"
+    // },
+    // {
+    //   "id": 4,
+    //   "message": "การแจ้งเตือนการทำลายคอมพิวเตอร์",
+    //   "category": "decommission",
+    //   "link": "/decommission"
+    // }
+  ]);
+  
 
   const handleNotificationClick = (id) => {
     console.log(`การแจ้งเตือนที่มี ID ${id} ถูกคลิก.`);
-    setAcknowledgedNotifications([...acknowledgedNotifications, id]);
+    const clickedNotification = notifications.find(notification => notification.id === id);
+    setAcknowledgedNotifications([...acknowledgedNotifications, clickedNotification]);
     setNotifications(notifications.filter(notification => notification.id !== id));
   };
 
   const handleAcknowledge = (id) => {
     console.log(`การแจ้งเตือนที่มี ID ${id} ได้รับการรับทราบ.`);
-    setAcknowledgedNotifications(acknowledgedNotifications.filter(notificationId => notificationId !== id));
+    setNotifications(notifications.filter(notification => notification.id !== id));
   };
 
   const getCategoryIcon = (category) => {
     switch (category) {
       case 'maintenance':
-        return <ToolOutlined style={{ color: '#1890ff', marginRight: '10px' }} />;
+        return <ToolOutlined className="mr-2 text-blue-500" />;
       case 'repair':
-        return <ToolFilled style={{ color: '#52c41a', marginRight: '10px' }} />;
+        return <ToolFilled className="mr-2 text-green-500" />;
       case 'location':
-        return <SyncOutlined style={{ color: '#eb2f96', marginRight: '10px' }} />;
+        return <SyncOutlined className="mr-2 text-pink-500" />;
       case 'decommission':
-        return <DeleteOutlined style={{ color: '#fadb14', marginRight: '10px' }} />;
+        return <DeleteOutlined className="mr-2 text-yellow-500" />;
       default:
         return null;
     }
   };
 
+  const renderNotificationActions = (notification) => {
+    if (['location', 'decommission'].includes(notification.category)) {
+      return (
+        <Button type="primary" onClick={() => handleAcknowledge(notification.id)} className="mt-2">
+          อนุญาต
+        </Button>
+      );
+    }
+    return null;
+  };
+
+  const acknowledgedNotificationIds = acknowledgedNotifications.map(notification => notification.id);
+  const filteredNotifications = notifications.filter(notification => !acknowledgedNotificationIds.includes(notification.id));
+
   const menu = (
     <List
-      dataSource={notifications}
+      dataSource={filteredNotifications}
       renderItem={notification => (
         <List.Item key={notification.id}>
           <Card
-            style={{
-              marginBottom: 10,
-              cursor: 'pointer',
-              backgroundColor: acknowledgedNotifications.includes(notification.id) ? '#f5f5f5' : '#d3d3d3',
-              border: '1px solid #ddd'
-            }}
+            className="mb-2 cursor-pointer border border-gray-300 bg-gray-200"
             onClick={() => handleNotificationClick(notification.id)}
           >
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              {getCategoryIcon(notification.category)}
-              <p>{notification.message}</p>
-            </div>
-            {!acknowledgedNotifications.includes(notification.id) && (
-              <Button type="primary" onClick={() => handleAcknowledge(notification.id)} style={{ marginTop: '10px' }}>
-                รับทราบ
-              </Button>
-            )}
+            <Link to={notification.link} className="no-underline text-inherit">
+              <div className="flex items-center">
+                {getCategoryIcon(notification.category)}
+                <p className="m-0">{notification.message}</p>
+              </div>
+            </Link>
+            {renderNotificationActions(notification)}
           </Card>
         </List.Item>
       )}
@@ -75,37 +142,30 @@ function NavComponent({ collapsed, setCollapsed }) {
   };
 
   return (
-    <>
-      <div className="navbar bg-base-100">
-        <div className="navbar-start">
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64,
-              marginRight: 20 // เพิ่มระยะห่างของปุ่มเมนู
-            }}
-          />
-        </div>
-
-        <div className="navbar-center">
-          <a className="btn btn-ghost text-xl">
-            <img src={logo_1} alt="โลโก้" style={imgStyle} />
-          </a>
-        </div>
-
-        <div className="navbar-end" style={{ marginRight: 20 }}> {/* เพิ่มระยะห่างของ Navbar ด้านขวา */}
-          <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
-            <Badge count={notifications.length}>
-              <Button type="ghost" shape="circle" icon={<BellOutlined />} style={{ fontSize: '20px' }} /> {/* เพิ่มระยะห่างรอบๆปุ่ม */}
-            </Badge>
-          </Dropdown>
-        </div>
+    <div className="navbar bg-base-100">
+      <div className="navbar-start">
+        <Button
+          type="text"
+          icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          onClick={() => setCollapsed(!collapsed)}
+          className="text-xl w-16 h-16 mr-5"
+        />
       </div>
-    </>
+
+      <div className="navbar-center">
+        <a className="btn btn-ghost text-xl">
+          <img src={logo_1} alt="โลโก้" style={imgStyle} />
+        </a>
+      </div>
+
+      <div className="navbar-end mr-5">
+        <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+          <Badge count={filteredNotifications.length}>
+            <Button type="ghost" shape="circle" icon={<BellOutlined />} className="text-2xl" />
+          </Badge>
+        </Dropdown>
+      </div>
+    </div>
   );
 }
 

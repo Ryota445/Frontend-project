@@ -1,11 +1,24 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { message, Input, Form, Upload, Image } from "antd";
+import {
+  message,
+  Input,
+  Form,
+  Upload,
+  Image,
+  Button,
+  Select,
+  Table,
+  Space,
+  Modal as AntdModal,
+} from "antd"; // แก้ไขส่วน import เพื่อเพิ่ม AntdModal
+
 import {
   SettingOutlined,
   PlusOutlined,
   PrinterOutlined,
+  WarningOutlined,
 } from "@ant-design/icons";
 import TableDetailMantenant from "../components/TableDetailMantenant";
 import TableDetailRepair from "../components/TableDetailRepair";
@@ -26,19 +39,74 @@ function UserDetail() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [repairReason, setRepairReason] = useState("");
   const [file, setFile] = useState(null);
+  const [fileList, setFileList] = useState([]);
 
   const [status_inventoryOptions, setStatus_inventoryOptions] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [initialStatus, setInitialStatus] = useState("");
   const [statusInventoryId, setStatusInventoryId] = useState(null);
   const [allowedRepair, setallowedRepair] = useState(null);
-  const [isVisibleModalFeedbackRepair, setIsVisibleModalFeedbackRepair] = useState(false)
-  const [isVisibleModalSentBack, setIsVisibleModalSentBack] = useState(false)
+  const [isVisibleModalFeedbackRepair, setIsVisibleModalFeedbackRepair] =
+    useState(false);
+  const [isVisibleModalSentBack, setIsVisibleModalSentBack] = useState(false);
+  const [isModalVisible2, setIsModalVisible2] = useState(false); // เพิ่มสถานะสำหรับ Modal เปลี่ยนที่ตั้งครุภัณฑ์
+  const [newLocation, setNewLocation] = useState({
+    building: "",
+    floor: "",
+    room: "",
+  }); // เพิ่มสถานะสำหรับที่ตั้งใหม่
+  const [buildingOptions, setBuildingOptions] = useState([]);
+  const [clickedButton, setClickedButton] = useState(""); // Track which button was clicked
+  const [selectedSubInventoryId, setSelectedSubInventoryId] = useState(null); // Track selected sub-inventory ID
 
- 
+  // forModal change location
+  const openModal2 = () => {
+    setIsModalVisible2(true);
+  };
 
+  const closeModal2 = () => {
+    setIsModalVisible2(false);
+  };
 
-    // forModal FeedbackRepair
+  const handleLocationInputChange = (field, value) => {
+    setNewLocation((prevState) => ({ ...prevState, [field]: value }));
+  };
+
+  const handleLocationChange = async () => {
+    const data = {
+      data: {
+        NewLocationRoom: newLocation.room,
+        NewLocationFloor: newLocation.floor,
+        building: newLocation.building,
+        inventories: id,
+        isDone: false,
+      },
+    };
+
+    try {
+      const response = await fetch(
+        "http://localhost:1337/api/request-change-locations",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!response.ok) throw new Error("ไม่สามารถเปลี่ยนที่ตั้งได้");
+
+      const responseData = await response.json();
+      console.log("Change Location Success:", responseData);
+      message.success("เปลี่ยนที่ตั้งสำเร็จ");
+    } catch (error) {
+      console.error("Error:", error);
+      message.error("เกิดข้อผิดพลาดในการเปลี่ยนที่ตั้ง");
+    }
+  };
+
+  // forModal FeedbackRepair
   const openModalSentBack = () => {
     setIsVisibleModalSentBack(true);
   };
@@ -46,7 +114,8 @@ function UserDetail() {
   const closeModalSentBack = () => {
     setIsVisibleModalSentBack(false);
   };
-    // forModal FeedbackRepair
+
+  // forModal FeedbackRepair
   const openModalFeedbackRepair = () => {
     setIsVisibleModalFeedbackRepair(true);
   };
@@ -55,8 +124,8 @@ function UserDetail() {
     setIsVisibleModalFeedbackRepair(false);
   };
 
-   // forModal Company
-   const [isVisible, setIsVisible] = useState(false);
+  // forModal Company
+  const [isVisible, setIsVisible] = useState(false);
   const openModalCompany = () => {
     setIsVisible(true);
   };
@@ -71,7 +140,7 @@ function UserDetail() {
 
   const fetchData = async () => {
     try {
-      // Fetch categories
+      // Fetch staustInventory
       const statusInventoryResponse = await fetch(
         "http://localhost:1337/api/status-inventories"
       );
@@ -80,6 +149,17 @@ function UserDetail() {
         statusInventoryData.data.map((item) => ({
           id: item.id,
           name: item.attributes.StatusInventoryName,
+        }))
+      );
+      //  Fetch buildOptions
+      const buildingResponse = await fetch(
+        "http://localhost:1337/api/buildings"
+      );
+      const buildingData = await buildingResponse.json();
+      setBuildingOptions(
+        buildingData.data.map((item) => ({
+          id: item.id,
+          name: item.attributes.buildingName,
         }))
       );
 
@@ -156,33 +236,44 @@ function UserDetail() {
     try {
       // เตรียมข้อมูลที่จะส่งไปยังเซิร์ฟเวอร์
       const formData = new FormData();
-      formData.append("repairReason", values.repairReason);
+      formData.append(
+        "data",
+        JSON.stringify({
+          inventory: id,
+          RepairReasonByResponsible: values.repairReason,
+          status_repair: 1,
+          isDone: false,
+          isSubInventory: clickedButton === "sub", // Check which button was clicked
+          sub_inventory:
+            clickedButton === "sub" ? selectedSubInventoryId : null, // Include sub-inventory ID if applicable
+        })
+      );
       if (values.file_repair) {
         // กรณีมีการอัปโหลดไฟล์
-        formData.append("file_repair", values.file_repair[0].originFileObj);
+        formData.append(
+          "files.ReportFileByResponsible",
+          values.file_repair[0].originFileObj
+        );
       }
 
       // ส่งข้อมูลไปยังเซิร์ฟเวอร์
-      const response = await fetch(
-        `http://localhost:1337/api/inventories/${id}/repair`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`http://localhost:1337/api/repair-reports`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
-        throw new Error("Response not OK");
+        const errorResponse = await response.json();
+        throw new Error(
+          `Response not OK: ${response.status} - ${errorResponse.message}`
+        );
       }
 
-      // อัปเดตสถานะหลังจากซ่อมแซมสำเร็จ
-      await putStatusInventory(id, 2);
-
       // แสดงข้อความแจ้งเตือนว่าซ่อมแซมสำเร็จ
-      message.success("แจ้งซ่อมสำเร็จแล้ว");
+      await message.success("แจ้งซ่อมสำเร็จแล้ว");
 
       // ปิด Modal
-      closeModal();
+      await closeModal();
 
       // รีโหลดหน้าเพื่อให้แสดงข้อมูลที่อัปเดตแล้ว
       window.location.reload();
@@ -190,7 +281,49 @@ function UserDetail() {
       console.error("Error:", error);
 
       // แสดงข้อความแจ้งเตือนว่าเกิดข้อผิดพลาดในการแจ้งซ่อม
-      message.error("เกิดข้อผิดพลาดในการแจ้งซ่อม");
+      message.error(`เกิดข้อผิดพลาดในการแจ้งซ่อม: ${error.message}`);
+    }
+  };
+
+  const onFinishSentBack = async (values) => {
+    try {
+      const formData = new FormData();
+      formData.append(
+        "data",
+        JSON.stringify({
+          ReasonSentBack: values.repairReason, // เปลี่ยนจาก RepairReasonByResponsible เป็น ReasonSentBack
+          inventory: id,
+          isDone: false,
+        })
+      );
+      if (values.file_repair) {
+        formData.append(
+          "files.FileReasonSentBack", // เปลี่ยนจาก ReportFileByResponsible เป็น FileReasonSentBack
+          values.file_repair[0].originFileObj
+        );
+      }
+
+      const response = await fetch(
+        `http://localhost:1337/api/request-sent-backs`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        throw new Error(
+          `Response not OK: ${response.status} - ${errorResponse.message}`
+        );
+      }
+
+      await message.success("แจ้งส่งคืนสำเร็จแล้ว");
+      await closeModalSentBack();
+      window.location.reload();
+    } catch (error) {
+      console.error("Error:", error);
+      message.error(`เกิดข้อผิดพลาดในการแจ้งส่งคืน: ${error.message}`);
     }
   };
 
@@ -210,38 +343,52 @@ function UserDetail() {
     setStatusBTN("repair");
   };
 
-  const openModal = () => {
+  const openModal = (buttonType, subInventoryId = null) => {
+    setClickedButton(buttonType); // Set the clicked button type
+    setSelectedSubInventoryId(subInventoryId); // Set the selected sub-inventory ID
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setRepairReason("");
-    setFile(null);
+    setFileList([]);
   };
-
   const handleRepairReasonChange = (e) => {
     setRepairReason(e.target.value);
   };
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    setFile(selectedFile);
+  // const handleFileChange = (e) => {
+  //   const selectedFile = e.target.files[0];
+  //   setFile(selectedFile);
+  // };
+  const handleFileChange = ({ fileList }) => {
+    setFileList(fileList);
   };
 
   const normFile = (e) => {
     if (Array.isArray(e)) {
       return e;
     }
-    return e?.fileList;
+    return e && e.fileList;
   };
+
+  // ตรวจสอบข้อมูล
+  const subInventories = dataInv?.attributes?.sub_inventories?.data;
 
   return (
     <>
       <div className="w-full ">
-        <div className="flex  justify-between mx-20">
+        <div className="flex  justify-between ">
           <h1 className="text-4xl font-semibold">รายละเอียดครุภัณฑ์</h1>
+          <button
+            onClick={openModalSentBack}
+            className="font-bold rounded text-sm mt-2 w-40 h-10 bg-red-500 text-white"
+          >
+            <WarningOutlined /> แจ้งส่งคืนครุภัณฑ์นี้
+          </button>
         </div>
+
         <div className=" w-full h-[300px] mt-5 grid grid-cols-8 ">
           <div></div>
 
@@ -270,8 +417,8 @@ function UserDetail() {
                     <h1 className="text-lg text-gray-400 mr-4">
                       หมายเลขครุภัณฑ์
                     </h1>
-                    {dataInv?.attributes?.id_inv &&
-                    !isNaN(dataInv.attributes.id_inv) ? (
+                    {dataInv?.attributes?.id_inv !== null &&
+                    dataInv?.attributes?.id_inv !== undefined ? (
                       <h1 className="text-lg">{dataInv.attributes.id_inv}</h1>
                     ) : (
                       <h1 className="text-lg">-</h1>
@@ -296,6 +443,12 @@ function UserDetail() {
                     <div className="flex flex-col w-3/4 mt-2 border-2 border-blue-500 rounded-md">
                       <h1 className="text-lg text-gray-400 ">
                         ที่ตั้งครุภัณฑ์
+                        <Button
+                          className="w-2/5  m-2 bg-blue-400 text-white"
+                          onClick={() => openModal2()}
+                        >
+                          เปลี่ยนที่ตั้ง
+                        </Button>
                       </h1>
                       <div className="flex flex-row">
                         <h1 className="text-lg text-gray-400 mr-2 ">อาคาร</h1>{" "}
@@ -379,49 +532,186 @@ function UserDetail() {
                     </div>
                   ) : (
                     <div>
-                      <p className="my-2 text-lg  text-red-500"><a onClick={(e)=>{e.preventDefault; 
-                        openModalFeedbackRepair();}}>***ครุภัณฑ์นี้ไม่ได้รับอนุมัติการซ่อมเนื่องจาก...*** :คลิกเพื่ออ่าน</a></p>
-                      <p className="my-2 text-lg  text-red-500">โปรดทำเรื่องส่งคืนครุภัณฑ์</p>
-                      <button onClick={openModalSentBack}
-                        className="font-bold rounded-lg text-sm mt-2 w-32 h-8 bg-red-500 text-white"
-                    
-                      >
-                        แจ้งส่งคืนครุภัณฑ์
-                      </button>
+                      <p className="my-2 text-lg  text-red-500">
+                        <a
+                          onClick={(e) => {
+                            e.preventDefault;
+                            openModalFeedbackRepair();
+                          }}
+                        >
+                          ***ครุภัณฑ์นี้ไม่ได้รับอนุมัติการซ่อมเนื่องจาก...***
+                          :คลิกเพื่ออ่าน
+                        </a>
+                      </p>
+                      <p className="my-2 text-lg  text-red-500">
+                        โปรดทำเรื่องส่งคืนครุภัณฑ์
+                      </p>
                     </div>
-                   
                   )}
 
-                  {statusInventoryId === 2 &&allowedRepair&& (
+                  {statusInventoryId === 2 && allowedRepair && (
                     <div className="flex justify-center mr-20">
                       <button
                         className=" mr-20 mt-5 font-bold rounded-lg text-base w-32 h-8 bg-[#276ff4] text-[#ffffff] justify-center"
-                        onClick={openModal}
+                        onClick={() => openModal("main")}
                       >
-                        แจ้งซ่อมแซม <SettingOutlined />
+                        แจ้งซ่อม <SettingOutlined />
                       </button>
                     </div>
                   )}
 
                   <div className="flex flex-row mt-4">
                     {/* Render the modal */}
+                    {/* ModalChange Location */}
+                    <AntdModal
+                      title="เปลี่ยนที่ตั้งครุภัณฑ์"
+                      visible={isModalVisible2}
+                      onCancel={closeModal2}
+                      footer={[
+                        <Button key="cancel" onClick={closeModal2}>
+                          ยกเลิก
+                        </Button>,
+                        <Button
+                          key="submit"
+                          type="primary"
+                          onClick={handleLocationChange}
+                        >
+                          ยืนยัน
+                        </Button>,
+                      ]}
+                    >
+                      <Form>
+                        <h2 className="text-lg font-bold">ที่ตั้งใหม่</h2>
+                        <Form.Item label="อาคาร">
+                          <Select
+                            placeholder="อาคาร"
+                            onChange={(value) =>
+                              handleLocationInputChange("building", value)
+                            }
+                          >
+                            {buildingOptions.map((building) => (
+                              <Option key={building.id} value={building.id}>
+                                {building.name}
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                        <Form.Item label="ชั้น">
+                          <Input
+                            value={newLocation.floor}
+                            onChange={(e) =>
+                              handleLocationInputChange("floor", e.target.value)
+                            }
+                          />
+                        </Form.Item>
+                        <Form.Item label="ห้อง">
+                          <Input
+                            value={newLocation.room}
+                            onChange={(e) =>
+                              handleLocationInputChange("room", e.target.value)
+                            }
+                          />
+                        </Form.Item>
+                      </Form>
+                    </AntdModal>
+
+                    {/* Modal sentback */}
                     {/* Modal sentback */}
                     <ModalSentBack
-                    isVisible={isVisibleModalSentBack}
-                    onClose={closeModalSentBack}
+                      isVisible={isVisibleModalSentBack}
+                      onClose={closeModalSentBack}
                     >
-                             {/* content สำหรับSentback  */}
-                             <h2 className="text-lg font-bold mb-4">แจ้งส่งคืนครุภัณฑ์</h2>
-                            <div className="h-[500px]"></div>
+                      <h2 className="text-lg font-bold mb-4">
+                        แจ้งส่งคืนครุภัณฑ์
+                      </h2>
+                      <Form
+                        form={form}
+                        name="sentback-form" // เปลี่ยนชื่อฟอร์มเป็น sentback-form
+                        onFinish={onFinishSentBack} // ใช้ฟังก์ชันใหม่
+                        layout="vertical"
+                        className="m-4"
+                      >
+                        <div className="mb-4">
+                          <label className="block text-gray-700 text-sm font-bold mb-2">
+                            เหตุผลในการแจ้งส่งคืนครุภัณฑ์:
+                          </label>
+                          <Form.Item
+                            name="repairReason"
+                            rules={[
+                              {
+                                required: true,
+                                message:
+                                  "กรุณาระบุเหตุผลในการแจ้งส่งคืนครุภัณฑ์",
+                              },
+                            ]}
+                          >
+                            <TextArea rows={4} />
+                          </Form.Item>
+                        </div>
+                        <div className="mb-4">
+                          <label className="block text-gray-700 text-sm font-bold mb-2">
+                            อัปโหลดไฟล์ (ถ้ามี)
+                          </label>
+                          <Form.Item
+                            name="file_repair"
+                            valuePropName="fileList"
+                            getValueFromEvent={normFile}
+                            rules={[
+                              {
+                                validator: (rule, value) =>
+                                  value && value.length === 1
+                                    ? Promise.resolve()
+                                    : Promise.reject(
+                                        "กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น"
+                                      ),
+                              },
+                            ]}
+                          >
+                            <Upload
+                              name="file_repair" // ใช้ชื่อเหมือนกับใน Modal แจ้งซ่อม
+                              listType="picture-card"
+                              beforeUpload={() => false}
+                              onChange={handleFileChange}
+                            >
+                              <button
+                                style={{ border: 0, background: "none" }}
+                                type="button"
+                              >
+                                <PlusOutlined />
+                                <div style={{ marginTop: 8 }}>เพิ่มไฟล์</div>
+                              </button>
+                            </Upload>
+                          </Form.Item>
+                          <p className="text-red-500">***กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น***</p>
+                        </div>
+                        <div className="flex justify-end">
+                          <Form.Item>
+                            <button
+                              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+                              htmlType="submit"
+                            >
+                              ยืนยัน
+                            </button>
+                          </Form.Item>
+                          <Form.Item>
+                            <button
+                              onClick={closeModalSentBack}
+                              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                            >
+                              ยกเลิก
+                            </button>
+                          </Form.Item>
+                        </div>
+                      </Form>
                     </ModalSentBack>
-                    
+
                     {/* Modal Feedback */}
                     <ModalFeedbackRepair
-                    isVisible={isVisibleModalFeedbackRepair}
-                    onClose={closeModalFeedbackRepair}
+                      isVisible={isVisibleModalFeedbackRepair}
+                      onClose={closeModalFeedbackRepair}
                     >
-                             {/* content สำหรับFeedbackrepair  */}
-                            <div className="h-[500px]"></div>
+                      {/* content สำหรับFeedbackrepair  */}
+                      <div className="h-[500px]"></div>
                     </ModalFeedbackRepair>
                     <Modal
                       isOpen={isModalOpen}
@@ -440,7 +730,15 @@ function UserDetail() {
                           <label className="block text-gray-700 text-sm font-bold mb-2">
                             เหตุผลในการแจ้งซ่อม:
                           </label>
-                          <Form.Item>
+                          <Form.Item
+                            name="repairReason"
+                            rules={[
+                              {
+                                required: true,
+                                message: "กรุณาระบุเหตุผลในการแจ้งซ่อม",
+                              },
+                            ]}
+                          >
                             <TextArea rows={4} />
                           </Form.Item>
                         </div>
@@ -467,13 +765,10 @@ function UserDetail() {
                               name="file_repair"
                               listType="picture-card"
                               beforeUpload={() => false}
-                              limit={1}
+                              onChange={handleFileChange}
                             >
                               <button
-                                style={{
-                                  border: 0,
-                                  background: "none",
-                                }}
+                                style={{ border: 0, background: "none" }}
                                 type="button"
                               >
                                 <PlusOutlined />
@@ -481,22 +776,25 @@ function UserDetail() {
                               </button>
                             </Upload>
                           </Form.Item>
+                          <p className="text-red-500">***กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น***</p>
                         </div>
-
                         <div className="flex justify-end">
-                          <button
-                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
-                            htmlType="submit"
-                            icon={<PrinterOutlined />}
-                          >
-                            ยืนยัน
-                          </button>
-                          <button
-                            onClick={closeModal}
-                            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-                          >
-                            ยกเลิก
-                          </button>
+                          <Form.Item>
+                            <button
+                              className="bg-blue-500  hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+                              htmlType="submit"
+                            >
+                              ยืนยัน
+                            </button>
+                          </Form.Item>
+                          <Form.Item>
+                            <button
+                              onClick={closeModal}
+                              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                            >
+                              ยกเลิก
+                            </button>
+                          </Form.Item>
                         </div>
                       </Form>
                     </Modal>
@@ -761,35 +1059,101 @@ function UserDetail() {
         <div className="col-span-6 border-2 border-blue-500 rounded-md">
           <div className="border-b-2 m-4 ">
             <h1 className="text-xl font-thin text-blue-800 ">
-              องค์ประกอบในชุดครุภัณฑ์
+              ข้อมูลครุภัณฑ์ภายในชุด
             </h1>
           </div>
 
-          {/* ซ่อนรายละเอียดครุภัณฑ์ไว้ก่อน */}
-
-          {/* <div className=" flex flex-row border-2 border-blue-500 rounded-md m-4 p-2 ">
-            <h1 className="text-lg text-gray-400 mr-4">หมายเลขครุภัณฑ์</h1>{" "}
-            <h1 className="text-lg">110231213/1</h1>
-            <h1 className="text-lg text-gray-400 mx-4">ชื่อครุภัณฑ์</h1>{" "}
-            <h1 className="text-lg">Liquid nitrogen</h1>
-            <h1 className="text-lg text-gray-400 mx-4">หมายเลขSN</h1>{" "}
-            <h1 className="text-lg">-</h1>
-            {statusInventoryId === 2 && (
-              <div className="flex justify-center">
-                <button
-                  className="ml-20  font-bold rounded-lg text-base w-32 h-8 bg-[#276ff4] text-[#ffffff] justify-center"
-                  onClick={openModal}
-                >
-                  แจ้งซ่อมแซม
-                </button>
-              </div>
-            )}
-          </div> */}
+          {/* แสดงรายละเอียดครุภัณฑ์ */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    หมายเลขครุภัณฑ์
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    ชื่อครุภัณฑ์
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    หมายเลข SN
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    ยี่ห้อ
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    รุ่น
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  ></th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {!subInventories || subInventories.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="6"
+                      className="px-6 py-4 text-center text-gray-500"
+                    >
+                      ไม่มีข้อมูลครุภัณฑ์ภายในชุด
+                    </td>
+                  </tr>
+                ) : (
+                  subInventories.map((item, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {dataInv?.attributes?.id_inv + "  "}
+                        {item.attributes.id_inv}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.attributes.name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.attributes.serialNumber}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.attributes.brand}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.attributes.model}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {statusInventoryId === 2 && allowedRepair && (
+                          <button
+                            className="font-bold rounded-lg text-base w-32 h-8 bg-[#276ff4] text-[#ffffff]"
+                            onClick={() => openModal("sub", item.id)} // Pass sub-inventory ID when clicked
+                          >
+                            แจ้งซ่อม <SettingOutlined />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
         <div className=""></div>
       </div>
 
-      <div className="w-full h-[100px]"></div>
+      <div className="w-full h-[150px]"></div>
 
       <div className=" w-full  grid grid-cols-5 ">
         <div>{/* col-1 */}</div>

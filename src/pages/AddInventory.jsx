@@ -1,23 +1,8 @@
-import React from "react";
-import { useState, useEffect } from "react";
-import FormAddInventory from "../components/FormAddInventory";
-import {
-  Form,
-  Input,
-  Button,
-  DatePicker,
-  Select,
-  Upload,
-  Space,
-  message,
-} from "antd";
-import {
-  UploadOutlined,
-  PlusOutlined,
-  PrinterOutlined,
-  DeleteOutlined,
-} from "@ant-design/icons";
+import React, { useState, useEffect } from "react";
+import { Form, Input, Button, DatePicker, Select, Upload, Space, message } from "antd";
+import { UploadOutlined, PlusOutlined, PrinterOutlined, DeleteOutlined } from "@ant-design/icons";
 import AddTest from "../components/AddTest";
+
 const { Option } = Select;
 
 const normFile = (e) => {
@@ -40,15 +25,14 @@ function AddInventory() {
 
   const [searchValue, setSearchValue] = useState("");
 
-  const [inventoryCount, setInventoryCount] = useState(1); // เก็บจำนวนครุภัณฑ์
-  const [startInventoryNumber, setStartInventoryNumber] = useState(""); // เก็บหมายเลขครุภัณฑ์เริ่มต้น
+  const [inventoryCount, setInventoryCount] = useState(1); // Number of inventories
+  const [startInventoryNumber, setStartInventoryNumber] = useState(""); // Starting inventory number
 
   const [activeButton, setActiveButton] = useState("single");
 
   useEffect(() => {
-    // สร้างหมายเลขครุภัณฑ์ตามจำนวนที่ระบุ
-    const endInventoryNumber =
-      parseInt(startInventoryNumber) + parseInt(inventoryCount) - 1; // เปลี่ยนเป็น parseInt(inventoryCount)
+    // Generate inventory number based on the specified quantity
+    const endInventoryNumber = parseInt(startInventoryNumber) + parseInt(inventoryCount) - 1; 
     form.setFieldsValue({
       inventory_number_m_start: startInventoryNumber,
       inventory_number_m_end: endInventoryNumber.toString(),
@@ -59,81 +43,55 @@ function AddInventory() {
     async function fetchData() {
       try {
         // Fetch companies
-        const companyResponse = await fetch(
-          "http://localhost:1337/api/company-inventories"
-        );
+        const companyResponse = await fetch("http://localhost:1337/api/company-inventories");
         const companyData = await companyResponse.json();
-        setCompanyOptions(
-          companyData.data.map((item) => ({
-            id: item.id,
-            name: item.attributes.contactName + " / " + item.attributes.Cname,
-          }))
-        );
+        setCompanyOptions(companyData.data.map((item) => ({
+          id: item.id,
+          name: item.attributes.contactName + " / " + item.attributes.Cname,
+        })));
 
         // Fetch responsibles
-        const responsibleResponse = await fetch(
-          "http://localhost:1337/api/responsibles"
-        );
+        const responsibleResponse = await fetch("http://localhost:1337/api/responsibles");
         const responsibleData = await responsibleResponse.json();
-        setResponsibleOptions(
-          responsibleData.data.map((item) => ({
-            id: item.id,
-            name: item.attributes.responsibleName,
-          }))
-        );
+        setResponsibleOptions(responsibleData.data.map((item) => ({
+          id: item.id,
+          name: item.attributes.responsibleName,
+        })));
 
         // Fetch categories
-        const categoryResponse = await fetch(
-          "http://localhost:1337/api/categories"
-        );
+        const categoryResponse = await fetch("http://localhost:1337/api/categories");
         const categoryData = await categoryResponse.json();
-        setCategoryOptions(
-          categoryData.data.map((item) => ({
-            id: item.id,
-            name: item.attributes.CategoryName,
-          }))
-        );
+        setCategoryOptions(categoryData.data.map((item) => ({
+          id: item.id,
+          name: item.attributes.CategoryName,
+        })));
 
         // Fetch buildings
-        const buildingResponse = await fetch(
-          "http://localhost:1337/api/buildings"
-        );
+        const buildingResponse = await fetch("http://localhost:1337/api/buildings");
         const buildingData = await buildingResponse.json();
-        setBuildingOptions(
-          buildingData.data.map((item) => ({
-            id: item.id,
-            name: item.attributes.buildingName,
-          }))
-        );
+        setBuildingOptions(buildingData.data.map((item) => ({
+          id: item.id,
+          name: item.attributes.buildingName,
+        })));
 
         // Fetch howToGet
-        const howToGetResponse = await fetch(
-          "http://localhost:1337/api/how-to-gets"
-        );
+        const howToGetResponse = await fetch("http://localhost:1337/api/how-to-gets");
         const howToGetData = await howToGetResponse.json();
-        setHowToGetOptions(
-          howToGetData.data.map((item) => ({
-            id: item.id,
-            name: item.attributes.howToGetName,
-          }))
-        );
+        setHowToGetOptions(howToGetData.data.map((item) => ({
+          id: item.id,
+          name: item.attributes.howToGetName,
+        })));
 
-        // Fetch howToGet
-        const sourceMoneyResponse = await fetch(
-          "http://localhost:1337/api/source-monies"
-        );
+        // Fetch sourceMoney
+        const sourceMoneyResponse = await fetch("http://localhost:1337/api/source-monies");
         const sourceMoneyData = await sourceMoneyResponse.json();
-        setSourceMoneyOptions(
-          sourceMoneyData.data.map((item) => ({
-            id: item.id,
-            name: item.attributes.sourceMoneyName,
-          }))
-        );
+        setSourceMoneyOptions(sourceMoneyData.data.map((item) => ({
+          id: item.id,
+          name: item.attributes.sourceMoneyName,
+        })));
 
         // Fetch yearMoneyGet options
-        const yearMoneyGetResponse = await fetch(
-          "http://localhost:1337/api/year-money-gets"
-        );
+        const yearMoneyGetResponse = await fetch("http://localhost:1337/api/year-money-gets");
         const yearMoneyGetData = await yearMoneyGetResponse.json();
 
         // Sort yearMoneyGet options by name
@@ -154,6 +112,21 @@ function AddInventory() {
   }, []);
 
   const onFinish = async (values) => {
+   
+    const subInventoryIds = [];
+    console.log('Received values of form:', values);
+    console.log('item-s:',items)
+    for (const item of items) {
+      console.log('item:',item)
+      const subInventoryId = await postSubInventoryData(item);
+      if (subInventoryId) {
+        subInventoryIds.push(subInventoryId);
+      } else {
+        message.error("Failed to save sub-inventory item.");
+        return;
+      }
+    }
+
     for (let i = 0; i < inventoryCount; i++) {
       const formData = new FormData();
       formData.append(
@@ -162,73 +135,82 @@ function AddInventory() {
           name: values.name,
           id_inv: (
             (parseInt(startInventoryNumber) || parseInt(values.id_inv)) + i
-          ).toString(), // Use parseInt and fallback to 0 if NaN
-          // เพิ่มข้อมูลอื่น ๆ ที่ต้องการส่งไปยังเซิร์ฟเวอร์
-          // inventory_number_m_start: values.inventory_number_m_start,
-          // inventory_number_m_end: values.inventory_number_m_end,
-          // Inventory_number_faculty: values.Inventory_number_faculty,
+          ).toString(),
           category: values.category,
           building: values.building,
           floor: values.floor,
-          rooms: values.room,
+          room: values.room,
           responsible: values.responsible,
           how_to_get: values.howToGet,
           sourceMoney: values.sourceMoney,
           year_money_get: values.YearMoneyGet,
-          DateOrder: values.DateOrder
-            ? values.DateOrder.format("YYYY-MM-DD")
-            : null, // ตรวจสอบว่ามีการเลือกวันที่
-          DateRecive: values.DateRecive
-            ? values.DateRecive.format("YYYY-MM-DD")
-            : null, // ตรวจสอบว่ามีการเลือกวันที่
+          DateOrder: values.DateOrder ? values.DateOrder.format("YYYY-MM-DD") : null,
+          DateRecive: values.DateRecive ? values.DateRecive.format("YYYY-MM-DD") : null,
           company_inventory: values.company_inventory,
           serialNumber: values.serialNumber,
           model: values.model,
           brand: values.brand,
           prize: values.prize,
           status_inventory: 1,
-          allowedRepair:true,
+          allowedRepair: true,
           age_use: values["age-use"],
           information: values.information,
-          // อื่นๆ ตามที่มีในฟอร์ม
+          sub_inventories: subInventoryIds,
         })
       );
 
       if (values.img_inv && values.img_inv.length > 0) {
-        // ตรวจสอบและเพิ่มไฟล์รูปภาพเข้าไปใน formData
         formData.append("files.img_inv", values.img_inv[0].originFileObj);
       }
 
-      // ส่งข้อมูลฟอร์มไปยัง API
-      const response = await postInventoryData(formData); // ใช้ formData แทน object
+      const response = await postInventoryData(formData);
       if (response) {
         message.success("บันทึกข้อมูลสำเร็จ");
-        form.resetFields(); // เคลียร์ฟอร์มหลังจากการส่งข้อมูลสำเร็จ
-        console.log("value.catagory is :", values.category);
+        form.resetFields();
       } else {
         message.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
       }
     }
-  }; // Add this closing brace
+  };
 
-  // ฟังก์ชัน postInventoryData แก้ไขให้รองรับ FormData
+  const postSubInventoryData = async (subItem) => {
+    try {
+      const response = await fetch("http://localhost:1337/api/sub-inventories", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: subItem })
+      });
+      if (!response.ok) throw new Error("Response not OK");
+      const responseData = await response.json();
+      console.log("subItem:",subItem)
+      console.log("responseData.data.id:",responseData.data.id)
+      return responseData.data.id;
+    } catch (error) {
+      console.error("Error:", error);
+      console.log("responseData.data.id:",responseData.data.id)
+
+      return null;
+    }
+  };
+
   const postInventoryData = async (formData) => {
     try {
       const response = await fetch("http://localhost:1337/api/inventories", {
         method: "POST",
-        body: formData, // ไม่ต้องตั้งค่า headers ที่นี่ เพราะ FormData จะกำหนด Content-Type ให้เอง
+        body: formData,
       });
       if (!response.ok) throw new Error("Response not OK");
       const responseData = await response.json();
       console.log("Response:", responseData);
-      return responseData; // คืนค่า response data
+      return responseData;
     } catch (error) {
       console.error("Error:", error);
-      return null; // คืนค่า null ในกรณีมีข้อผิดพลาด
+      return null;
     }
   };
 
-  // ฟังก์ชันสำหรับเคลียร์ฟอร์ม
   const handleReset = () => {
     form.resetFields();
   };
@@ -248,7 +230,6 @@ function AddInventory() {
   }, []);
 
   const [count, setCount] = useState(1);
-
   const [items, setItems] = useState([]);
 
   const removeItem = (index) => {
@@ -375,33 +356,9 @@ function AddInventory() {
                   name="floor"
                   label="ชั้น"
                   className="w-full"
-                  rules={[{ required: false, message: "กรุณาเลือกชั้น" }]}
+                  // rules={[{ required: false, message: "กรุณาเลือกชั้น" }]}
                 >
-                  <Select>
-                    <Option value="B">B</Option>
-                    <Option value="G">G</Option>
-                    <Option value="2">2</Option>
-                    <Option value="3">3</Option>
-                    <Option value="4">4</Option>
-                    <Option value="5">5</Option>
-                    <Option value="6">6</Option>
-                    <Option value="7">7</Option>
-                    <Option value="8">8</Option>
-                    <Option value="9">9</Option>
-                    <Option value="10">10</Option>
-                    <Option value="11">11</Option>
-                    <Option value="12">12</Option>
-                    <Option value="13">13</Option>
-                    <Option value="14">14</Option>
-                    <Option value="15">15</Option>
-                    <Option value="16">16</Option>
-                    <Option value="17">17</Option>
-                    <Option value="18">18</Option>
-                    <Option value="19">19</Option>
-                    <Option value="20">20</Option>
-
-                    {/* ... ตัวเลือกอื่นๆ */}
-                  </Select>
+                  <Input />
                 </Form.Item>
 
                 <Form.Item name="room" label="ห้อง" className="w-full">
@@ -616,11 +573,21 @@ function AddInventory() {
 
           <div className="border-b-2 border-black mb-6 mt-10">
             <h1 className="text-lg text-blue-800">
-              เพิ่มข้อมูลครุภัณฑ์ภายในชุด
+              ข้อมูลครุภัณฑ์ภายในชุด
             </h1>
           </div>
+          
+          <AddTest items={items} setItems={setItems} count={count} setCount={setCount}  />
 
-          <AddTest items={items} setItems={setItems} removeItem={removeItem} />
+{/* <div>
+        {items.map((item, index) => (
+          <div key={index} className="item">
+            <span>{item.testName}</span>
+            <button onClick={() => removeItem(index)}>Remove</button>
+          </div>
+        ))}
+      </div> */}
+
 
           <div className="flex justify-center space-x-2">
             <Form.Item>
