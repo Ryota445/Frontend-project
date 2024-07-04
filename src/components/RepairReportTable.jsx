@@ -7,9 +7,9 @@ const columns = [
   { title: 'หมายเลขครุภัณฑ์', dataIndex: 'id', key: 'id', width: 150 },
   { title: 'ชื่อครุภัณฑ์', dataIndex: 'name', key: 'name', width: 200 },
   { title: 'แจ้งโดย', dataIndex: 'reportedBy', key: 'reportedBy', width: 120 },
-  { title: 'รายละเอียดการซ่อม', dataIndex: 'description', key: 'description', width: 200 },
+  { title: 'รายละเอียดการแจ้งซ่อม', dataIndex: 'description', key: 'description', width: 200 },
   { title: 'ไฟล์แจ้งซ่อม', dataIndex: 'FileReport', key: 'FileReport', width: 150, ellipsis: true },
-  { title: 'สถานะการซ่อมแซม', dataIndex: 'status', key: 'status', width: 200 },
+  { title: 'สถานะการซ่อม', dataIndex: 'status', key: 'status', width: 200 },
   {
     title: '',
     dataIndex: 'action',

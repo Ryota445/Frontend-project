@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, message, Steps, theme, Modal } from 'antd';
+import { Button, message, Steps, Modal } from 'antd';
 import MaintenanceState1 from '../components/MaintenanceState1';
 import MaintenanceState2 from '../components/MaintenanceState2';
 import MaintenanceState3 from '../components/MaintenanceState3';
@@ -10,7 +10,6 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
   const [dataInv, setDataInv] = useState(null);
   const [dataRepairReport, setDataRepairReport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { token } = theme.useToken();
   const [current, setCurrent] = useState(0);
 
   const next = () => setCurrent(current + 1);
@@ -24,7 +23,7 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
 
   useEffect(() => {
     if (selectedStatus !== undefined && selectedStatus !== null && !isNaN(selectedStatus)) {
-      setCurrent(parseInt(selectedStatus, 10)-1);
+      setCurrent(parseInt(selectedStatus, 10) - 1);
     }
   }, [selectedStatus]);
 
@@ -48,41 +47,49 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
     }
   };
 
-  const steps = [
-    { title: 'แจ้งซ่อม', content: <MaintenanceState1 dataInvForCard={dataInv} dataRepairReport={dataRepairReport} /> },
-    { title: 'รอพิจารณาซ่อม', content: <MaintenanceState2 dataInvForCard={dataInv} dataRepairReport={dataRepairReport} /> },
-    { title: 'ดำเนินการซ่อมแซม', content: <MaintenanceState4 /> },
-    { title: 'เสร็จสิ้นการซ่อมแซม', content: <MaintenanceState5 /> },
-    { title: 'ไม่อนุมัติการซ่อม', content: <MaintenanceState3 /> },
-  ];
+  const steps = current === 4
+    ? [
+        { title: 'แจ้งซ่อม' },
+        { title: 'รอพิจารณาซ่อม' },
+        { title: 'ไม่อนุมัติการซ่อม' },
+      ]
+    : [
+        { title: 'แจ้งซ่อม' },
+        { title: 'รอพิจารณาซ่อม' },
+        { title: 'ดำเนินการซ่อม' },
+        { title: 'เสร็จสิ้นการซ่อม' },
+      ];
+
+  const getContent = () => {
+    switch (parseInt(selectedStatus, 10) - 1) {
+      case 0:
+        return <MaintenanceState1 dataInvForCard={dataInv} dataRepairReport={dataRepairReport} />;
+      case 1:
+        return <MaintenanceState2 dataInvForCard={dataInv} dataRepairReport={dataRepairReport} />;
+      case 2:
+        return  <MaintenanceState4 />;
+      case 3:
+        return <MaintenanceState5 />;
+      case 4:
+        return <MaintenanceState3 />;
+      default:
+        return null;
+    }
+  };
 
   const items = steps.map(item => ({ key: item.title, title: item.title }));
-  const contentStyle = {
-    padding: '10px',
-    minHeight: '500px',
-    color: token.colorTextTertiary,
-    backgroundColor: token.colorFillAlter,
-    borderRadius: token.borderRadiusLG,
-    border: `1px dashed ${token.colorBorder}`,
-    marginTop: 16,
-  };
 
   return (
     <Modal visible={visible} onCancel={onClose} footer={null} width={1200}>
       <Steps current={current} items={items} />
-      <div style={contentStyle}>{steps[current].content}</div>
+      <div style={{ padding: '10px', minHeight: '500px', marginTop: 16 }}>
+        {getContent()}
+      </div>
       <div className='flex flex-row justify-end' style={{ marginTop: 24 }}>
-        <Button
-          style={{ margin: '0 8px' }}
-          onClick={onClose}
-        >
+        <Button style={{ margin: '0 8px' }} onClick={onClose}>
           ยกเลิก
         </Button>
-        <Button
-          className="bg-blue-300"
-          type="primary"
-          onClick={() => message.success('Processing complete!')}
-        >
+        <Button className="bg-blue-300" type="primary" onClick={() => message.success('Processing complete!')}>
           บันทึก
         </Button>
       </div>

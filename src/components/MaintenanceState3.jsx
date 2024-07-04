@@ -33,9 +33,10 @@ function MaintenanceState3() {
 
           <div className="mb-4">
           <label className="block text-lg font-medium mb-2">ผลการพิจารณาซ่อมแซมครุภัณฑ์จากคณะฯ</label>
-          <Select className="w-full" showSearch placeholder="ผลการพิจารณา">
-            {/* Add Select options here */}
-          </Select>
+          {/* <Select className="w-full" showSearch placeholder="ผลการพิจารณา">
+           
+          </Select> */}
+           <Input placeholder="ผลการพิจารณา" />
         </div>
         
 </div>

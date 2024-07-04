@@ -3,10 +3,12 @@ import {  Select, Button, DatePicker, Upload ,Image,message,Input, Checkbox , Fo
 import { UploadOutlined,InboxOutlined,FileOutlined } from '@ant-design/icons';
 const { TextArea } = Input;
 import CardInventoryDetail from './CardInventoryDetail';
+import CardSubInventoryDetail from './CardSubInventoryDetail';
 
 function MaintenanceState2( {dataInvForCard ,dataRepairReport}) {
   console.log("Data received in MaintenanceState2:", dataInvForCard);
   const [dataInv, setdataInv] = useState(dataInvForCard)
+  const [idSubInventory,setIdSubInventory] =useState(null)
 
   const fileUrl = dataRepairReport?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url 
     ? `http://localhost:1337${dataRepairReport.attributes.ReportFileByResponsible.data[0].attributes.url}`
@@ -16,17 +18,19 @@ function MaintenanceState2( {dataInvForCard ,dataRepairReport}) {
 
  
   useEffect(() => {
-    console.log('fileUrl: ',fileUrl)
-    console.log('fileName: ',dataRepairReport?.attributes?.ReportFileByResponsible.data)
-  
-  
-  }, [])
+    console.log('fileUrl: ', fileUrl);
+    console.log('fileName: ', fileName);
+    console.log('subInventory: ', dataRepairReport?.attributes?.isSubInventory);
+  }, [fileUrl, fileName, dataRepairReport]);
 
   useEffect(() => {
     if (dataInvForCard) {
       setdataInv(dataInvForCard);
+      if (dataRepairReport?.attributes?.sub_inventory?.data) {
+      setIdSubInventory(dataRepairReport?.attributes?.sub_inventory.data.id)
     }
-  }, [dataInvForCard]);
+  }
+  }, [dataInvForCard,dataRepairReport]);
 
   const [componentDisabled, setComponentDisabled] = useState(false);
   const normFile = (e) => {
@@ -47,7 +51,16 @@ function MaintenanceState2( {dataInvForCard ,dataRepairReport}) {
       {/* ใส่เนื้อหาตรงนี้ */}
       <h1 className='text-2xl text-gray-500  my-2 mb-2'> บันทึกข้อมูลการทำเรื่องพิจาณาซ่อมแซมครุภัณฑ์ </h1>
 
-      <CardInventoryDetail data={dataInv}/>
+      {dataRepairReport ? (
+            dataRepairReport.attributes.isSubInventory ? (
+              <CardSubInventoryDetail data={dataInv} idSubInventory={idSubInventory}/>
+            ) : (
+              <CardInventoryDetail data={dataInv} />
+            )
+          ) : (
+            <p>Loading data...</p>
+          )}
+
       <div className='border-2 border-blue-500 rounded-md  px-4 pb-4 mb-2'>
                 {/* ข้อมูลฟอร์ม */}
 
