@@ -11,9 +11,6 @@ import {
   Select,
   Table,
   Space,
-  Checkbox,
-  DatePicker,
-  Radio,
   Modal as AntdModal,
 } from "antd"; // แก้ไขส่วน import เพื่อเพิ่ม AntdModal
 
@@ -41,7 +38,7 @@ function UserDetail() {
   const [dataInv, setDataInv] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isModalOpenMan, setIsModalOpenMan] = useState(false);
+  const [isModalOpenM, setIsModalOpenM] = useState(false);
   const [repairReason, setRepairReason] = useState("");
   const [file, setFile] = useState(null);
   const [fileList, setFileList] = useState([]);
@@ -65,159 +62,78 @@ function UserDetail() {
   const [clickedButtonM, setClickedButtonM] = useState(""); // Track which button was clicked
   const [selectedSubInventoryId, setSelectedSubInventoryId] = useState(null); // Track selected sub-inventory ID
   const [selectedSubInventoryIdM, setSelectedSubInventoryIdM] = useState(null); // Track selected sub-inventory ID
-
-
-
-  const [selectedForm, setSelectedForm] = useState(null);
   const [fileList2, setFileList2] = useState([]);
   const [isNextAppointment, setIsNextAppointment] = useState(false);
   const [isMaintenanceDate, setIsMaintenanceDate] = useState(false);
-  const [dateInputType, setDateInputType] = useState(null);
-  const [formType, setFormType] = useState(null);
-  const [searchValue, setSearchValue] = useState("");
-  const [companyOptions, setCompanyOptions] = useState([]);
   // forModal reportMaintenance
 
-  useEffect(() => {
-    async function fetchDataC() {
-      try {
-    // Fetch companies
-    const companyResponse = await fetch("http://localhost:1337/api/company-inventories");
-    const companyData = await companyResponse.json();
-    setCompanyOptions(companyData.data.map((item) => ({
-      id: item.id,
-      name: item.attributes.contactName + " / " + item.attributes.Cname,
-    })));
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  }
-}
-fetchDataC();
-}, []);
- 
 
   const handleFileChange2 = ({ fileList }) => setFileList2(fileList);
 
   const handleSaveMaintenance = async (values) => {
     try {
       const formData = new FormData();
-      const currentDate = new Date();
-      const dateToDo = values.dateToDo ? new Date(values.dateToDo) : currentDate;
-  
-      let newDueDate = null;
-      if (values.newDueDateType === 'formInput' && values.formInputDate) {
-        // คำนวณวันที่จากจำนวนวันที่ใส่
-        newDueDate = new Date(dateToDo.getTime() + parseInt(values.formInputDate) * 24 * 60 * 60 * 1000);
-      } else if (values.newDueDateType === 'datePicker' && values.datePickerDate) {
-        newDueDate = new Date(values.datePickerDate);
-      }
-  
-      const maintenanceData = {
-        inventory: id,
-        isSubInventory: clickedButton === "sub",
-        sub_inventory: clickedButton === "sub" ? selectedSubInventoryId : null,
-        isDone: true,
-        company_inventory: values.companyInventory,
-        NameMaintenance: values.nameMaintenance,
-        DetailMaintenance: values.detailMaintenance,
-        prize: values.prize,
-        DateToDo: dateToDo.toISOString(),
-        newDueDate: newDueDate ? newDueDate.toISOString() : null,
-      };
-  
-      formData.append("data", JSON.stringify(maintenanceData));
-  
+      formData.append("data", JSON.stringify({
+        inventory: inventoryId,
+        subInventory: subInventoryId,
+        ...values,
+        isDone: true, // or false based on your condition
+      }));
+
       fileList2.forEach(file => {
         formData.append('files.FileMaintenanceByAdmin', file.originFileObj);
       });
-  
+
       const response = await fetch(`http://localhost:1337/api/maintenance-reports`, {
         method: "POST",
         body: formData,
       });
-  
+
       if (!response.ok) {
-        throw new Error(`Response not OK: ${response.status}`);
+        const errorResponse = await response.json();
+        throw new Error(`Response not OK: ${response.status} - ${errorResponse.message}`);
       }
-  
-      // สร้างการนัดหมายใหม่ถ้ามี newDueDate
-      if (newDueDate) {
-        const appointmentData = {
-          inventory: id,
-          isSubInventory: clickedButton === "sub",
-          sub_inventory: clickedButton === "sub" ? selectedSubInventoryId : null,
-          isDone: false,
-          DetailMaintenance: values.detailMaintenance,
-          DueDate: newDueDate.toISOString(),
-        };
-  
-        const appointmentResponse = await fetch(`http://localhost:1337/api/maintenance-reports`, {
-          method: "POST",
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ data: appointmentData }),
-        });
-  
-        if (!appointmentResponse.ok) {
-          throw new Error(`Appointment creation failed: ${appointmentResponse.status}`);
-        }
-      }
-  
+
       message.success("เพิ่มข้อมูลบำรุงรักษาสำเร็จแล้ว");
-      closeModalMan();
-      // window.location.reload();
+      closeModalM();
+      window.location.reload();
     } catch (error) {
       message.error(`เกิดข้อผิดพลาดในเพิ่มข้อมูลบำรุงรักษา: ${error.message}`);
     }
   };
 
-
   const handleAddAppointment = async (values) => {
     try {
-      const currentDate = new Date();
-  
-      let dueDate = null;
-      if (values.newDueDateType === 'formInput' && values.formInputDate) {
-        // คำนวณวันที่จากจำนวนวันที่ใส่
-        dueDate = new Date(currentDate.getTime() + parseInt(values.formInputDate) * 24 * 60 * 60 * 1000);
-      } else if (values.newDueDateType === 'datePicker' && values.datePickerDate) {
-        dueDate = new Date(values.datePickerDate);
-      }
-  
-      if (!dueDate) {
-        throw new Error('กรุณาระบุวันนัดหมาย');
-      }
-  
-      const appointmentData = {
-        inventory: id,
-        isSubInventory: clickedButton === "sub",
-        sub_inventory: clickedButton === "sub" ? selectedSubInventoryId : null,
+      const formData = new FormData();
+      formData.append("data", JSON.stringify({
+        inventory: inventoryId,
+        subInventory: subInventoryId,
+        ...values,
         isDone: false,
-        DetailMaintenance: values.DetailMaintenance,
-        DueDate: dueDate.toISOString(),
-      };
-  
-      const response = await fetch(`http://localhost:1337/api/maintenance-reports`, {
+      }));
+
+      const response = await fetch(`http://localhost:1337/api/maintenance-appointments`, {
         method: "POST",
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: appointmentData }),
+        body: formData,
       });
-  
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Response not OK: ${response.status} - ${errorData.error.message}`);
+        const errorResponse = await response.json();
+        throw new Error(`Response not OK: ${response.status} - ${errorResponse.message}`);
       }
-  
+
       message.success("เพิ่มนัดหมายบำรุงรักษาสำเร็จแล้ว");
-      closeModalMan();
-      // window.location.reload();
+      closeModalM();
+      window.location.reload();
     } catch (error) {
       message.error(`เกิดข้อผิดพลาดในเพิ่มนัดหมายบำรุงรักษา: ${error.message}`);
     }
   };
+
+
+
+
+
 
   // forModal change location
   const openModal2 = () => {
@@ -404,9 +320,9 @@ fetchDataC();
           RepairReasonByResponsible: values.repairReason,
           status_repair: 1,
           isDone: false,
-          isSubInventory: clickedButtonM === "sub", // Check which button was clicked
+          isSubInventory: clickedButton === "sub", // Check which button was clicked
           sub_inventory:
-            clickedButtonM === "sub" ? selectedSubInventoryIdM : null, // Include sub-inventory ID if applicable
+            clickedButton === "sub" ? selectedSubInventoryId : null, // Include sub-inventory ID if applicable
         })
       );
       if (values.file_repair) {
@@ -446,20 +362,19 @@ fetchDataC();
     }
   };
 
-  const openModalMan = (buttonType, subInventoryId = null) => {
+  const openModalM = (buttonType, subInventoryId = null) => {
     setClickedButtonM(buttonType); // Set the clicked button type
     setSelectedSubInventoryIdM(subInventoryId); // Set the selected sub-inventory ID
-    setIsModalOpenMan(true);
+    setIsModalOpen(true);
   };
 
-  const closeModalMan = () => { 
-    setIsModalOpenMan(false);
+  const closeModalM = () => {
+    setIsModalOpen(false);
     setRepairReason("");
     setFileList([]);
-    
   };
 
-
+ 
 
   const onFinishSentBack = async (values) => {
     try {
@@ -519,16 +434,16 @@ fetchDataC();
     setStatusBTN("repair");
   };
 
-  const openModal = (buttonType, subInventoryId = null) => {
-    setClickedButton(buttonType); // Set the clicked button type
-    setSelectedSubInventoryId(subInventoryId); // Set the selected sub-inventory ID
-    setIsModalOpen(true);
-  };
+  // const openModalM = (buttonType, subInventoryId = null) => {
+  //   setClickedButton(buttonType); // Set the clicked button type
+  //   setSelectedSubInventoryId(subInventoryId); // Set the selected sub-inventory ID
+  //   setIsModalOpen(true);
+  // };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setRepairReason("");
-    setFileList([]);
+  // const closeModalM = () => {
+  //   setIsModalOpen(false);
+  //   setRepairReason("");
+  //   setFileList([]);
   };
   const handleRepairReasonChange = (e) => {
     setRepairReason(e.target.value);
@@ -594,7 +509,7 @@ fetchDataC();
 <div className="flex justify-self-end ">
                       <button
                         className=" my-2 mx-2 font-bold rounded text-base w-48 h-12 bg-[#4de83f] text-[#ffffff] justify-center"
-                        onClick={() => openModalMan("main")}
+                        onClick={() => openModalM("main")}
                       >
                         <SafetyOutlined className="text-xl " /> บำรุงรักษา<span className="flex justify-center">(ครุภัณฑ์หลัก)</span> 
                       </button>
@@ -996,208 +911,104 @@ fetchDataC();
 
                     {/* modal addMantenant */}
                     <Modal
-      isOpen={isModalOpenMan}
-      onRequestClose={closeModalMan}
-      contentLabel="เพิ่มข้อมูลบำรุงรักษา"
+      isOpen={isModalOpenM}
+      onRequestClose={closeModalM}
+      contentLabel="เพิ่มข้อมูลบำรุ่งรักษา"
     >
       <h2 className="text-lg font-bold mb-4">เพิ่มข้อมูลบำรุงรักษา</h2>
-
-     
-       <div className="mb-4">
-        <Button onClick={() => setFormType('saveMaintenance')} className={formType === 'saveMaintenance' ? 'btn-primary text-blue-500' : 'default'}>
-          บันทึกข้อมูลบำรุงรักษา
-        </Button>
-        <Button onClick={() => setFormType('addAppointment')} className={formType === 'addAppointment' ? 'btn-primary text-blue-500' : 'default'}>
-          เพิ่มนัดหมายบำรุ่งรักษา
-        </Button>
-      </div>
-
-      {formType === 'saveMaintenance' && (
-  <Form
-    form={form}
-    name="maintenance-form"
-    layout="vertical"
-    className="m-4"
-    onFinish={handleSaveMaintenance}
-  >
-    <Form.Item
-      name="companyInventory"
-      label="ตัวแทน/บริษัท"
-      rules={[{ required: true, message: "กรุณาเลือกบริษัท" }]}
-    >
-             <Select
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            placeholder="ค้นหาชื่อตัวแทน/บริษัท"
-            optionFilterProp="children"
-            showSearch
-            onSearch={setSearchValue}
-            value={searchValue}
-            onChange={(value) => {
-              setSearchValue(value);
-            }}
-          >
-            {companyOptions.map((company) => (
-              <Option key={company.id} value={company.id}>
-                {company.name}
-              </Option>
-            ))}
-          </Select>
-          </Form.Item>
-
-          <Form.Item
-      name="nameMaintenance"
-      label="ชื่อการบำรุงรักษา"
-      rules={[{ required: false, message: "กรุณากรอกชื่อการบำรุงรักษา" }]}
-    >
-      <Input />
-    </Form.Item>
-
-    <Form.Item
-      name="detailMaintenance"
-      label="รายละเอียดการบำรุงรักษา"
-      rules={[{ required: true, message: "กรุณากรอกรายละเอียดการบำรุงรักษา" }]}
-    >
-      <Input.TextArea rows={4} />
-    </Form.Item>
-
-    <Form.Item
-      name="prize"
-      label="ค่าใช้จ่าย (บาท)"
-      rules={[{ required: true, message: "กรุณากรอกค่าใช้จ่าย" }]}
-    >
-      <Input addonAfter="บาท" />
-    </Form.Item>
-
-    <Form.Item
-      name="fileMaintenanceByAdmin"
-      label="ไฟล์"
-      valuePropName="fileList"
-      getValueFromEvent={e => (Array.isArray(e) ? e : e.fileList)}
-    >
-      <Upload
-        name="fileMaintenanceByAdmin"
-        listType="picture"
-        beforeUpload={() => false}
-        onChange={handleFileChange2}
+      <Form
+        form={form}
+        name="maintenance-form"
+        layout="vertical"
+        className="m-4"
+        onFinish={isNextAppointment ? handleAddAppointment : handleSaveMaintenance}
       >
-        <Button icon={<PlusOutlined />}>อัปโหลดไฟล์</Button>
-      </Upload>
-    </Form.Item>
+        <Form.Item
+          name="companyInventory"
+          label="ตัวแทน/บริษัท"
+          rules={[{ required: true, message: "กรุณาเลือกบริษัท" }]}
+        >
+          <Select placeholder="เลือกบริษัท">
+            {/* Options here */}
+          </Select>
+        </Form.Item>
 
-    <Form.Item name="maintenanceDateCheckbox" valuePropName="checked">
-      <Checkbox onChange={(e) => setIsMaintenanceDate(e.target.checked)}>ต้องการกำหนดวันที่ทำการบำรุงรักษา</Checkbox>
-    </Form.Item>
+        <Form.Item
+          name="nameMaintenance"
+          label="ชื่อการบำรุงรักษา"
+          rules={[{ required: true, message: "กรุณากรอกชื่อการบำรุงรักษา" }]}
+        >
+          <Input />
+        </Form.Item>
 
-    {isMaintenanceDate && (
-      <Form.Item name="dateToDo" label="วันที่บำรุงรักษา">
-        <DatePicker />
-      </Form.Item>
-    )}
+        <Form.Item
+          name="detailMaintenance"
+          label="รายละเอียดการบำรุงรักษา"
+          rules={[{ required: true, message: "กรุณากรอกรายละเอียดการบำรุงรักษา" }]}
+        >
+          <Input.TextArea rows={4} />
+        </Form.Item>
 
-    {/* <Form.Item name="nextAppointmentCheckbox" valuePropName="checked">
-      <Checkbox onChange={(e) => setIsNextAppointment(e.target.checked)}>มีนัดหมายบำรุงรักษารอบถัดไป</Checkbox>
-    </Form.Item>
+        <Form.Item
+          name="prize"
+          label="ราคา"
+          rules={[{ required: true, message: "กรุณากรอกราคา" }]}
+        >
+          <Input addonAfter="บาท" />
+        </Form.Item>
 
+        <Form.Item
+          name="fileMaintenanceByAdmin"
+          label="ไฟล์"
+          valuePropName="fileList"
+          getValueFromEvent={e => (Array.isArray(e) ? e : e.fileList)}
+        >
+          <Upload
+            name="fileMaintenanceByAdmin"
+            listType="picture"
+            beforeUpload={() => false}
+            onChange={handleFileChange2}
+          >
+            <Button icon={<PlusOutlined />}>อัปโหลดไฟล์</Button>
+          </Upload>
+        </Form.Item>
 
-          {isMaintenanceDate && (
-            <Form.Item name="dateToDo" label="วันที่บำรุงรักษา">
-              <DatePicker />
-            </Form.Item>
-          )} */}
+        <Form.Item name="maintenanceDateCheckbox" valuePropName="checked">
+          <Checkbox onChange={(e) => setIsMaintenanceDate(e.target.checked)}>ต้องการวันที่ทำการบำรุงรักษา</Checkbox>
+        </Form.Item>
 
-          <Form.Item name="nextAppointmentCheckbox" valuePropName="checked">
-            <Checkbox onChange={(e) => setIsNextAppointment(e.target.checked)}>มีนัดหมายบำรุงรักษารอบถัดไป</Checkbox>
+        {isMaintenanceDate && (
+          <Form.Item name="dateToDo" label="วันที่บำรุงรักษา">
+            <DatePicker />
           </Form.Item>
+        )}
 
-          {isNextAppointment && (
-  <>
-    <Form.Item name="newDueDateType" label="วันบำรุงรักษารอบถัดไป">
-      <Radio.Group onChange={(e) => setDateInputType(e.target.value)}>
-        <Radio value="formInput">กรอกจำนวนวันในการบำรุงรักษารอบถัดไป (วัน)</Radio>
-        <Radio value="datePicker">เลือกวันที่</Radio>
-      </Radio.Group>
-    </Form.Item>
+        <Form.Item name="nextAppointmentCheckbox" valuePropName="checked">
+          <Checkbox onChange={(e) => setIsNextAppointment(e.target.checked)}>มีนัดหมายบำรุงรักษารอบถัดไป</Checkbox>
+        </Form.Item>
 
-    {dateInputType === 'formInput' && (
-      <Form.Item name="formInputDate" label="กรอกจำนวนวันในการบำรุงรักษารอบถัดไป (วัน)">
-        <Input placeholder="ใส่จำนวนวัน" />
-      </Form.Item>
-    )}
+        {isNextAppointment && (
+          <Form.Item name="newDueDate" label="นัดหมายรอบถัดไป">
+            <Radio.Group>
+              <Radio value="formInput">กรอกวัน</Radio>
+              <Radio value="datePicker">เลือกวันที่</Radio>
+            </Radio.Group>
+          </Form.Item>
+        )}
 
-    {dateInputType === 'datePicker' && (
-      <Form.Item name="datePickerDate" label="เลือกวันที่">
-        <DatePicker />
-      </Form.Item>
-    )}
-  </>
-)}
-
-          <div className="flex justify-end">
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                ยืนยัน
-              </Button>
-            </Form.Item>
-            <Form.Item>
-              <Button onClick={closeModalMan}>
-                ยกเลิก
-              </Button>
-            </Form.Item>
-          </div>
-        </Form>
-      )}
-
-{formType === 'addAppointment' && (
-    <Form
-    form={form}
-    name="appointment-form"
-    layout="vertical"
-    className="m-4"
-    onFinish={handleAddAppointment}
-  >
-    <Form.Item
-      name="DetailMaintenance"
-      label="รายละเอียดการบำรุงรักษา"
-      rules={[{ required: true, message: "กรุณากรอกรายละเอียดการบำรุงรักษา" }]}
-    >
-      <Input.TextArea rows={4} />
-    </Form.Item>
-
-    <Form.Item name="newDueDateType" label="นัดหมายรอบถัดไป" rules={[{ required: true, message: "กรุณาเลือกวิธีกำหนดวันนัดหมาย" }]}>
-      <Radio.Group onChange={(e) => setDateInputType(e.target.value)}>
-        <Radio value="formInput">กรอกจำนวนวันในการบำรุงรักษารอบถัดไป (วัน)</Radio>
-        <Radio value="datePicker">เลือกวันที่</Radio>
-      </Radio.Group>
-    </Form.Item>
-
-    {dateInputType === 'formInput' && (
-      <Form.Item name="formInputDate" label="กรอกจำนวนวันในการบำรุงรักษารอบถัดไป (วัน)" rules={[{ required: true, message: "กรุณากรอกจำนวนวัน" }]}>
-        <Input placeholder="ใส่จำนวนวัน" type="number" />
-      </Form.Item>
-    )}
-
-    {dateInputType === 'datePicker' && (
-      <Form.Item name="datePickerDate" label="เลือกวันที่" rules={[{ required: true, message: "กรุณาเลือกวันที่" }]}>
-        <DatePicker />
-      </Form.Item>
-    )}
-
-          <div className="flex justify-end">
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                ยืนยัน
-              </Button>
-            </Form.Item>
-            <Form.Item>
-              <Button onClick={closeModalMan}>
-                ยกเลิก
-              </Button>
-            </Form.Item>
-          </div>
-        </Form>
-      )}
+        <div className="flex justify-end">
+          <Form.Item>
+            <Button type="primary" htmlType="submit">
+              ยืนยัน
+            </Button>
+          </Form.Item>
+          <Form.Item>
+            <Button onClick={closeModalM}>
+              ยกเลิก
+            </Button>
+          </Form.Item>
+        </div>
+      </Form>
     </Modal>
 
 
@@ -1549,7 +1360,7 @@ fetchDataC();
 
               <button
                             className="ml-2 font-bold rounded-lg text-base w-32 h-8 bg-[#4de83f] text-[#ffffff]"
-                            onClick={() => openModalMan("sub", item.id)} // Pass sub-inventory ID when clicked
+                            onClick={() => openModalM("sub", item.id)} // Pass sub-inventory ID when clicked
                           >
                             <SafetyOutlined className="text-xl " />บำรุงรักษา 
                           </button>

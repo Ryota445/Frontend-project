@@ -6,6 +6,7 @@ import {
   MonitorOutlined,
   TeamOutlined,
   UserOutlined,
+  RollbackOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, theme } from 'antd';
 import './index.css';
@@ -59,7 +60,7 @@ function getItem(label, key, icon, children) {
 const items = [
   getItem('จัดการครุภัณฑ์', '3', <Link to="/manageInventory"><DesktopOutlined /></Link>),
   getItem('ดูแลครุภัณฑ์', '4', <Link to="/MantenantPage1"><MonitorOutlined /></Link>),
-  getItem('เปลี่ยนที่ตั้ง/ส่งคืนครุภัณฑ์', '5', <Link to="/RequestManagement"><MonitorOutlined /></Link>),
+  getItem('เปลี่ยนที่ตั้ง/ส่งคืนครุภัณฑ์', '5', <Link to="/RequestManagement"><RollbackOutlined /></Link>),
   getItem('เพิ่มข้อมูลผู้รับผิดชอบ', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
   getItem('เพิ่มข้อมูลบริษัท', '9', <Link to="/AddInformationCompany"><TeamOutlined /></Link>),
   getItem('Logout', '2', <Link to="/"><UserOutlined /></Link>),

@@ -4,7 +4,6 @@ import no_image from "../assets/img/Image.png";
 
 
 function CardInventoryDetail({data}) {
-  console.log("Data received in CardInventoryDetail:", data);
 
     const [dataInv, setDataInv] = useState(data);
     

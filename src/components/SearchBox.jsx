@@ -136,11 +136,7 @@ function SearchBox({ onSearch }) {
                                     </div>
                                     <div className='flex flex-col mr-2'>
                                     <label htmlFor="asset-type" className="block text-sm font-medium text-gray-700">ชั้น</label>
-                                        <Select defaultValue="ทั้งหมด" id="asset-type" style={{ width: 100 }}>
-                                            <Option value="ทั้งหมด">ทั้งหมด</Option>
-                                            <Option value="option1">1</Option>
-                                            <Option value="option2">2</Option>
-                                        </Select>
+                                    <Input placeholder="" id="floor" name="floor" value={formData.assetName}  style={{ width: 80 }} />
                                     </div>
                                     <div className='flex flex-col mr-2'>
                                     <label htmlFor="asset-type" className="block text-sm font-medium text-gray-700">ห้อง</label>
@@ -156,9 +152,8 @@ function SearchBox({ onSearch }) {
                                     <label htmlFor="asset-type" className="block text-sm font-medium text-gray-700 ">สถานะครุภัณฑ์</label>
                                         <Select defaultValue="ทั้งหมด" id="asset-type" style={{ width: 100 }}>
                                             <Option value="ทั้งหมด">ทั้งหมด</Option>
-                                            <Option value="option1">ปกติ</Option>
-                                            <Option value="option2">เสีย</Option>
-                                            <Option value="option2">ไม่ได้ใช้งาน   </Option>
+                                            <Option value="1">ปกติ</Option>
+                                            <Option value="2">เสีย</Option>
                                         </Select>
                                     </div>
 

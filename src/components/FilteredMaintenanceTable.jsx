@@ -32,6 +32,7 @@ const FilteredMaintenanceTable = ({ data }) => {
       title: 'รายละเอียด',
       dataIndex: 'description',
       key: 'description',
+      width: 400,
     },
     {
       title: '',
