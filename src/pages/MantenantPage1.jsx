@@ -58,7 +58,7 @@ const MantenantPage1 = () => {
       const companyData = await companyResponse.json();
       setCompanyOptions(companyData.data.map((item) => ({
         id: item.id,
-        name: item.attributes.contactName + " / " + item.attributes.Cname,
+        name: item.attributes.contactName + " / " + item.attributes.Cname + (item?.attributes?.role ? ` (${item.attributes.role})` : ''),
       })));
     } catch (error) {
       console.error("Error fetching company data:", error);
@@ -318,7 +318,11 @@ const MantenantPage1 = () => {
   return (
     <>
       <div className="">
-        <h1 className="text-2xl font-bold mb-8">ดูแลครุภัณฑ์</h1>
+        
+        <div className='border-b-2 border-black mb-10 flex justify-between items-center'>
+        <h1 className='text-3xl text-blue-800'>ดูแลครุภัณฑ์</h1>
+        
+      </div>
         <div className="bg-white shadow-md rounded-lg p-6 mb-2">
           <SearchBox />
         </div>

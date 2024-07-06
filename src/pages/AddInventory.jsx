@@ -47,7 +47,7 @@ function AddInventory() {
         const companyData = await companyResponse.json();
         setCompanyOptions(companyData.data.map((item) => ({
           id: item.id,
-          name: item.attributes.contactName + " / " + item.attributes.Cname,
+          name: item.attributes.contactName + " / " + item.attributes.Cname + (item?.attributes?.role ? ` (${item.attributes.role})` : ''),
         })));
 
         // Fetch responsibles

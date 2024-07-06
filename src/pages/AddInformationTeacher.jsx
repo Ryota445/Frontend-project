@@ -10,6 +10,8 @@ function AddInformationTeacher() {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
   const [columnSettings, setColumnSettings] = useState({
     responsibleName: true,
@@ -18,7 +20,7 @@ function AddInformationTeacher() {
   });
 
   useEffect(() => {
-    fetch('http://localhost:1337/api/responsibles')
+    fetch('http://localhost:1337/api/responsibles?populate=*')
       .then(response => response.json())
       .then(data => {
         setData(data.data || []);
@@ -61,7 +63,42 @@ function AddInformationTeacher() {
     });
   };
 
+  const handleEditResponsible = () => {
+    if (editingRecord.id === 1) {
+      message.error('ไม่สามารถลบบริษัทนี้ได้');
+      return;
+    }
+  
+    form.validateFields().then(values => {
+      fetch(`http://localhost:1337/api/responsibles/${editingRecord.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: values })
+      })
+        .then(response => response.json())
+        .then(updatedData => {
+          setData(prevData => prevData.map(item => 
+            item.id === editingRecord.id ? updatedData.data : item
+          ));
+          setIsEditModalVisible(false);
+          form.resetFields();
+          message.success('แก้ไขข้อมูลผู้รับผิดชอบสำเร็จแล้ว');
+        })
+        .catch(error => {
+          console.error('Error updating responsible:', error);
+          message.error('แก้ไขข้อมูลผู้รับผิดชอบไม่สำเร็จ');
+        });
+    });
+  };
+
   const handleDeleteResponsible = id => {
+    if (id === 1) {
+      message.error('ไม่สามารถลบบริษัทนี้ได้');
+      return;
+    }
+  
     fetch(`http://localhost:1337/api/responsibles/${id}`, {
       method: 'DELETE'
     })
@@ -115,8 +152,15 @@ function AddInformationTeacher() {
       key: 'action',
       render: (text, record) => (
         <Space size="middle">
-          <EyeOutlined className='text-xl' />
-          <EditOutlined className='text-xl' />
+          
+          <EditOutlined 
+            className='text-xl' 
+            onClick={() => {
+              setEditingRecord(record);
+              form.setFieldsValue(record.attributes);
+              setIsEditModalVisible(true);
+            }}
+          />
           <DeleteOutlined className='text-xl' onClick={() => handleDeleteResponsible(record.id)} />
         </Space>
       )
@@ -141,7 +185,7 @@ function AddInformationTeacher() {
         <Search
           placeholder="ค้นหาชื่อผู้รับผิดชอบ"
           onSearch={handleSearch}
-          enterButton
+          allowClear
           style={{ width: 300 }}
         />
       </Space>
@@ -155,10 +199,23 @@ function AddInformationTeacher() {
       />
 
       <Modal
-        title="เพิ่มข้อมูลผู้รับผิดชอบ"
-        visible={isModalVisible}
-        onOk={handleAddResponsible}
-        onCancel={() => setIsModalVisible(false)}
+        title={editingRecord ? "แก้ไขข้อมูลผู้รับผิดชอบ" : "เพิ่มข้อมูลผู้รับผิดชอบ"}
+        visible={isModalVisible || isEditModalVisible}
+        onOk={editingRecord ? handleEditResponsible : handleAddResponsible}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setIsEditModalVisible(false);
+          setEditingRecord(null);
+          form.resetFields();
+        }}
+        okText={editingRecord ? "บันทึกการแก้ไข" : "บันทึก"}
+        cancelText="ยกเลิก"
+        okButtonProps={{ 
+          style: { backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' } 
+        }}
+        cancelButtonProps={{ 
+          style: { borderColor: '#1890ff', color: '#1890ff' } 
+        }}
       >
         <Form form={form} layout="vertical">
           <Form.Item name="responsibleName" label="ชื่อผู้รับผิดชอบ" rules={[{ required: true }]}>

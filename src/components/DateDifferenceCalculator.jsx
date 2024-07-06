@@ -1,39 +1,44 @@
-import React, { useState, useEffect } from 'react';
-
 const DateDifferenceCalculator = ({ dateReceive }) => {
-  const [difference, setDifference] = useState('');
+  console.log("DateDifferenceCalculator called with:", dateReceive);
+  
+  if (!dateReceive) {
+    return "ไม่มีข้อมูลวันที่";
+  }
 
-  useEffect(() => {
-    // ตรวจสอบว่ามีค่า dateReceive หรือไม่
-    if (dateReceive) {
-      const currentDate = new Date();
-      const targetDate = new Date(dateReceive);
+  const calculateTimeDifference = (dateReceive) => {
+    const today = new Date();
+    const receivedDate = new Date(dateReceive);
+    
+    let years = today.getFullYear() - receivedDate.getFullYear();
+    let months = today.getMonth() - receivedDate.getMonth();
+    let days = today.getDate() - receivedDate.getDate();
 
-      let years = currentDate.getFullYear() - targetDate.getFullYear();
-      let months = currentDate.getMonth() - targetDate.getMonth();
-      let days = currentDate.getDate() - targetDate.getDate();
-
-      if (days < 0) {
-        months -= 1;
-        days += new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
-      }
-
-      if (months < 0) {
-        years -= 1;
-        months += 12;
-      }
-
-      // กำหนดค่าให้กับ state difference
-      setDifference(`${years} ปี ${months} เดือน ${days} วัน`);
+    // ปรับค่าเดือนและปีถ้าจำเป็น
+    if (days < 0) {
+      months--;
+      days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
     }
-  }, [dateReceive]);
+    if (months < 0) {
+      years--;
+      months += 12;
+    }
 
-  return (
-    <div>
-      {/* แสดงผลลัพธ์ */}
-      {difference && <p>ความแตกต่าง: {difference}</p>}
-    </div>
-  );
+    return { years, months, days };
+  };
+
+  const { years, months, days } = calculateTimeDifference(dateReceive);
+  console.log("Calculated time difference:", { years, months, days });
+
+  // สร้างข้อความผลลัพธ์
+  let result = [];
+  if (years > 0) result.push(`${years} ปี`);
+  if (months > 0) result.push(`${months} เดือน`);
+  if (days > 0) result.push(`${days} วัน`);
+
+  // ถ้าไม่มีความแตกต่างของเวลา (วันเดียวกัน)
+  if (result.length === 0) return "0 วัน";
+
+  return result.join(" ");
 };
 
 export default DateDifferenceCalculator;

@@ -30,10 +30,16 @@ import Modal from "react-modal";
 import ModalDetailCompany from "../components/ModalDetailCompany";
 import ModalFeedbackRepair from "../components/ModalFeedbackRepair";
 import ModalSentBack from "../components/ModalSentBack";
-import DateDifferenceCalculator from "../components/DateDifferenceCalculator";
+import DateDifferenceCalculator from "../components/DateDifferenceCalculator"
 import ThaiDateFormat from "../components/ThaiDateFormat";
+import InventoryMaintenanceHistory from "../components/InventoryMaintenanceHistory "
 import no_image from "../assets/img/Image.png";
+import { differenceInDays } from 'date-fns';
 const { TextArea } = Input;
+
+
+
+
 function UserDetail() {
   const [form] = Form.useForm();
   const { id } = useParams();
@@ -76,6 +82,7 @@ function UserDetail() {
   const [formType, setFormType] = useState(null);
   const [searchValue, setSearchValue] = useState("");
   const [companyOptions, setCompanyOptions] = useState([]);
+  const [subInventoriesM, setSubInventoriesM] = useState([]);
   // forModal reportMaintenance
 
   useEffect(() => {
@@ -86,7 +93,7 @@ function UserDetail() {
     const companyData = await companyResponse.json();
     setCompanyOptions(companyData.data.map((item) => ({
       id: item.id,
-      name: item.attributes.contactName + " / " + item.attributes.Cname,
+      name: item.attributes.contactName + " / " + item.attributes.Cname + (item?.attributes?.role ? ` (${item.attributes.role})` : ''),
     })));
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -111,11 +118,12 @@ fetchDataC();
       } else if (values.newDueDateType === 'datePicker' && values.datePickerDate) {
         newDueDate = new Date(values.datePickerDate);
       }
+      
   
       const maintenanceData = {
         inventory: id,
-        isSubInventory: clickedButton === "sub",
-        sub_inventory: clickedButton === "sub" ? selectedSubInventoryId : null,
+        isSubInventory: clickedButtonM === "sub",
+        sub_inventory: clickedButtonM === "sub" ? selectedSubInventoryIdM : null,
         isDone: true,
         company_inventory: values.companyInventory,
         NameMaintenance: values.nameMaintenance,
@@ -144,8 +152,8 @@ fetchDataC();
       if (newDueDate) {
         const appointmentData = {
           inventory: id,
-          isSubInventory: clickedButton === "sub",
-          sub_inventory: clickedButton === "sub" ? selectedSubInventoryId : null,
+          isSubInventory: clickedButtonM === "sub",
+          sub_inventory: clickedButtonM === "sub" ? selectedSubInventoryIdM : null,
           isDone: false,
           DetailMaintenance: values.detailMaintenance,
           DueDate: newDueDate.toISOString(),
@@ -191,8 +199,8 @@ fetchDataC();
   
       const appointmentData = {
         inventory: id,
-        isSubInventory: clickedButton === "sub",
-        sub_inventory: clickedButton === "sub" ? selectedSubInventoryId : null,
+        isSubInventory: clickedButtonM === "sub",
+        sub_inventory: clickedButtonM === "sub" ? selectedSubInventoryIdM : null,
         isDone: false,
         DetailMaintenance: values.DetailMaintenance,
         DueDate: dueDate.toISOString(),
@@ -332,10 +340,34 @@ fetchDataC();
       }
       const dataA = await response.json();
       setDataInv(dataA.data);
+      console.log("dataInv?.attributes?.DateReceive:",dataInv?.attributes?.DateReceive)
+
+     
+      // Check and fetch subInventories if they exist
+      const subInventoriesData = dataA?.data?.attributes?.sub_inventories?.data;
+      if (subInventoriesData && subInventoriesData.length > 0) {
+        const subInventoryIds = subInventoriesData.map(sub => sub.id);
+        fetchSubInventoriesM(subInventoryIds);
+      } else {
+        console.log('No sub-inventories found');
+      }
+
     } catch (error) {
       console.error("Error Fetching data :", error);
     } finally {
       setIsLoading(false);
+
+    }
+  };
+
+
+  const fetchSubInventoriesM = async (ids) => {
+    try {
+      const promises = ids.map(id => fetch(`http://localhost:1337/api/sub-inventories/${id}?populate=*`).then(res => res.json()));
+      const results = await Promise.all(promises);
+      setSubInventoriesM(results.map(result => result.data));
+    } catch (error) {
+      console.error('Error fetching sub-inventories:', error);
     }
   };
 
@@ -404,9 +436,9 @@ fetchDataC();
           RepairReasonByResponsible: values.repairReason,
           status_repair: 1,
           isDone: false,
-          isSubInventory: clickedButtonM === "sub", // Check which button was clicked
+          isSubInventory: clickedButton === "sub", // Check which button was clicked
           sub_inventory:
-            clickedButtonM === "sub" ? selectedSubInventoryIdM : null, // Include sub-inventory ID if applicable
+            clickedButton === "sub" ? selectedSubInventoryId : null, // Include sub-inventory ID if applicable
         })
       );
       if (values.file_repair) {
@@ -450,6 +482,7 @@ fetchDataC();
     setClickedButtonM(buttonType); // Set the clicked button type
     setSelectedSubInventoryIdM(subInventoryId); // Set the selected sub-inventory ID
     setIsModalOpenMan(true);
+    
   };
 
   const closeModalMan = () => { 
@@ -520,10 +553,11 @@ fetchDataC();
   };
 
   const openModal = (buttonType, subInventoryId = null) => {
-    setClickedButton(buttonType); // Set the clicked button type
-    setSelectedSubInventoryId(subInventoryId); // Set the selected sub-inventory ID
-    setIsModalOpen(true);
-  };
+  setClickedButton(buttonType); // Set the clicked button type
+  setSelectedSubInventoryId(subInventoryId); // Set the selected sub-inventory ID
+  setIsModalOpen(true);
+ 
+};
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -548,6 +582,9 @@ fetchDataC();
     }
     return e && e.fileList;
   };
+
+
+
 
   // ตรวจสอบข้อมูล
   const subInventories = dataInv?.attributes?.sub_inventories?.data;
@@ -1420,20 +1457,21 @@ fetchDataC();
                 </div>
 
                 <div className="flex flex-row my-2">
-                  <h1 className="text-lg text-gray-400 mr-4">
-                    อายุการใช้งานจริง
-                  </h1>
+                <h1 className="text-lg text-gray-400 mr-4">อายุการใช้งานจริง</h1>
 
                   {dataInv?.attributes?.DateRecive ? (
                     <h1 className="text-lg">
-                      <DateDifferenceCalculator
-                        dateReceive={dataInv?.attributes?.DateReceive}
-                      />
+                      
+                     <DateDifferenceCalculator dateReceive={dataInv?.attributes?.DateRecive} />
                     </h1>
                   ) : (
                     <p className="text-lg ml-2">-</p>
                   )}
                 </div>
+        
+           
+          
+
 
                 <div className="flex flex-row my-2">
                   <h1 className="text-lg text-gray-400 mr-4">
@@ -1523,7 +1561,7 @@ fetchDataC();
                     <tr key={index}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {dataInv?.attributes?.id_inv + "  "}
-                        {item.attributes.id_inv}
+                       <span className="text-red-600"> {item.attributes.id_inv}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {item.attributes.name}
@@ -1538,21 +1576,21 @@ fetchDataC();
                         {item.attributes.model}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {statusInventoryId === 2 && allowedRepair && (
-                          <button
-                            className="font-bold rounded-lg text-base w-32 h-8 bg-[#276ff4] text-[#ffffff]"
-                            onClick={() => openModal("sub", item.id)} // Pass sub-inventory ID when clicked
-                          >
-                            แจ้งซ่อม <SettingOutlined />
-                          </button>
-                        )}
+                      {statusInventoryId === 2 && allowedRepair && (
+  <button
+    className="font-bold rounded-lg text-base w-32 h-8 bg-[#276ff4] text-[#ffffff]"
+    onClick={() => openModal("sub", item.id)} // Pass sub-inventory ID when clicked
+  >
+    แจ้งซ่อม <SettingOutlined />
+  </button>
+)}
 
-              <button
-                            className="ml-2 font-bold rounded-lg text-base w-32 h-8 bg-[#4de83f] text-[#ffffff]"
-                            onClick={() => openModalMan("sub", item.id)} // Pass sub-inventory ID when clicked
-                          >
-                            <SafetyOutlined className="text-xl " />บำรุงรักษา 
-                          </button>
+<button
+  className="ml-2 font-bold rounded-lg text-base w-32 h-8 bg-[#4de83f] text-[#ffffff]"
+  onClick={() => openModalMan("sub", item.id)} // Pass sub-inventory ID when clicked
+>
+  <SafetyOutlined className="text-xl " />บำรุงรักษา 
+</button>
                           
                       </td>
                     </tr>
@@ -1570,7 +1608,7 @@ fetchDataC();
       <div className=" w-full  grid grid-cols-5 ">
         <div>{/* col-1 */}</div>
 
-        <div className=" col-span-3">
+        {/* <div className=" col-span-3">
           <div className=" w-full ">
             <button
               className={`font-bold rounded-t-lg text-lg w-48 h-16 bg-[#8dd15c] text-[#ffffff] justify-center ${
@@ -1596,7 +1634,9 @@ fetchDataC();
               <TableDetailRepair />
             </>
           )}
-        </div>
+        </div> */}
+        <InventoryMaintenanceHistory dataInv={dataInv} subInventories={subInventoriesM} />
+
 
         <div>{/* col-3 */}</div>
       </div>

@@ -73,7 +73,11 @@ function ManagementAdmin() {
 
     return (
         <>
-            <h1 className='text-2xl mb-8'>การจัดการครุภัณฑ์</h1>
+            
+            <div className='border-b-2 border-black mb-10 flex justify-between items-center'>
+        <h1 className='text-3xl text-blue-800'>การจัดการครุภัณฑ์</h1>
+        
+      </div>
             <SearchBox onSearch={handleSearch} />
 
             <div className='flex flex-row'>

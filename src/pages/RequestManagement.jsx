@@ -364,6 +364,12 @@ const RequestManagement = () => {
   ];
 
   return (
+    <>
+     <div className='border-b-2 border-black mb-10 flex justify-between items-center'>
+ 
+     <h1 className='text-3xl text-blue-800'>เปลี่ยนที่ตั้ง/ส่งคืนครุภัณฑ์</h1>
+      </div>
+    
     <div className="container mx-auto p-4">
       <div className="flex justify-end mb-4">
         <Button
@@ -422,6 +428,7 @@ const RequestManagement = () => {
         </div>
       ) : null}
     </div>
+    </>
   );
 };
 

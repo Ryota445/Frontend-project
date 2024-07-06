@@ -10,6 +10,8 @@ function AddInformationCompany() {
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
   const [columnSettings, setColumnSettings] = useState({
     Cname: true,
@@ -18,6 +20,7 @@ function AddInformationCompany() {
     Cphone: true,
     Cemail: true,
     Caddress: true,
+    role: true,
   });
 
   useEffect(() => {
@@ -38,7 +41,8 @@ function AddInformationCompany() {
   };
 
   const filteredData = data.filter(item => 
-    item.attributes?.Cname?.toLowerCase().includes(searchText.toLowerCase())
+    item.attributes?.Cname?.toLowerCase().includes(searchText.toLowerCase()) ||
+    item.attributes?.contactName?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const handleAddCompany = () => {
@@ -60,6 +64,31 @@ function AddInformationCompany() {
         .catch(error => {
           console.error('Error adding company:', error);
           message.error('บันทึกข้อมูลบริษัทไม่สำเร็จ');
+        });
+    });
+  };
+
+  const handleEditCompany = () => {
+    form.validateFields().then(values => {
+      fetch(`http://localhost:1337/api/company-inventories/${editingRecord.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: values })
+      })
+        .then(response => response.json())
+        .then(updatedData => {
+          setData(prevData => prevData.map(item => 
+            item.id === editingRecord.id ? updatedData.data : item
+          ));
+          setIsEditModalVisible(false);
+          form.resetFields();
+          message.success('แก้ไขข้อมูลบริษัทสำเร็จแล้ว');
+        })
+        .catch(error => {
+          console.error('Error updating company:', error);
+          message.error('แก้ไขข้อมูลบริษัทไม่สำเร็จ');
         });
     });
   };
@@ -94,6 +123,9 @@ function AddInformationCompany() {
       <Menu.Item key="contactName">
         <Checkbox checked={columnSettings.contactName}>ชื่อตัวแทน</Checkbox>
       </Menu.Item>
+      <Menu.Item key="role">
+      <Checkbox checked={columnSettings.role}>หน้าที่</Checkbox>
+      </Menu.Item>
       <Menu.Item key="Cphone">
         <Checkbox checked={columnSettings.Cphone}>เบอร์โทร</Checkbox>
       </Menu.Item>
@@ -122,6 +154,11 @@ function AddInformationCompany() {
       dataIndex: ['attributes', 'contactName'],
       key: 'contactName'
     },
+    columnSettings.role && {
+      title: 'หน้าที่',
+      dataIndex: ['attributes', 'role'],
+      key: 'role'
+    },
     columnSettings.Cphone && {
       title: 'เบอร์โทร',
       dataIndex: ['attributes', 'Cphone'],
@@ -142,9 +179,19 @@ function AddInformationCompany() {
       key: 'action',
       render: (text, record) => (
         <Space size="middle">
-          <EyeOutlined className='text-xl' />
-          <EditOutlined className='text-xl' />
-          <DeleteOutlined className='text-xl' onClick={() => handleDeleteCompany(record.id)} />
+          <EditOutlined 
+            className='text-xl' 
+            onClick={() => {
+              setEditingRecord(record);
+              form.setFieldsValue(record.attributes);
+              setIsEditModalVisible(true);
+            }}
+          />
+          <DeleteOutlined 
+            className='text-xl' 
+            onClick={() => handleDeleteCompany(record.id)}
+            style={{ color: record.id === 1 ? 'gray' : undefined }}
+          />
         </Space>
       )
     }
@@ -154,24 +201,28 @@ function AddInformationCompany() {
     <>
       <div className='border-b-2 border-black mb-10 flex justify-between items-center'>
         <h1 className='text-3xl text-blue-800'>ข้อมูลบริษัท</h1>
-        <Space>
+      </div>
+      
+      <div className='flex flex-col'>
+      
+        <Space style={{ marginBottom: 16 }}>
+          <Search
+            placeholder="ค้นหาชื่อบริษัท หรือชื่อตัวแทน"
+            onSearch={handleSearch}
+            style={{ width: 300 }}
+            allowClear
+          />
+        </Space>
+
+        <Space className='flex flex-row justify-between'>
           <Dropdown overlay={menu} trigger={['click']}>
-            <Button icon={<SettingOutlined />} />
+            <Button icon={<SettingOutlined />}>เลือกคอลัมน์</Button>
           </Dropdown>
-          <Button type="primary" onClick={() => setIsModalVisible(true)}>
+          <Button className='w-32 h-12 mr-10 mb-2' style={{ backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' }} onClick={() => setIsModalVisible(true)}>
             เพิ่มข้อมูลบริษัท
           </Button>
         </Space>
       </div>
-      
-      <Space style={{ marginBottom: 16 }}>
-        <Search
-          placeholder="ค้นหาชื่อบริษัท"
-          onSearch={handleSearch}
-          enterButton
-          style={{ width: 300 }}
-        />
-      </Space>
       
       <Table
         columns={columns}
@@ -182,10 +233,23 @@ function AddInformationCompany() {
       />
 
       <Modal
-        title="เพิ่มข้อมูลบริษัท"
-        visible={isModalVisible}
-        onOk={handleAddCompany}
-        onCancel={() => setIsModalVisible(false)}
+        title={editingRecord ? "แก้ไขข้อมูลบริษัท" : "เพิ่มข้อมูลบริษัท"}
+        visible={isModalVisible || isEditModalVisible}
+        onOk={editingRecord ? handleEditCompany : handleAddCompany}
+        onCancel={() => {
+          setIsModalVisible(false);
+          setIsEditModalVisible(false);
+          setEditingRecord(null);
+          form.resetFields();
+        }}
+        okText={editingRecord ? "บันทึกการแก้ไข" : "บันทึก"}
+        cancelText="ยกเลิก"
+        okButtonProps={{ 
+          style: { backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' } 
+        }}
+        cancelButtonProps={{ 
+          style: { borderColor: '#1890ff', color: '#1890ff' } 
+        }}
       >
         <Form form={form} layout="vertical">
           <Form.Item name="Cname" label="ชื่อบริษัท" rules={[{ required: true }]}>
@@ -197,13 +261,16 @@ function AddInformationCompany() {
           <Form.Item name="contactName" label="ชื่อตัวแทน" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
+          <Form.Item name="role" label="หน้าที่" rules={[{ required: false }]}>
+            <Input />
+          </Form.Item>
           <Form.Item name="Cphone" label="เบอร์โทร" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="Cemail" label="อีเมล" rules={[{ required: true, type: 'email' }]}>
+          <Form.Item name="Cemail" label="อีเมล" rules={[{ required: false, type: 'email' }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="Caddress" label="ที่อยู่บริษัท" rules={[{ required: true }]}>
+          <Form.Item name="Caddress" label="ที่อยู่บริษัท" rules={[{ required: false }]}>
             <Input />
           </Form.Item>
         </Form>

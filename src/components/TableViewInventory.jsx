@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { message, Checkbox, Space, Button, Table, Modal, Upload, Dropdown, Menu, Select, Input } from "antd";
-import { EyeOutlined, EditOutlined, DeleteOutlined, CloseOutlined, UploadOutlined, DownOutlined } from "@ant-design/icons";
+import { EyeOutlined, EditOutlined, DeleteOutlined, CloseOutlined, UploadOutlined, DownOutlined, SettingOutlined} from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 
 function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber }) {
@@ -382,7 +382,7 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
 
       <div className="flex flex-row justify-start mt-2">
         <Dropdown overlay={menu} trigger={['click']}>
-          <Button>เลือกคอลัมน์<DownOutlined /></Button>
+        <Button icon={<SettingOutlined />}>เลือกคอลัมน์</Button>
         </Dropdown>
       </div>
 

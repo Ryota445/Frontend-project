@@ -66,6 +66,7 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
         ...filteredFormData,
         status_repair: selectedStatus,
         isDone: selectedStatus == 4 || selectedStatus == 5,
+        isCanRepair: selectedStatus != 5,
       };
 
       formDataToSend.append('data', JSON.stringify(requestBody));
