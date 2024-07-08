@@ -101,7 +101,7 @@ const MantenantPage1 = () => {
                 name: <Link to={`/UserDetailInventory/${inventoryId}`}>
                         {item.attributes.isSubInventory ? (
                           <>
-                            <span className='text-red-500'>(ครุภัณฑ์ในองค์ประกอบ)</span> {item?.attributes?.sub_inventory?.data?.attributes?.name} <span className='text-red-500'>(ของ)</span>{inventory?.name}
+                            <span className='text-red-500'>(องค์ประกอบในชุดครุภัณฑ์)</span> {item?.attributes?.sub_inventory?.data?.attributes?.name} <span className='text-red-500'>(ของ)</span>{inventory?.name}
                           </>
                         ) : (
                           <> {inventory?.name} </>
@@ -180,7 +180,7 @@ const MantenantPage1 = () => {
                 name: <Link to={`/UserDetailInventory/${inventoryId}`}>
                         {item.attributes.isSubInventory ? (
                           <>
-                            <span className='text-red-500'>(ครุภัณฑ์ในองค์ประกอบ)</span> {item?.attributes?.sub_inventory?.data?.attributes?.name} <span className='text-red-500'>(ของ)</span>{inventory?.name}
+                            <span className='text-red-500'>(องค์ประกอบในชุดครุภัณฑ์)</span> {item?.attributes?.sub_inventory?.data?.attributes?.name} <span className='text-red-500'>(ของ)</span>{inventory?.name}
                           </>
                         ) : (
                           <> {inventory?.name} </>

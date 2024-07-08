@@ -629,12 +629,12 @@ fetchDataC();
                 )}
 </div>
 <div className="flex justify-self-end ">
-                      <button
+{allowedRepair ? ( <>   <button
                         className=" my-2 mx-2 font-bold rounded text-base w-48 h-12 bg-[#4de83f] text-[#ffffff] justify-center"
                         onClick={() => openModalMan("main")}
                       >
-                        <SafetyOutlined className="text-xl " /> บำรุงรักษา<span className="flex justify-center">(ครุภัณฑ์หลัก)</span> 
-                      </button>
+                      <SafetyOutlined className="text-xl " /> บำรุงรักษา<span className="flex justify-center">(ครุภัณฑ์หลัก)</span>
+                      </button></> ):(<div></div> )}
                     </div>
                     </div>
                 <div>
@@ -758,15 +758,15 @@ fetchDataC();
                   ) : (
                     <div>
                       <p className="my-2 text-lg  text-red-500">
-                        <a
+                        {/* <a
                           onClick={(e) => {
                             e.preventDefault;
                             openModalFeedbackRepair();
                           }}
-                        >
-                          ***ครุภัณฑ์นี้ไม่ได้รับอนุมัติการซ่อมเนื่องจาก...***
-                          :คลิกเพื่ออ่าน
-                        </a>
+                        > */}
+                          ***ครุภัณฑ์นี้ไม่ได้รับอนุมัติการซ่อม***
+                          
+                        {/* </a> */}
                       </p>
                       <p className="my-2 text-lg  text-red-500">
                         โปรดทำเรื่องส่งคืนครุภัณฑ์
@@ -1288,7 +1288,7 @@ fetchDataC();
                 </div>
 
                 <div className="flex flex-row my-2">
-                  <h1 className="text-lg text-gray-400 mr-4">ตัวแทนบริษัท</h1>
+                  <h1 className="text-lg text-gray-400 mr-4">ตัวแทนบริษัท/ผู้บริจาค</h1>
                   {dataInv?.attributes?.company_inventory?.data?.attributes
                     ?.contactName ? (
                     <h1 className="text-lg">
@@ -1501,7 +1501,7 @@ fetchDataC();
         <div className="col-span-6 border-2 border-blue-500 rounded-md">
           <div className="border-b-2 m-4 ">
             <h1 className="text-xl font-thin text-blue-800 ">
-              ข้อมูลครุภัณฑ์ภายในชุด
+              ข้อมูลองค์ประกอบในชุดครุภัณฑ์
             </h1>
           </div>
 
@@ -1553,7 +1553,7 @@ fetchDataC();
                       colSpan="6"
                       className="px-6 py-4 text-center text-gray-500"
                     >
-                      ไม่มีข้อมูลครุภัณฑ์ภายในชุด
+                      ไม่มีข้อมูลองค์ประกอบในชุดครุภัณฑ์
                     </td>
                   </tr>
                 ) : (
@@ -1584,13 +1584,13 @@ fetchDataC();
     แจ้งซ่อม <SettingOutlined />
   </button>
 )}
-
+{statusInventoryId === 2 && allowedRepair && (
 <button
   className="ml-2 font-bold rounded-lg text-base w-32 h-8 bg-[#4de83f] text-[#ffffff]"
   onClick={() => openModalMan("sub", item.id)} // Pass sub-inventory ID when clicked
 >
   <SafetyOutlined className="text-xl " />บำรุงรักษา 
-</button>
+</button>)}
                           
                       </td>
                     </tr>

@@ -133,7 +133,7 @@ function AddInformationTeacher() {
 
   const columns = [
     columnSettings.responsibleName && {
-      title: 'ชื่อผู้รับผิดชอบ',
+      title: 'ชื่อผู้รับดูแล',
       dataIndex: ['attributes', 'responsibleName'],
       key: 'responsibleName'
     },
@@ -170,20 +170,20 @@ function AddInformationTeacher() {
   return (
     <>
       <div className='border-b-2 border-black mb-10 flex justify-between items-center'>
-        <h1 className='text-3xl text-blue-800'>ข้อมูลผู้รับผิดชอบ</h1>
+        <h1 className='text-3xl text-blue-800'>ข้อมูลผู้ดูแล</h1>
         <Space>
           <Dropdown overlay={menu} trigger={['click']}>
             <Button icon={<SettingOutlined />} />
           </Dropdown>
           <Button type="primary" onClick={() => setIsModalVisible(true)}>
-            เพิ่มข้อมูลผู้รับผิดชอบ
+            เพิ่มข้อมูลผู้ดูแล
           </Button>
         </Space>
       </div>
       
       <Space style={{ marginBottom: 16 }}>
         <Search
-          placeholder="ค้นหาชื่อผู้รับผิดชอบ"
+          placeholder="ค้นหาชื่อผู้ดูแล"
           onSearch={handleSearch}
           allowClear
           style={{ width: 300 }}

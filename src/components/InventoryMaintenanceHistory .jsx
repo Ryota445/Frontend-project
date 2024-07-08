@@ -155,7 +155,7 @@ function InventoryTable({ data, statusBTN, dataInv }) {
       );
       name = (
         <>
-          <span className='text-red-500'>(ครุภัณฑ์ในองค์ประกอบ)</span> {item.subInventory.attributes.name} <span>(ของ)</span> {dataInv.attributes.name}
+          <span className='text-red-500'>(องค์ประกอบในชุดครุภัณฑ์)</span> {item.subInventory.attributes.name} 
         </>
       );
     } else {

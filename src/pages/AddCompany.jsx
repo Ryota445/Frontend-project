@@ -55,7 +55,7 @@ function AddCompany() {
       <Form.Item
         label="ชื่อบริษัท"
         name="company"
-        rules={[{ required: true, message: 'กรุณากรอกชื่อบริษัทด้วย!' }]}
+        rules={[{ required: false, message: 'กรุณากรอกชื่อบริษัทด้วย!' }]}
       >
         <Input />
       </Form.Item>

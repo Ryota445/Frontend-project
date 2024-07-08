@@ -45,6 +45,8 @@ import RequestManagement from './pages/RequestManagement';
 import RequestChangeLocation from './pages/RequestChangeLocation';
 import Login from './pages/Login';
 import EditInventory from './pages/EditInventory'
+import ExportFilePage from './pages/ExportFilePage'
+// import InventoryReport from './pages/InventoryReport'
 
 const { Header, Content, Sider } = Layout;
 
@@ -61,8 +63,9 @@ const items = [
   getItem('จัดการครุภัณฑ์', '3', <Link to="/manageInventory"><DesktopOutlined /></Link>),
   getItem('ดูแลครุภัณฑ์', '4', <Link to="/MantenantPage1"><MonitorOutlined /></Link>),
   getItem('เปลี่ยนที่ตั้ง/ส่งคืนครุภัณฑ์', '5', <Link to="/RequestManagement"><RollbackOutlined /></Link>),
-  getItem('เพิ่มข้อมูลผู้รับผิดชอบ', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
-  getItem('เพิ่มข้อมูลบริษัท', '9', <Link to="/AddInformationCompany"><TeamOutlined /></Link>),
+  getItem('จัดการข้อมูลผู้ดูแล', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
+  getItem('จัดการข้อมูลตัวแทนบริษัท/ผู้บริจาค', '9', <Link to="/AddInformationCompany"><TeamOutlined /></Link>),
+  getItem('ออกรายงาน', '11', <Link to="/ExportFilePage"><TeamOutlined /></Link>),
   getItem('Logout', '2', <Link to="/"><UserOutlined /></Link>),
 ];
 
@@ -125,6 +128,8 @@ const App = () => {
                   <Route path="/RequestManagement" element={<RequestManagement />} />
                   <Route path="/RequestChangeLocation" element={<RequestChangeLocation />} />
                   <Route path="/EditInventory/:id" element={<EditInventory />} />
+                  <Route path="/ExportFilePage" element={<ExportFilePage />} />
+                  {/* <Route path="/InventoryReport" element={<InventoryReport />} /> */}
                 </Routes>
               </div>
             </Content>

@@ -484,7 +484,7 @@ function AddInventory() {
 
           <Form.Item
             name="company_inventory"
-            label="ตัวแทนบริษัท"
+            label="ตัวแทนบริษัท/ผู้บริจาค"
             className="w-full"
             rules={[{ required: false, message: "กรุณาเลือกตัวแทน" }]}
           >
@@ -573,7 +573,7 @@ function AddInventory() {
 
           <div className="border-b-2 border-black mb-6 mt-10">
             <h1 className="text-lg text-blue-800">
-              ข้อมูลครุภัณฑ์ภายในชุด
+            ข้อมูลองค์ประกอบในชุดครุภัณฑ์
             </h1>
           </div>
           

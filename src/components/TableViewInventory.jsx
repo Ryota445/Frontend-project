@@ -4,11 +4,19 @@ import { message, Checkbox, Space, Button, Table, Modal, Upload, Dropdown, Menu,
 import { EyeOutlined, EditOutlined, DeleteOutlined, CloseOutlined, UploadOutlined, DownOutlined, SettingOutlined} from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 
-function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber }) {
-  const [selectedItems, setSelectedItems] = useState([]);
+function TableViewInventory({ 
+  inventoryList, 
+  onDeleteSuccess, 
+  foundDataNumber, 
+  selectedItems, 
+  selectedRows, 
+  onSelectionChange,
+  showSubInventoryColumns 
+}) {
+  // const [selectedItems, setSelectedItems] = useState([]);
+  // const [selectedRows, setSelectedRows] = useState([]);
   const [sortedInventoryList, setSortedInventoryList] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [selectedRows, setSelectedRows] = useState([]);
   const [showLocationFields, setShowLocationFields] = useState(false);
   const [showDisposalFields, setShowDisposalFields] = useState(false);
   const [newLocation, setNewLocation] = useState({ building: "", floor: "", room: "" });
@@ -35,6 +43,14 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (showSubInventoryColumns) {
+        setVisibleColumns(prev => [...prev, 'sub_inventories_name', 'sub_inventories_id']);
+    } else {
+        setVisibleColumns(prev => prev.filter(col => col !== 'sub_inventories_name' && col !== 'sub_inventories_id'));
+    }
+}, [showSubInventoryColumns]);
 
   const handleView = (inventoryId) => {
     navigate(`/UserDetailInventory/${inventoryId}`);
@@ -96,8 +112,11 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
       const responseData = await response.json();
       console.log("Change Location Success:", responseData);
       message.success("เปลี่ยนที่ตั้งสำเร็จ");
-      // Refresh the data
-      fetchChangeLocationData();
+      setTimeout(() => {
+        window.location.reload();
+    }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
+      
+      
     } catch (error) {
       console.error("Error:", error);
       message.error("เกิดข้อผิดพลาดในการเปลี่ยนที่ตั้ง");
@@ -116,31 +135,63 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
     disposalFileList.forEach(file => {
       formData.append("files.FileReasonDisposal", file.originFileObj);
     });
-
+  
     try {
       const response = await fetch("http://localhost:1337/api/request-disposals", {
         method: "POST",
         body: formData,
       });
-
+  
       if (!response.ok) throw new Error("ไม่สามารถทำจำหน่ายครุภัณฑ์ได้");
-
+  
       const responseData = await response.json();
-      console.log("Disposal Success:",JSON.stringify(responseData));
+      console.log("Disposal Success:", JSON.stringify(responseData));
+      console.log("FormData:", JSON.stringify(responseData));
+  
+      // Sending PUT requests for each selected row
+      const putRequests = selectedRows.map(row => {
+        const requestBody = { 
+          data: {
+          
+          isDisposal: true,}, };
+        console.log(`PUT Request to /api/inventories/${row.id}:`, requestBody);
+        
+        
+        return fetch(`http://localhost:1337/api/inventories/${row.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBody),
+        });
+      });
+  
+      // Waiting for all PUT requests to complete
+      const putResponses = await Promise.all(putRequests);
+  
+      // Checking if all PUT requests were successful
+      if (putResponses.some(res => !res.ok)) {
+        console.error("PUT Request Errors:", putResponses.filter(res => !res.ok));
+        throw new Error("บางรายการไม่สามารถอัพเดทสถานะการจำหน่ายได้");
+      }
+  
       message.success("ทำจำหน่ายครุภัณฑ์สำเร็จ");
-      
+setTimeout(() => {
+    window.location.reload();
+}, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
     } catch (error) {
       console.error("Error:", error);
       message.error("เกิดข้อผิดพลาดในการทำจำหน่ายครุภัณฑ์");
     }
-
+  
     setIsModalVisible(false);
     setShowDisposalFields(false);
   };
-
+  
   const handleLocationInputChange = (key, value) => {
     setNewLocation({ ...newLocation, [key]: value });
   };
+  
 
   const allColumns = [
     {
@@ -150,14 +201,88 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
     },
     {
       title: 'ชื่อครุภัณฑ์',
+      width: 200,
       dataIndex: ['attributes', 'name'],
       key: 'name',
     },
     {
+      title: 'เลของค์ประกอบในชุดครุภัณฑ์',
+      key: 'sub_inventories_id',
+      width: 100,
+      render: (text, record) => {
+        const subInventories = record.attributes.sub_inventories?.data;
+        if (!subInventories || subInventories.length === 0) {
+          return "- ";
+        }
+        const columns = [
+          {
+            title: 'เลขครุภัณฑ์',
+            dataIndex: ['attributes', 'id_inv'],
+            key: 'id_inv',
+            render: (text) => (
+              <div className="max-w-[150px] whitespace-nowrap overflow-hidden overflow-ellipsis">
+                {text}
+              </div>
+            ),
+          },
+        ];
+        return (
+          <Table
+            columns={columns}
+            dataSource={subInventories}
+            pagination={false}
+            showHeader={false}
+            size="small"
+            rowKey="id"
+            className="w-full"
+          />
+        );
+      },
+    },
+    {
+      title: 'ชื่อองค์ประกอบในชุดครุภัณฑ์',
+      key: 'sub_inventories_name',
+     
+      render: (text, record) => {
+        const subInventories = record.attributes.sub_inventories?.data;
+        if (!subInventories || subInventories.length === 0) {
+          return "-";
+        }
+        const columns = [
+          {
+            title: 'ชื่อครุภัณฑ์',
+            dataIndex: ['attributes', 'name'],
+            key: 'name',
+            render: (text) => (
+              <div className="max-w-[150px] whitespace-nowrap overflow-hidden overflow-ellipsis">
+                {text}
+              </div>
+            ),
+          },
+        ];
+        return (
+          <Table
+            columns={columns}
+            dataSource={subInventories}
+            pagination={false}
+            showHeader={false}
+            size="small"
+            rowKey="id"
+            className="w-full"
+          />
+        );
+      },
+    },
+
+
+
+
+
+    {
       title: 'ผู้ดูแล',
       dataIndex: ['attributes', 'responsible', 'data', 'attributes', 'responsibleName'],
       key: 'responsible',
-    },
+    },  
     {
       title: 'หมวดหมู่',
       dataIndex: ['attributes', 'category', 'data', 'attributes', 'CategoryName'],
@@ -207,7 +332,9 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
     },
   ];
 
-  const modalColumns = allColumns.filter(col => col.key !== 'action').concat({
+  const filteredColumns = allColumns.filter(col => col.key !== 'action' && col.key !== 'delete');
+
+  const modalColumns = filteredColumns.filter(col => visibleColumns.includes(col.key)).concat({
     title: 'การจัดการ',
     key: 'action',
     render: (text, record) => (
@@ -230,19 +357,19 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
   }, [inventoryList]);
 
   const handleCheckboxChange = (id, inventory) => {
-    const updatedSelectedItems = selectedItems.includes(id)
-      ? selectedItems.filter((itemId) => itemId !== id)
-      : [...selectedItems, id];
+    let updatedSelectedItems, updatedSelectedRows;
 
-    const updatedSelectedRows = selectedItems.includes(id)
-      ? selectedRows.filter((row) => row.id !== id)
-      : [...selectedRows, inventory];
+    if (selectedItems.includes(id)) {
+        updatedSelectedItems = selectedItems.filter((itemId) => itemId !== id);
+        updatedSelectedRows = selectedRows.filter((row) => row.id !== id);
+    } else {
+        updatedSelectedItems = [...selectedItems, id];
+        updatedSelectedRows = [...selectedRows, inventory];
+    }
 
-    setSelectedItems(updatedSelectedItems);
-    setSelectedRows(updatedSelectedRows);
-
+    onSelectionChange(updatedSelectedItems, updatedSelectedRows);
     message.info(`เลือกแล้ว ${updatedSelectedItems.length} รายการ`);
-  };
+};
 
   const handleDeleteFromSelected = (id) => {
     const updatedSelectedItems = selectedItems.filter((itemId) => itemId !== id);
@@ -302,7 +429,7 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
             type="primary"
             onClick={openModal}
           >
-            เลือก
+             เลือก ({selectedItems.length})
           </Button>
         </div>
       </div>
@@ -317,14 +444,16 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
         width={1000}
       >
         <div className="mb-4">
-          <h2 className="text-lg font-bold">เลือก {selectedRows.length} รายการ</h2>
+          <h2 className="text-lg font-bold">เลือก ({selectedItems.length}) รายการ</h2>
         </div>
         <Table
           columns={modalColumns}
           dataSource={selectedRows}
+          
           pagination={{ pageSize: 10 }}
-          scroll={{ y: 240 }}
+          scroll={{ y: 240 ,x: 'max-content'}}
           rowKey="id"
+          className="w-full overflow-x-auto"
         />
 
         {!showLocationFields && !showDisposalFields && (
@@ -387,19 +516,19 @@ function TableViewInventory({ inventoryList, onDeleteSuccess, foundDataNumber })
       </div>
 
       <Table
-        columns={columns}
-        dataSource={sortedInventoryList}
-        pagination={{ pageSize: 10 }}
-        scroll={{ y: 400 }}
-        rowKey="id"
-        rowSelection={{
-          selectedRowKeys: selectedItems,
-          onChange: (selectedRowKeys, selectedRows) => {
-            setSelectedItems(selectedRowKeys);
-            setSelectedRows(selectedRows);
-          },
-        }}
-      />
+  columns={columns}
+  dataSource={sortedInventoryList}
+  pagination={{ pageSize: 10 }}
+  scroll={{ x: 'max-content' }}
+  rowKey="id"
+  rowSelection={{
+    selectedRowKeys: selectedItems,
+    onChange: (selectedRowKeys, selectedRows) => {
+      onSelectionChange(selectedRowKeys, selectedRows);
+    },
+  }}
+  className="w-full overflow-x-auto"
+/>  
     </>
   );
 }

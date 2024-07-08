@@ -563,7 +563,7 @@ const updateSubInventory = (index, field, value) => {
 
         <Form.Item
           name="company_inventory"
-          label="ตัวแทนบริษัท"
+          label="ตัวแทนบริษัท/ผู้บริจาค"
           className="w-full"
           rules={[{ required: false, message: "กรุณาเลือกตัวแทน" }]}
         >
@@ -652,7 +652,7 @@ const updateSubInventory = (index, field, value) => {
 
         <div className="border-b-2 border-black mb-6 mt-10">
           <h1 className="text-lg text-blue-800">
-            ข้อมูลครุภัณฑ์ภายในชุด
+            ข้อมูลองค์ประกอบในชุดครุภัณฑ์
           </h1>
         </div>
 {/* 
@@ -697,7 +697,7 @@ const updateSubInventory = (index, field, value) => {
         {!subInventories || subInventories.length === 0 ? (
           <tr>
             <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
-              ไม่มีข้อมูลครุภัณฑ์ภายในชุด
+              ไม่มีข้อมูลองค์ประกอบในชุดครุภัณฑ์
             </td>
           </tr>
         ) : (

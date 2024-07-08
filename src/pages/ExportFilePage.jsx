@@ -1,38 +1,62 @@
 import React, { useState, useEffect } from 'react';
 import {Link} from 'react-router-dom';
 import SearchBox from '../components/SearchBox';
-import TableViewInventory from '../components/TableViewInventory';
+import TableExportFile from '../components/TableExportFile';
 
-function ManagementAdmin() {
+
+
+function ExportFilePage() {
     const [selectedItems, setSelectedItems] = useState([]);
-const [selectedRows, setSelectedRows] = useState([]);
+    const [selectedRows, setSelectedRows] = useState([]);
     const [searchData, setSearchData] = useState(null);
     const [filteredInventoryList, setFilteredInventoryList] = useState([]);
-    const [inventoryList, setInventoryList] = useState([]); // เพิ่ม state สำหรับรายการทั้งหมด
+    const [inventoryList, setInventoryList] = useState([]);
     const [foundDataNumber, setFoundDataNumber] = useState(0)
     const [showSubInventoryColumns, setShowSubInventoryColumns] = useState(false);
+    const [modeSelected, setModeSelected] = useState('mode1'); // initial mode
+
     useEffect(() => {
         fetchItems();
     }, []);
 
+
+
+    // mode1
     const updateSelectedItems = (newItems, newRows) => {
-        setSelectedItems(prevItems => {
-            const uniqueItems = [...new Set([...prevItems, ...newItems])];
-            return uniqueItems;
-        });
-        setSelectedRows(prevRows => {
-            const uniqueRows = [...prevRows, ...newRows].reduce((acc, current) => {
-                const x = acc.find(item => item.id === current.id);
-                if (!x) {
-                    return acc.concat([current]);
-                } else {
-                    return acc;
-                }
-            }, []);
-            return uniqueRows;
-        });
+     
+            setSelectedItems(prevItems => {
+                const updatedItems = newItems.filter(item => !prevItems.includes(item));
+                return [...prevItems.filter(item => newItems.includes(item)), ...updatedItems];
+            });
+            setSelectedRows(prevRows => {
+                const updatedRows = newRows.filter(row => !prevRows.some(prevRow => prevRow.id === row.id));
+                return [...prevRows.filter(row => newRows.some(newRow => newRow.id === row.id)), ...updatedRows];
+            });
     };
 
+
+        // mode2
+
+    // const updateSelectedItems = (newItems, newRows) => {
+    //         setSelectedItems(prevItems => {
+    //             const uniqueItems = [...new Set([...prevItems, ...newItems])];
+    //             return uniqueItems;
+    //         });
+    //         setSelectedRows(prevRows => {
+    //             const uniqueRows = [...prevRows, ...newRows].reduce((acc, current) => {
+    //                 const x = acc.find(item => item.id === current.id);
+    //                 if (!x) {
+    //                     return acc.concat([current]);
+    //                 } else {
+    //                     return acc;
+    //                 }
+    //             }, []);
+    //             return uniqueRows;
+    //         });
+    // };
+
+    
+    
     const fetchItems = async () => {
         try {
             const response = await fetch("http://localhost:1337/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories");
@@ -40,18 +64,12 @@ const [selectedRows, setSelectedRows] = useState([]);
                 throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
             }
             const result = await response.json();
-
-
             
-            // กรองรายการที่ isDisposal เป็น false ส่วนนี้
             const filteredData = result.data.filter(inventory => !inventory.attributes.isDisposal);
             
-
-
-
-            setFilteredInventoryList(filteredData); // เซ็ตรายการทั้งหมดเป็นรายการที่ถูกกรองแล้ว
-            setInventoryList(filteredData); // เซ็ตรายการทั้งหมด
-            setFoundDataNumber(filteredData.length); // อัปเดตจำนวนรายการที่พบ
+            setFilteredInventoryList(filteredData);
+            setInventoryList(filteredData);
+            setFoundDataNumber(filteredData.length);
             console.log("InventoryData :", filteredData);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -67,6 +85,7 @@ const [selectedRows, setSelectedRows] = useState([]);
             updateSelectedItems(tempSelectedItems, tempSelectedRows);
         }, 0);
     };
+
     const filterInventoryList = (searchData) => {
         if (!searchData) {
             setFilteredInventoryList(inventoryList);
@@ -118,63 +137,49 @@ const [selectedRows, setSelectedRows] = useState([]);
     };
 
     const handleDeleteSuccess = () => {
-        fetchItems(); // เมื่อลบสำเร็จให้ดึงข้อมูลใหม่
+        fetchItems();
     };
 
-    const handleViewInventory = (inventoryData) => {
-        // เปิด DetailInventory component และส่งข้อมูลของครุภัณฑ์ไปยัง props ชื่อว่า inventoryData
-        // โดยการเรียกใช้ props ที่ชื่อว่า onViewInventory ซึ่งเป็นฟังก์ชันที่ถูกส่งมาจาก parent component
-        onViewInventory(inventoryData);
-    };
-    
     const handleSubInventorySearchChange = (isChecked) => {
         setShowSubInventoryColumns(isChecked);
     };
+  return (
+    <>
+    <div className='border-b-2 border-black mb-10 flex justify-between items-center'>
+        <h1 className='text-3xl text-blue-800'>ออกรายงาน</h1>
+    </div>
 
-    return (
-        <>
+    
             
-            <div className='border-b-2 border-black mb-10 flex justify-between items-center'>
-        <h1 className='text-3xl text-blue-800'>การจัดการครุภัณฑ์</h1>
-        
-      </div>
-            <SearchBox 
-            onSearch={handleSearch} 
-            mode={"management"} 
-            onSubInventorySearchChange={handleSubInventorySearchChange}
-            />
+    <SearchBox  className=""
+        onSearch={handleSearch} 
+        mode={"Disposal"} 
+        onSubInventorySearchChange={handleSubInventorySearchChange}
+    />
+    <div className='h-[50px]'>
+        {/*  gap*/}
+    </div>
 
-            <div className='flex flex-row'>
+    
 
-            <div className='ml-5 my-5'>
-            {/* ปุ่มเพิ่มครุภัณฑ์ */}
-            <Link to="/AddInventory"><button className="btn btn-outline btn-success">เพิ่มครุภัณฑ์</button></Link>
-            </div>
+    {filteredInventoryList.length > 0 ? (
+        <TableExportFile
+            inventoryList={filteredInventoryList}
+            onDeleteSuccess={handleDeleteSuccess}
+            foundDataNumber={foundDataNumber}
+            selectedItems={selectedItems}
+            selectedRows={selectedRows}
+            onSelectionChange={updateSelectedItems}
+            showSubInventoryColumns={showSubInventoryColumns}
+        />
+    ) : (
+        <div className='flex flex-col justify-center items-center h-full mt-10'>
+            <p className='text-xl'> -ไม่พบข้อมูล- </p>
+        </div>
+    )}
+</>
 
-          
-
-            </div>
-
-            {filteredInventoryList.length > 0 ? (
-                <TableViewInventory
-    inventoryList={filteredInventoryList}
-    onDeleteSuccess={handleDeleteSuccess}
-    foundDataNumber={foundDataNumber}
-    onView={handleViewInventory}
-    selectedItems={selectedItems}
-    selectedRows={selectedRows}
-    onSelectionChange={updateSelectedItems}
-    showSubInventoryColumns={showSubInventoryColumns}
-/>
-            
-            ) : (
-                <div className='flex flex-col justify-center items-center h-full mt-10'>
-                <p className='text-xl'> -ไม่พบข้อมูล- </p>
-                </div>
-               
-            )}
-        </>
-    );
+  )
 }
 
-export default ManagementAdmin;
+export default ExportFilePage
