@@ -484,7 +484,7 @@ setTimeout(() => {
               <Input type="number" placeholder="ห้อง" onChange={(e) => handleLocationInputChange("room", e.target.value)} />
             </div>
             <div className="flex justify-end mt-4 space-x-2">
-              <Button className="bg-blue-300" type="primary" onClick={handleLocationChange}>ยืนยัน</Button>
+              <Button className="bg-blue-300" type="primary" onClick={handleLocationChange} disabled={!newLocation.building}>ยืนยัน</Button>
               <Button onClick={() => setShowLocationFields(false)}>ยกเลิก</Button>
             </div>
           </>

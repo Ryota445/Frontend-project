@@ -31,6 +31,7 @@ const RequestManagement = () => {
                   room: inventory.attributes.room || "N/A",
                 },
                 newLocation: {
+                  buildingId:item?.attributes?.building?.data?.id,
                   building:
                     item.attributes.building.data.attributes.buildingName,
                   floor: item.attributes.NewLocationFloor,
@@ -38,6 +39,7 @@ const RequestManagement = () => {
                 },
               })
             );
+            
             return {
               key: item.id,
               date: new Date(item.attributes.createdAt), // ใช้ Date object สำหรับการเรียงลำดับ
@@ -134,6 +136,7 @@ const RequestManagement = () => {
           })
         );
 
+        console.log("formData: ",formData)
         await fetch(`http://localhost:1337/api/inventories/${inventory.key}`, {
           method: "PUT",
           body: formData,
@@ -155,7 +158,9 @@ const RequestManagement = () => {
       });
 
       message.success(`อนุญาตคำร้องหมายเลข ${key}`);
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+    }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
     } catch (error) {
       console.error("Error approving request:", error);
       message.error("เกิดข้อผิดพลาดในการอนุญาตคำร้อง");
@@ -196,7 +201,9 @@ const RequestManagement = () => {
       });
   
       message.success(`อนุมัติคำร้องหมายเลข ${key}`);
-      window.location.reload();
+      setTimeout(() => {
+        window.location.reload();
+    }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
     } catch (error) {
       console.error("Error approving return equipment request:", error);
       message.error("เกิดข้อผิดพลาดในการอนุมัติคำร้องส่งคืนครุภัณฑ์");

@@ -102,10 +102,20 @@ function InventoryMaintenanceHistory({ dataInv, subInventories }) {
 }
 
 function InventoryTable({ data, statusBTN, dataInv }) {
-    const filteredData = data.filter(item => 
-      (statusBTN === 'mantenant' && item.type === 'maintenance') || 
-      (statusBTN === 'repair' && item.type === 'repair')
-    );
+  const filteredData = data.filter(item => 
+    (statusBTN === 'mantenant' && item.type === 'maintenance') || 
+    (statusBTN === 'repair' && item.type === 'repair')
+  );
+
+  const totalPrice = filteredData.reduce((sum, item) => {
+    const price = item.type === 'repair' ? item.attributes.RepairPrice : item.attributes.prize;
+    return sum + (parseFloat(price) || 0);
+  }, 0);
+
+  const hasPriceData = filteredData.some(item => {
+    const price = item.type === 'repair' ? item.attributes.RepairPrice : item.attributes.prize;
+    return price !== null && price !== undefined && price !== '';
+  });
   
     const noDataMessage = statusBTN === 'mantenant' 
       ? 'ไม่มีข้อมูลประวัติการบำรุงรักษา' 
@@ -120,21 +130,29 @@ function InventoryTable({ data, statusBTN, dataInv }) {
               <th className="py-2 border text-center p-4">หมายเลขครุภัณฑ์</th>
               <th className="py-2 border text-center p-4">ชื่อครุภัณฑ์</th>
               <th className="py-2 border text-center p-4">รายละเอียด{statusBTN === 'mantenant' ? 'การบำรุงรักษา' : 'การซ่อมแซม'}</th>
-              <th className="py-2 border text-center p-4">ราคา (บาท)</th>
+              <th className="py-2 border text-center p-4">ค่าใช้จ่าย (บาท)</th>
             </tr>
           </thead>
           <tbody className="bg-white text-gray-500">
-            {filteredData.length > 0 ? (
-              filteredData.map((item, index) => (
+          {filteredData.length > 0 ? (
+            <>
+              {filteredData.map((item, index) => (
                 <TableRow key={index} item={item} dataInv={dataInv} />
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="py-4 border text-center p-4">
-                  {noDataMessage}
-                </td>
-              </tr>
-            )}
+              ))}
+              {hasPriceData && (
+                <tr className="font-bold">
+                  <td colSpan="4" className="py-4 border text-right p-4">ค่าใช้จ่าย รวม:</td>
+                  <td className="py-4 border text-center p-4">{totalPrice.toFixed(2)}</td>
+                </tr>
+              )}
+            </>
+          ) : (
+            <tr>
+              <td colSpan="5" className="py-4 border text-center p-4">
+                {statusBTN === 'mantenant' ? 'ไม่มีข้อมูลประวัติการบำรุงรักษา' : 'ไม่มีข้อมูลประวัติการซ่อมแซม'}
+              </td>
+            </tr>
+          )}
           </tbody>
         </table>
       </div>
@@ -166,14 +184,17 @@ function InventoryTable({ data, statusBTN, dataInv }) {
   
     const details = item.type === 'repair' ? item.attributes.ListDetailRepair : item.attributes.DetailMaintenance;
     const price = item.type === 'repair' ? item.attributes.RepairPrice : item.attributes.prize;
-  
+  const formattedPrice = price ? parseFloat(price).toFixed(2) : 'ไม่มีข้อมูล';
+
+    
     return (
       <tr className="py-4">
         <td className="py-4 border text-center p-4"><ThaiDateFormat dateString={date} /></td>
         <td className="py-4 border text-center p-4">{idInv}</td>
         <td className="py-4 border text-center p-4">{name}</td>
         <td className="py-4 border text-center p-4">{details}</td>
-        <td className="py-4 border text-center p-4">{price}</td>
+        <td className="py-4 border text-center p-4">{formattedPrice}</td>
+
       </tr>
     );
   }

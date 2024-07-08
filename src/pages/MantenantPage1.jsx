@@ -220,11 +220,15 @@ const MantenantPage1 = () => {
     const openModalMan = (id) => {
       setSelectedMaintenanceReportId(id);
       setIsModalOpenMan(true);
+      setFormType('saveMaintenance'); // Add this line
     };
+    
+    
   
     const closeModalMan = () => {
       setIsModalOpenMan(false);
       form.resetFields();
+      setFormType(null);
     };
   
     const handleFileChange2 = ({ fileList }) => setFileList2(fileList);
@@ -269,6 +273,9 @@ const MantenantPage1 = () => {
     
         message.success("บันทึกข้อมูลบำรุงรักษาสำเร็จแล้ว");
         closeModalMan();
+        setTimeout(() => {
+          window.location.reload();
+      }, 1000);
       } catch (error) {
         message.error(`เกิดข้อผิดพลาดในการบันทึกข้อมูลบำรุงรักษา: ${error.message}`);
       }
@@ -309,6 +316,9 @@ const MantenantPage1 = () => {
         }
     
         message.success("เพิ่มนัดหมายบำรุงรักษาสำเร็จแล้ว");
+        setTimeout(() => {
+          window.location.reload();
+      }, 1000);
         closeModalMan();
       } catch (error) {
         message.error(`เกิดข้อผิดพลาดในเพิ่มนัดหมายบำรุงรักษา: ${error.message}`);
@@ -363,12 +373,12 @@ const MantenantPage1 = () => {
         />
 
 <Modal
-          title="เพิ่มข้อมูลบำรุงรักษา"
-          visible={isModalOpenMan}
-          onCancel={closeModalMan}
-          footer={null}
-          width={1200}
-        >
+  title="เพิ่มข้อมูลบำรุงรักษา"
+  visible={isModalOpenMan}
+  onCancel={closeModalMan}
+  footer={null}
+  width={1200}
+>
           {/* {dataRepairReport ? (
             dataRepairReport.attributes.isSubInventory ? (
               <CardSubInventoryDetail data={dataInv} idSubInventory={idSubInventory} />
@@ -381,11 +391,11 @@ const MantenantPage1 = () => {
 
           {formType === 'saveMaintenance' && (
             <Form
-              form={form}
-              name="maintenance-form"
-              layout="vertical"
-              onFinish={handleSaveMaintenance}
-            >
+            form={form}
+            name="maintenance-form"
+            layout="vertical"
+            onFinish={handleSaveMaintenance}
+          >
               <Form.Item
                 name="companyInventory"
                 label="ตัวแทน/บริษัท"

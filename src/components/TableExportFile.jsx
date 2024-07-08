@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { message, Checkbox, Space, Button, Table, Modal, Dropdown, Menu, Select } from "antd";
+import { message, Checkbox, Space, Button, Table, Modal, Dropdown, Menu, Select ,Input  } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined, CloseOutlined, SettingOutlined,DownloadOutlined } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import DateDifferenceCalculator from "../components/DateDifferenceCalculator";
 
 
 function TableExportFile({ 
@@ -20,29 +21,38 @@ function TableExportFile({
     const [sortedInventoryList, setSortedInventoryList] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [visibleColumns, setVisibleColumns] = useState(['id_inv', 'name', 'responsible', 'category', 'location', 'action', 'status_inventory']);
+    const [fileName, setFileName] = useState('');
+    const [dropdownVisible, setDropdownVisible] = useState(false);
     const navigate = useNavigate();
+    const [exportType, setExportType] = useState('1');
+
+
+
+    const handleExportTypeChange = (value) => {
+      setExportType(value);
+    };
 
 
 
 
 
-    useEffect(() => {
-        async function fetchData() {
-          try {
-            const buildingResponse = await fetch("http://localhost:1337/api/buildings");
-            const buildingData = await buildingResponse.json();
-            setBuildingOptions(
-              buildingData.data.map((item) => ({
-                id: item.id,
-                name: item.attributes.buildingName,
-              }))
-            );
-          } catch (error) {
-            console.error("Error fetching data:", error);
-          }
-        }
-        fetchData();
-      }, []);
+    // useEffect(() => {
+    //     async function fetchData() {
+    //       try {
+    //         const buildingResponse = await fetch("http://localhost:1337/api/buildings");
+    //         const buildingData = await buildingResponse.json();
+    //         setBuildingOptions(
+    //           buildingData.data.map((item) => ({
+    //             id: item.id,
+    //             name: item.attributes.buildingName,
+    //           }))
+    //         );
+    //       } catch (error) {
+    //         console.error("Error fetching data:", error);
+    //       }
+    //     }
+    //     fetchData();
+    //   }, []);
     
       useEffect(() => {
         if (showSubInventoryColumns) {
@@ -163,11 +173,6 @@ function TableExportFile({
             );
           },
         },
-    
-    
-    
-    
-    
         {
           title: 'ผู้ดูแล',
           dataIndex: ['attributes', 'responsible', 'data', 'attributes', 'responsibleName'],
@@ -191,6 +196,71 @@ function TableExportFile({
           title: 'สถานะครุภัณฑ์',
           dataIndex: ['attributes', 'status_inventory', 'data', 'attributes', 'StatusInventoryName'],
           key: 'status_inventory',
+        },
+        {
+          title: 'วิธีได้มา',
+          dataIndex: ['attributes', 'how_to_get', 'data', 'attributes', 'howToGetName'],
+          key: 'howToGet',
+        },
+        {
+          title: 'ปีงบประมาณ',
+          dataIndex: ['attributes', 'year_money_get', 'data', 'attributes', 'yearMoneyGetName'],
+          key: 'yearMoneyGet',
+        },
+        {
+          title: 'ตัวแทนบริษัท/ผู้บริจาค',
+          key: 'companyContact',
+          render: (text, record) => {
+            const contactName = record.attributes.company_inventory?.data?.attributes?.contactName || '';
+            const companyName = record.attributes.company_inventory?.data?.attributes?.Cname || '';
+            return `${contactName}/${companyName}`;
+          },
+        },
+        {
+          title: 'วันที่สั่งซื้อ',
+          dataIndex: ['attributes', 'DateOrder'],
+          key: 'dateOrder',
+        },
+        {
+          title: 'วันที่ตรวจรับ/วันที่รับโอน',
+          dataIndex: ['attributes', 'DateRecive'],
+          key: 'dateReceive',
+        },
+        {
+          title: 'ยี่ห้อ',
+          dataIndex: ['attributes', 'brand'],
+          key: 'brand',
+        },
+        {
+          title: 'รุ่น',
+          dataIndex: ['attributes', 'model'],
+          key: 'model',
+        },
+        {
+          title: 'หมายเลข SN',
+          dataIndex: ['attributes', 'serialNumber'],
+          key: 'serialNumber',
+        },
+        {
+          title: 'ราคาที่ซื้อ (บาท)',
+          dataIndex: ['attributes', 'prize'],
+          key: 'price',
+        },
+        {
+          title: 'รายละเอียดเพิ่มเติม',
+          dataIndex: ['attributes', 'information'],
+          key: 'information',
+        },
+        {
+          title: 'อายุการใช้งานโดยประเมิน',
+          dataIndex: ['attributes', 'age_use'],
+          key: 'estimatedAge',
+          render: (text) => `${text} ปี`,
+        },
+        {
+          title: 'อายุการใช้งานจริง',
+          key: 'actualAge',
+          render: (text, record) => <DateDifferenceCalculator dateReceive={record.attributes.DateRecive} />,
         },
         {
           title: 'ดู/แก้ไข',
@@ -286,83 +356,449 @@ function TableExportFile({
           message.error("เกิดข้อผิดพลาดในการลบข้อมูล");
         }
       };
+
+
+      const handleMenuClick = (e) => {
+        e.domEvent.stopPropagation();
+      };
+
+      const handleVisibleChange = (flag) => {
+        setDropdownVisible(flag);
+      };
     
       const menu = (
         <Menu
-          multiple
-          onClick={({ key }) => {
-            if (visibleColumns.includes(key)) {
-              setVisibleColumns(visibleColumns.filter(col => col !== key));
-            } else {
-              setVisibleColumns([...visibleColumns, key]);
-            }
-          }}
+          onClick={handleMenuClick}
+          style={{ maxHeight: '300px', overflow: 'auto' }}
         >
           {allColumns.map(col => (
             <Menu.Item key={col.key}>
-              <Checkbox checked={visibleColumns.includes(col.key)}>{col.title}</Checkbox>
+              <Checkbox
+                checked={visibleColumns.includes(col.key)}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  if (visibleColumns.includes(col.key)) {
+                    setVisibleColumns(visibleColumns.filter(key => key !== col.key));
+                  } else {
+                    setVisibleColumns([...visibleColumns, col.key]);
+                  }
+                }}
+              >
+                {col.title}
+              </Checkbox>
             </Menu.Item>
           ))}
         </Menu>
       );
+
     
+      const excelColumns = [
+        {
+          title: 'หมายเลขครุภัณฑ์',
+          dataIndex: ['attributes', 'id_inv'],
+          key: 'id_inv',
+        },
+        {
+          title: 'ชื่อครุภัณฑ์',
+          dataIndex: ['attributes', 'name'],
+          key: 'name',
+        },
+        {
+          title: 'เลของค์ประกอบในชุดครุภัณฑ์',
+          key: 'sub_inventories_id',
+        },
+        {
+          title: 'ชื่อองค์ประกอบในชุดครุภัณฑ์',
+          key: 'sub_inventories_name',
+        },
+        {
+          title: 'ผู้ดูแล',
+          dataIndex: ['attributes', 'responsible', 'data', 'attributes', 'responsibleName'],
+          key: 'responsible',
+        },
+        {
+          title: 'หมวดหมู่',
+          dataIndex: ['attributes', 'category', 'data', 'attributes', 'CategoryName'],
+          key: 'category',
+        },
+        {
+          title: 'อาคาร',
+          dataIndex: ['attributes', 'building', 'data', 'attributes', 'buildingName'],
+          key: 'building',
+        },
+        {
+          title: 'ชั้น',
+          dataIndex: ['attributes', 'floor'],
+          key: 'floor',
+        },
+        {
+          title: 'ห้อง',
+          dataIndex: ['attributes', 'room'],
+          key: 'room',
+        },
+        {
+          title: 'สถานะครุภัณฑ์',
+          dataIndex: ['attributes', 'status_inventory', 'data', 'attributes', 'StatusInventoryName'],
+          key: 'status_inventory',
+        },
+        {
+          title: 'วิธีได้มา',
+          dataIndex: ['attributes', 'how_to_get', 'data', 'attributes', 'howToGetName'],
+          key: 'howToGet',
+        },
+        {
+          title: 'ปีงบประมาณ',
+          dataIndex: ['attributes', 'year_money_get', 'data', 'attributes', 'yearMoneyGetName'],
+          key: 'yearMoneyGet',
+        },
+        {
+          title: 'ตัวแทนบริษัท/ผู้บริจาค',
+          key: 'companyContact',
+        },
+        {
+          title: 'วันที่สั่งซื้อ',
+          dataIndex: ['attributes', 'DateOrder'],
+          key: 'dateOrder',
+        },
+        {
+          title: 'วันที่ตรวจรับ/วันที่รับโอน',
+          dataIndex: ['attributes', 'DateRecive'],
+          key: 'dateReceive',
+        },
+        {
+          title: 'ยี่ห้อ',
+          dataIndex: ['attributes', 'brand'],
+          key: 'brand',
+        },
+        {
+          title: 'รุ่น',
+          dataIndex: ['attributes', 'model'],
+          key: 'model',
+        },
+        {
+          title: 'หมายเลข SN',
+          dataIndex: ['attributes', 'serialNumber'],
+          key: 'serialNumber',
+        },
+        {
+          title: 'ราคาที่ซื้อ (บาท)',
+          dataIndex: ['attributes', 'prize'],
+          key: 'price',
+        },
+        {
+          title: 'รายละเอียดเพิ่มเติม',
+          dataIndex: ['attributes', 'information'],
+          key: 'information',
+        },
+        {
+          title: 'อายุการใช้งานโดยประเมิน',
+          dataIndex: ['attributes', 'age_use'],
+          key: 'estimatedAge',
+        },
+        {
+          title: 'อายุการใช้งานจริง',
+          key: 'actualAge',
+        },
+      ];
 
 
 
+      
 
-      const [exportType, setExportType] = useState('1');
-
-  const handleExportTypeChange = (value) => {
-    setExportType(value);
-  };
+  
 
   const exportToExcel = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('ข้อมูลครุภัณฑ์');
 
+    let workbook = new ExcelJS.Workbook();
+  let worksheet;
+  let fileName;
+  let finalFileName; // ประกาศตัวแปรนี้ที่นี่
+
+  switch (exportType) {
+    case '1':
+      // นำออกไฟล์ Excel ตามคอลัมน์ที่เลือก
+      workbook = new ExcelJS.Workbook();
+      worksheet = workbook.addWorksheet('ข้อมูลครุภัณฑ์');
+
+  
     // กำหนดสไตล์สำหรับหัวข้อคอลัมน์
     const headerStyle = {
       font: { bold: true, size: 14 },
-      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD3D3D3' } },
-      alignment: { vertical: 'middle', horizontal: 'center' },
+      alignment: { vertical: 'middle', horizontal: 'center', wrapText: true },
+      border: {
+        top: {style:'thin'},
+        left: {style:'thin'},
+        bottom: {style:'thin'},
+        right: {style:'thin'}
+      }
     };
-
+  
+    // กำหนดสไตล์สำหรับเนื้อหา
+    const contentStyle = {
+      font: { size: 12 },
+      alignment: { vertical: 'middle', horizontal: 'left', wrapText: true },
+      border: {
+        top: {style:'thin'},
+        left: {style:'thin'},
+        bottom: {style:'thin'},
+        right: {style:'thin'}
+      }
+    };
+  
     // เพิ่มหัวข้อคอลัมน์
-    const headers = columns.map(col => col.title);
-    worksheet.addRow(headers);
-    worksheet.getRow(1).eachCell(cell => {
+    const headers = excelColumns.map(col => col.title);
+    const headerRow = worksheet.addRow(headers);
+    headerRow.eachCell((cell) => {
       cell.style = headerStyle;
     });
 
-    // เพิ่มข้อมูล
-    selectedRows.forEach(row => {
-      const rowData = columns.map(col => {
-        if (col.key === 'sub_inventories_id' || col.key === 'sub_inventories_name') {
-          const subInventories = row.attributes.sub_inventories?.data;
-          if (subInventories && subInventories.length > 0) {
-            return subInventories.map(subInv => 
-              col.key === 'sub_inventories_id' ? subInv.attributes.id_inv : subInv.attributes.name
-            ).join('\n');
+    
+  
+      // เพิ่มข้อมูล
+      selectedRows.forEach(row => {
+        const rowData = excelColumns.map(col => {
+          if (col.key === 'sub_inventories_id' || col.key === 'sub_inventories_name') {
+            const subInventories = row.attributes.sub_inventories?.data;
+            if (subInventories && subInventories.length > 0) {
+              return subInventories.map(subInv => 
+                col.key === 'sub_inventories_id' ? subInv.attributes.id_inv : subInv.attributes.name
+              ).join(', ');
+            }
+            return '-';
           }
-          return '-';
-        }
-        if (col.dataIndex) {
-          return col.dataIndex.reduce((obj, key) => obj && obj[key], row) || '';
-        }
-        return '';
+          if (col.key === 'companyContact') {
+            const contactName = row.attributes.company_inventory?.data?.attributes?.contactName || '';
+            const companyName = row.attributes.company_inventory?.data?.attributes?.Cname || '';
+            return `${contactName}/${companyName}`;
+          }
+          if (col.key === 'estimatedAge') {
+            return `${row.attributes.age_use} ปี`;
+          }
+          if (col.key === 'actualAge') {
+            // ใช้ฟังก์ชันคำนวณอายุแทนการใช้ component โดยตรง
+            return calculateAgeDifference(row.attributes.DateRecive);
+          }
+          if (col.dataIndex) {
+            return col.dataIndex.reduce((obj, key) => obj && obj[key], row) || '';
+          }
+          return '';
+        });
+        worksheet.addRow(rowData);
       });
-      worksheet.addRow(rowData);
-    });
+  
+   // ปรับความกว้างคอลัมน์และความสูงแถว
+  worksheet.columns.forEach(column => {
+    column.width = 30; // กำหนดความกว้างคอลัมน์เป็น 20
+  });
+  worksheet.getRow(1).height = 50; // กำหนดความสูงแถวหัวข้อ
 
-    // ปรับความกว้างคอลัมน์ให้พอดีกับเนื้อหา
-    worksheet.columns.forEach(column => {
-      column.width = 15;
-    });
+  
+  break;
 
-    // สร้างไฟล์ Excel
-    const buffer = await workbook.xlsx.writeBuffer();
-    saveAs(new Blob([buffer]), 'รายงานครุภัณฑ์.xlsx');
-  };
+  case '2':
+      // นำออกไฟล์ Excel ประวัติการการบำรุงรักษา
+      worksheet = workbook.addWorksheet('ประวัติการบำรุงรักษา');
+      fileName = `ประวัติการบำรุงรักษา_${new Date().toISOString().split('T')[0]}.xlsx`;
+      // exportMaintenanceHistory(worksheet);
+      break;
+    case '3':
+      // นำออกไฟล์ Excel ประวัติการซ่อมแซม
+      worksheet = workbook.addWorksheet('ประวัติการซ่อมแซม');
+      fileName = `ประวัติการซ่อมแซม_${new Date().toISOString().split('T')[0]}.xlsx`;
+      // exportRepairHistory(worksheet);
+      break;
+    case '4':
+      // นำออกไฟล์ Excel ประวัติการซ่อมแซมและบำรุงรักษา
+      worksheet = workbook.addWorksheet('ประวัติการซ่อมแซมและบำรุงรักษา');
+      fileName = `ประวัติการซ่อมแซมและบำรุงรักษา_${new Date().toISOString().split('T')[0]}.xlsx`;
+      exportMaintenanceAndRepairHistory(worksheet);
+      break;
+    case '5':
+      // นำออกไฟล์ Excel นำออกรายการข้อมูลทั่วไปครุภัณฑ์
+      // (เพิ่มโค้ดสำหรับการ export ข้อมูลทั่วไปครุภัณฑ์)
+      break;
+
+
+
+
+
+  default:
+    message.error('กรุณาเลือกประเภทรายงาน');
+    return;
+}
+// สร้างชื่อไฟล์
+const thaiDate = new Date().toLocaleDateString('th-TH', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+const defaultFileName = `${
+  exportType === '1' ? 'รายงานครุภัณฑ์' : 'รายงานตามที่เลือก'
+} - ${thaiDate}`;
+finalFileName = `${fileName || defaultFileName}.xlsx`;
+
+  // สร้างไฟล์ Excel
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), finalFileName);
+};
+
+
+
+const calculateAgeDifference = (dateReceive) => {
+  if (!dateReceive) return "ไม่มีข้อมูลวันที่";
+
+  const today = new Date();
+  const receivedDate = new Date(dateReceive);
+   
+  let years = today.getFullYear() - receivedDate.getFullYear();
+  let months = today.getMonth() - receivedDate.getMonth();
+  let days = today.getDate() - receivedDate.getDate();
+
+  if (days < 0) {
+    months--;
+    days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+  }
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  let result = [];
+  if (years > 0) result.push(`${years} ปี`);
+  if (months > 0) result.push(`${months} เดือน`);
+  if (days > 0) result.push(`${days} วัน`);
+
+  return result.length === 0 ? "0 วัน" : result.join(" ");
+};
+
+
+const exportMaintenanceAndRepairHistory = (worksheet) => {
+  // กำหนดหัวข้อคอลัมน์
+  worksheet.columns = [
+    { header: 'วันที่', key: 'date', width: 15 },
+    { header: 'หมายเลขครุภัณฑ์', key: 'id_inv', width: 20 },
+    { header: 'ชื่อครุภัณฑ์', key: 'name', width: 30 },
+    { header: 'รายละเอียด', key: 'details', width: 40 },
+    { header: 'ค่าใช้จ่าย (บาท)', key: 'price', width: 15 },
+    { header: 'ประเภท', key: 'type', width: 15 }
+  ];
+
+  // สร้างข้อมูลรายงาน
+  const reportData = generateMaintenanceRepairReport(selectedRows);
+
+  // เพิ่มข้อมูลลงในแผ่นงาน
+  worksheet.addRows(reportData);
+
+  // จัดรูปแบบหัวข้อคอลัมน์
+  worksheet.getRow(1).font = { bold: true };
+  worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+};
+
+const generateMaintenanceRepairReport = (selectedRows) => {
+  let reportData = [];
+
+  selectedRows.forEach(inventory => {
+    // ตรวจสอบว่า inventory และ attributes มีอยู่จริง
+    if (inventory && inventory.attributes) {
+      // ข้อมูลซ่อมแซมของครุภัณฑ์หลัก
+      if (inventory.attributes.repair_reports && inventory.attributes.repair_reports.data) {
+        inventory.attributes.repair_reports.data.forEach(report => {
+          if (report && report.attributes && report.attributes.isDone && report.attributes.isCanRepair) {
+            reportData.push({
+              date: report.attributes.dateFinishRepair,
+              id_inv: inventory.attributes.id_inv,
+              name: inventory.attributes.name,
+              details: report.attributes.ListDetailRepair,
+              price: report.attributes.RepairPrice,
+              type: 'ซ่อมแซม'
+            });
+          }
+        });
+      }
+
+      // ข้อมูลบำรุงรักษาของครุภัณฑ์หลัก
+      if (inventory.attributes.maintenance_reports && inventory.attributes.maintenance_reports.data) {
+        inventory.attributes.maintenance_reports.data.forEach(report => {
+          if (report && report.attributes && report.attributes.isDone) {
+            reportData.push({
+              date: report.attributes.DateToDo,
+              id_inv: inventory.attributes.id_inv,
+              name: inventory.attributes.name,
+              details: report.attributes.DetailMaintenance,
+              price: report.attributes.prize,
+              type: 'บำรุงรักษา'
+            });
+          }
+        });
+      }
+
+      // ข้อมูลซ่อมแซมและบำรุงรักษาของครุภัณฑ์ย่อย
+      if (inventory.attributes.sub_inventories && inventory.attributes.sub_inventories.data) {
+        inventory.attributes.sub_inventories.data.forEach(subInventory => {
+          if (subInventory && subInventory.attributes) {
+            if (subInventory.attributes.repair_reports && subInventory.attributes.repair_reports.data) {
+              subInventory.attributes.repair_reports.data.forEach(report => {
+                if (report && report.attributes && report.attributes.isDone && report.attributes.isCanRepair) {
+                  reportData.push({
+                    date: report.attributes.dateFinishRepair,
+                    id_inv: `${inventory.attributes.id_inv} ${subInventory.attributes.id_inv}`,
+                    name: `(องค์ประกอบในชุดครุภัณฑ์) ${subInventory.attributes.name}`,
+                    details: report.attributes.ListDetailRepair,
+                    price: report.attributes.RepairPrice,
+                    type: 'ซ่อมแซม'
+                  });
+                }
+              });
+            }
+
+            if (subInventory.attributes.maintenance_reports && subInventory.attributes.maintenance_reports.data) {
+              subInventory.attributes.maintenance_reports.data.forEach(report => {
+                if (report && report.attributes && report.attributes.isDone) {
+                  reportData.push({
+                    date: report.attributes.DateToDo,
+                    id_inv: `${inventory.attributes.id_inv} ${subInventory.attributes.id_inv}`,
+                    name: `(องค์ประกอบในชุดครุภัณฑ์) ${subInventory.attributes.name}`,
+                    details: report.attributes.DetailMaintenance,
+                    price: report.attributes.prize,
+                    type: 'บำรุงรักษา'
+                  });
+                }
+              });
+            }
+          }
+        });
+      }
+    }
+  });
+
+  // เรียงข้อมูลตามวันที่
+  reportData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return reportData;
+};
+
+
+
+
+  //  // เพิ่มข้อมูล
+  //  selectedRows.forEach(row => {
+  //   const rowData = columns.map(col => {
+  //     if (col.key === 'sub_inventories_id' || col.key === 'sub_inventories_name') {
+  //       const subInventories = row.attributes.sub_inventories?.data;
+  //       if (subInventories && subInventories.length > 0) {
+  //         return subInventories.map(subInv => 
+  //           col.key === 'sub_inventories_id' ? subInv.attributes.id_inv : subInv.attributes.name
+  //         ).join('\n');
+  //       }
+  //       return '-';
+  //     }
+  //     if (col.dataIndex) {
+  //       return col.dataIndex.reduce((obj, key) => obj && obj[key], row) || '';
+  //     }
+  //     return '';
+  //   });
+  //   worksheet.addRow(rowData);
+  // });
 
 
 
@@ -398,25 +834,34 @@ function TableExportFile({
           <h2 className="text-lg font-bold">เลือก ({selectedItems.length}) รายการ</h2>
         </div>
         <div className="mb-4">
-          <Select
-            style={{ width: 300 }}
-            placeholder="เลือกประเภทรายงาน"
-            onChange={handleExportTypeChange}
-            value={exportType}
-          >
-            <Option value="1">1. นำออกไฟล์ Excel ตามคอลัมน์ที่เลือก</Option>
-            <Option value="2">2. นำออกไฟล์ Excel การบำรุงรักษา</Option>
-            <Option value="3">3. นำออกไฟล์ Excel การซ่อมแซม</Option>
-            <Option value="4">4. นำออกไฟล์ Excel นำออกรายการข้อมูลทั่วไปครุภัณฑ์</Option>
-          </Select>
-          <Button
-            icon={<DownloadOutlined />}
-            onClick={exportToExcel}
-            className="ml-2"
-          >
-            นำออกไฟล์ Excel
-          </Button>
-        </div>
+  <Select
+    style={{ width: 300 }}
+    placeholder="เลือกประเภทรายงาน"
+    onChange={handleExportTypeChange}
+    value={exportType}
+  >
+    <Option value="1">1. นำออกไฟล์ Excel ตามคอลัมน์ที่เลือก</Option>
+    <Option value="2">2. นำออกไฟล์ Excel ประวัติการการบำรุงรักษา</Option>
+    <Option value="3">3. นำออกไฟล์ Excel ประวัติการซ่อมแซม</Option>
+    <Option value="4">4. นำออกไฟล์ Excel ประวัติการซ่อมแซมและบำรุงรักษา</Option>
+    <Option value="5">5. นำออกไฟล์ Excel นำออกรายการข้อมูลทั่วไปครุภัณฑ์</Option>
+  </Select>
+
+  <Input 
+  placeholder="ชื่อไฟล์ (ไม่ต้องใส่นามสกุลไฟล์)" 
+  value={fileName}
+  onChange={(e) => setFileName(e.target.value)}
+  style={{ width: 300, marginRight: 10 }}
+/>
+
+  <Button
+    icon={<DownloadOutlined />}
+    onClick={exportToExcel}
+    className="ml-2"
+  >
+    นำออกไฟล์ Excel
+  </Button>
+</div>
         <Table
           columns={modalColumns}
           dataSource={selectedRows}
@@ -428,9 +873,15 @@ function TableExportFile({
       </Modal>
 
       <div className="flex flex-row justify-start mt-2">
-        <Dropdown overlay={menu} trigger={['click']}>
-        <Button icon={<SettingOutlined />}>เลือกคอลัมน์</Button>
-        </Dropdown>
+      <Dropdown 
+  overlay={menu} 
+  trigger={['click']} 
+  placement="bottomLeft"
+  visible={dropdownVisible}
+  onVisibleChange={handleVisibleChange}
+>
+  <Button icon={<SettingOutlined />}>เลือกคอลัมน์</Button>
+</Dropdown>
       </div>
 
       <Table

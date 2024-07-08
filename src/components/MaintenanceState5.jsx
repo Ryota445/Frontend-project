@@ -99,8 +99,8 @@ fetchData();
                 <TextArea rows={2} placeholder="รายละเอียดในการซ่อม" />
               </Form.Item>
 
-              <Form.Item name="RepairPrice" label="ราคา">
-                <Input placeholder="ราคา" addonAfter="บาท" />
+              <Form.Item name="RepairPrice" label="ค่าใช้จ่าย">
+                <Input placeholder="ค่าใช้จ่าย" addonAfter="บาท" />
               </Form.Item>
 
               <Form.Item

@@ -7,6 +7,7 @@ import {
   TeamOutlined,
   UserOutlined,
   RollbackOutlined,
+  FileExcelOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, theme } from 'antd';
 import './index.css';
@@ -65,7 +66,7 @@ const items = [
   getItem('เปลี่ยนที่ตั้ง/ส่งคืนครุภัณฑ์', '5', <Link to="/RequestManagement"><RollbackOutlined /></Link>),
   getItem('จัดการข้อมูลผู้ดูแล', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
   getItem('จัดการข้อมูลตัวแทนบริษัท/ผู้บริจาค', '9', <Link to="/AddInformationCompany"><TeamOutlined /></Link>),
-  getItem('ออกรายงาน', '11', <Link to="/ExportFilePage"><TeamOutlined /></Link>),
+  getItem('ออกรายงาน', '11', <Link to="/ExportFilePage"><FileExcelOutlined /></Link>),
   getItem('Logout', '2', <Link to="/"><UserOutlined /></Link>),
 ];
 
