@@ -50,6 +50,7 @@ import Login from './pages/Login';
 import EditInventory from './pages/EditInventory'
 import ExportFilePage from './pages/ExportFilePage'
 import MainLayout from './pages/MainLayout'; // สร้างคอมโพเนนต์นี้ใหม่
+import Register from './pages/Register'
 
 // import InventoryReport from './pages/InventoryReport'
 
@@ -101,6 +102,7 @@ const AppContent = () => {
                   <Route path="/RequestChangeLocation" element={<RequestChangeLocation />} />
                   <Route path="/EditInventory/:id" element={<EditInventory />} />
                   <Route path="/ExportFilePage" element={<ExportFilePage />} />
+                  <Route path="/register" element={<Register />} />
                   {/* <Route path="/InventoryReport" element={<InventoryReport />} /> */}
                   </Routes>
       </Content>

@@ -80,6 +80,11 @@ function Login() {
                                 เข้าสู่ระบบ
                             </Button>
                         </Form.Item>
+                        <Form.Item>
+            <Button type="default" onClick={() => navigate('/register')} className="bg-green-500 text-white">
+                ลงทะเบียน
+            </Button>
+        </Form.Item>
                         <Form.Item className="text-center">
                             <Button type="link">ย้อนกลับ</Button>
                         </Form.Item>

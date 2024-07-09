@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { EyeOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
-import { Table, Button, Input, Space, Modal, Form, Checkbox, Dropdown, Menu, message } from 'antd';
+import { Table, Button, Input, Space, Modal, Form, Select, message,Checkbox } from 'antd';
+import { EditOutlined, DeleteOutlined, SettingOutlined ,SaveOutlined ,UserAddOutlined } from '@ant-design/icons';
 
 const { Search } = Input;
 
@@ -13,182 +12,408 @@ function AddInformationTeacher() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
   const [form] = Form.useForm();
-  const [columnSettings, setColumnSettings] = useState({
-    responsibleName: true,
-    responsiblePhone: true,
-    responsibleEmail: true,
-  });
+  const [roles, setRoles] = useState([]);
+  const [changedRoles, setChangedRoles] = useState({});
 
-  useEffect(() => {
-    fetch('http://localhost:1337/api/responsibles?populate=*')
-      .then(response => response.json())
-      .then(data => {
-        setData(data.data || []);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-        setLoading(false);
+ const [responsibles, setResponsibles] = useState([]);
+ const [useExistingResponsible, setUseExistingResponsible] = useState(false);
+ const [useExistingResponsibleForNewUser, setUseExistingResponsibleForNewUser] = useState(false);
+
+const fetchResponsibles = async () => {
+  try {
+    const token = localStorage.getItem('jwt');
+    const response = await fetch('http://localhost:1337/api/responsibles', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    const result = await response.json();
+    setResponsibles(result.data);
+  } catch (error) {
+    console.error('Error fetching responsibles:', error);
+  }
+};
+
+useEffect(() => {
+  fetchUsers();
+  fetchRoles();
+  fetchResponsibles();
+}, []);
+ 
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('jwt');
+      const response = await fetch('http://localhost:1337/api/users?populate=*', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-  }, []);
+      const result = await response.json();
+      setData(result.map(user => ({
+        ...user,
+        roleChanged: false,
+        responsible: user.responsible?.data?.attributes || user.responsible
+      })));
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setLoading(false);
+    }
+  };
+  
+  const fetchRoles = async () => {
+    try {
+      const token = localStorage.getItem('jwt');
+      const response = await fetch('http://localhost:1337/api/role-in-webs', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const result = await response.json();
+      setRoles(result.data);
+    } catch (error) {
+      console.error('Error fetching roles:', error);
+    }
+  };
+
+
+  const handleRoleChange = (userId, roleId) => {
+    setChangedRoles(prev => ({...prev, [userId]: roleId}));
+    setData(prevData => prevData.map(user => 
+      user.id === userId ? {...user, roleChanged: true} : user
+    ));
+  };
+  
+  const handleSaveRole = async (userId) => {
+    try {
+      const newRoleId = changedRoles[userId];
+      const response = await fetch(`http://localhost:1337/api/users/${userId}`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        },
+        body: JSON.stringify({
+          role_in_web: newRoleId
+        })
+      });
+  
+      if (!response.ok) {
+        throw new Error('เกิดข้อผิดพลาดในการเปลี่ยน role บัญชีผู้ใช้');
+      }
+  
+      message.success('เปลี่ยน role บัญชีผู้ใช้สำเร็จ');
+      setChangedRoles(prev => {
+        const newChangedRoles = {...prev};
+        delete newChangedRoles[userId];
+        return newChangedRoles;
+      });
+      setData(prevData => prevData.map(user => 
+        user.id === userId ? {...user, role_in_web: {id: newRoleId}, roleChanged: false} : user
+      ));
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      message.error('Error ในการเปลี่ยนบัญชีผู้ใช้');
+    }
+  };
+
+  const handleEdit = (record) => {
+    setEditingRecord(record);
+    form.setFieldsValue({
+      responsibleName: record.responsible?.attributes?.responsibleName,
+      responsiblePhone: record.responsible?.attributes?.responsiblePhone,
+      responsibleEmail: record.responsible?.attributes?.responsibleEmail,
+      role_in_web: record.role_in_web?.id
+    });
+    setIsEditModalVisible(true);
+  };
+  
+ const handleSave = async (record) => {
+  try {
+    const values = await form.validateFields();
+    let responsibleData;
+
+    if (values.useExistingResponsible) {
+      responsibleData = values.responsibleId;
+    } else {
+      responsibleData = {
+        responsibleName: values.responsibleName,
+        responsiblePhone: values.responsiblePhone,
+        responsibleEmail: values.responsibleEmail
+      };
+    }
+
+    const response = await fetch(`http://localhost:1337/api/users/${record.id}?populate=*`, {
+      method: 'PUT',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+      },
+      body: JSON.stringify({
+        responsible: responsibleData
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('เกิดข้อผิดพลาดในการบันทึกการแก้ไขข้อมูลผู้ดูแล');
+    }
+
+    message.success('แก้ไขข้อมูลผู้ดูแลสำเร็จ');
+    fetchUsers();
+    setIsEditModalVisible(false);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    message.error('เกิดข้อผิดพลาดในการบันทึกการแก้ไขข้อมูลผู้ดูแล');
+  }
+};
+
 
   const handleSearch = value => {
     setSearchText(value);
   };
 
-  const filteredData = data.filter(item => 
-    item.attributes?.responsibleName?.toLowerCase().includes(searchText.toLowerCase())
+  const filteredData = data.filter(item =>
+    item.username.toLowerCase().includes(searchText.toLowerCase()) ||
+    item.responsible?.responsibleName?.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleAddResponsible = () => {
-    form.validateFields().then(values => {
-      fetch('http://localhost:1337/api/responsibles', {
+
+  const [isAddResponsibleModalVisible, setIsAddResponsibleModalVisible] = useState(false);
+  const [addResponsibleForm] = Form.useForm();
+
+  const handleAddResponsible = async () => {
+    try {
+      const values = await addResponsibleForm.validateFields();
+      
+      // Post responsible data
+      const response = await fetch('http://localhost:1337/api/responsibles', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
         },
-        body: JSON.stringify({ data: values })
-      })
-        .then(response => response.json())
-        .then(newData => {
-          setData(prevData => [...prevData, newData.data]);
-          setIsModalVisible(false);
-          form.resetFields();
-          message.success('บันทึกข้อมูลผู้รับผิดชอบสำเร็จแล้ว');
+        body: JSON.stringify({
+          data: {
+            responsibleName: values.responsibleName,
+            responsiblePhone: values.responsiblePhone,
+            responsibleEmail: values.responsibleEmail
+          }
         })
-        .catch(error => {
-          console.error('Error adding responsible:', error);
-          message.error('บันทึกข้อมูลผู้รับผิดชอบไม่สำเร็จ');
-        });
-    });
-  };
-
-  const handleEditResponsible = () => {
-    if (editingRecord.id === 1) {
-      message.error('ไม่สามารถลบบริษัทนี้ได้');
-      return;
-    }
-  
-    form.validateFields().then(values => {
-      fetch(`http://localhost:1337/api/responsibles/${editingRecord.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ data: values })
-      })
-        .then(response => response.json())
-        .then(updatedData => {
-          setData(prevData => prevData.map(item => 
-            item.id === editingRecord.id ? updatedData.data : item
-          ));
-          setIsEditModalVisible(false);
-          form.resetFields();
-          message.success('แก้ไขข้อมูลผู้รับผิดชอบสำเร็จแล้ว');
-        })
-        .catch(error => {
-          console.error('Error updating responsible:', error);
-          message.error('แก้ไขข้อมูลผู้รับผิดชอบไม่สำเร็จ');
-        });
-    });
-  };
-
-  const handleDeleteResponsible = id => {
-    if (id === 1) {
-      message.error('ไม่สามารถลบบริษัทนี้ได้');
-      return;
-    }
-  
-    fetch(`http://localhost:1337/api/responsibles/${id}`, {
-      method: 'DELETE'
-    })
-      .then(response => response.json())
-      .then(() => {
-        setData(prevData => prevData.filter(item => item.id !== id));
-        message.success('ลบข้อมูลผู้รับผิดชอบสำเร็จแล้ว');
-      })
-      .catch(error => {
-        console.error('Error deleting responsible:', error);
-        message.error('ลบข้อมูลผู้รับผิดชอบไม่สำเร็จ');
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to add responsible');
+      }
+
+      message.success('เพิ่มข้อมูลผู้ดูแลสำเร็จ');
+      setIsAddResponsibleModalVisible(false);
+      addResponsibleForm.resetFields();
+      fetchUsers(); // Refresh the user list
+    } catch (error) {
+      console.error('Error adding responsible:', error);
+      message.error('เกิดข้อผิดพลาดในการเพิ่มข้อมูลผู้ดูแล');
+    }
   };
 
-  const handleMenuClick = ({ key }) => {
-    setColumnSettings(prev => ({ ...prev, [key]: !prev[key] }));
-  };
+  const [isAddUserModalVisible, setIsAddUserModalVisible] = useState(false);
+  const [addUserForm] = Form.useForm();
 
-  const menu = (
-    <Menu onClick={handleMenuClick}>
-      <Menu.Item key="responsibleName">
-        <Checkbox checked={columnSettings.responsibleName}>ชื่อผู้รับผิดชอบ</Checkbox>
-      </Menu.Item>
-      <Menu.Item key="responsiblePhone">
-        <Checkbox checked={columnSettings.responsiblePhone}>เบอร์โทร</Checkbox>
-      </Menu.Item>
-      <Menu.Item key="responsibleEmail">
-        <Checkbox checked={columnSettings.responsibleEmail}>อีเมล</Checkbox>
-      </Menu.Item>
-    </Menu>
-  );
+  // Modify handleAddUser function
+ const handleAddUser = async () => {
+  try {
+    const values = await addUserForm.validateFields();
+    
+    if (values.password !== values.confirmPassword) {
+      message.error('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน');
+      return;
+    }
+
+    let responsibleId;
+
+    if (values.useExistingResponsible) {
+      responsibleId = values.responsibleId;
+    } else {
+      // Create new responsible
+      const responsibleResponse = await fetch('http://localhost:1337/api/responsibles', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+        },
+        body: JSON.stringify({ data: {
+          responsibleName: values.responsibleName,
+          responsiblePhone: values.responsiblePhone,
+          responsibleEmail: values.email
+        }})
+      });
+
+      if (!responsibleResponse.ok) {
+        throw new Error('Failed to create responsible');
+      }
+
+      const responsibleData = await responsibleResponse.json();
+      responsibleId = responsibleData.data.id;
+    }
+
+    // Create User
+    const userResponse = await fetch('http://localhost:1337/api/users', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+      },
+      body: JSON.stringify({
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        responsible: responsibleId,
+        role: 1,
+        role_in_web: 2
+      })
+    });
+
+    if (!userResponse.ok) {
+      throw new Error('Failed to create user');
+    }
+
+    message.success('เพิ่มบัญชีผู้ใช้สำเร็จ');
+    setIsAddUserModalVisible(false);
+    addUserForm.resetFields();
+    fetchUsers();
+  } catch (error) {
+    console.error('Error adding user:', error);
+    message.error(`เกิดข้อผิดพลาดในการเพิ่มบัญชีผู้ใช้: ${error.message}`);
+  }
+};
+
+  const handleDeleteUser = async (record) => {
+    // ตรวจสอบว่า Role เป็น Admin หรือไม่
+    if (record.role_in_web?.id === 1 || record.role_in_web?.attributes?.RoleName.toLowerCase() === 'admin') {
+      message.error('ไม่สามารถลบบัญชี Admin ได้');
+      return;
+    }
+
+    Modal.confirm({
+      title: 'ยืนยันการลบบัญชีผู้ใช้',
+      content: 'คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีผู้ใช้นี้?',
+      okText: 'ยืนยัน',
+      cancelText: 'ยกเลิก',
+      onOk: async () => {
+        try {
+          const response = await fetch(`http://localhost:1337/api/users/${record.id}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to delete user');
+          }
+
+          message.success('ลบบัญชีผู้ใช้สำเร็จ');
+          fetchUsers();
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          message.error('เกิดข้อผิดพลาดในการลบบัญชีผู้ใช้');
+        }
+      }
+    });
+  };
 
   const columns = [
-    columnSettings.responsibleName && {
-      title: 'ชื่อผู้รับดูแล',
-      dataIndex: ['attributes', 'responsibleName'],
-      key: 'responsibleName'
-    },
-    columnSettings.responsiblePhone && {
-      title: 'เบอร์โทร',
-      dataIndex: ['attributes', 'responsiblePhone'],
-      key: 'responsiblePhone'
-    },
-    columnSettings.responsibleEmail && {
-      title: 'อีเมล',
-      dataIndex: ['attributes', 'responsibleEmail'],
-      key: 'responsibleEmail'
+    {
+      title: 'ชื่อบัญชีผู้ใช้',
+      dataIndex: 'username',
+      key: 'username',
     },
     {
-      title: 'การจัดการ',
-      key: 'action',
-      render: (text, record) => (
-        <Space size="middle">
-          
-          <EditOutlined 
-            className='text-xl' 
-            onClick={() => {
-              setEditingRecord(record);
-              form.setFieldsValue(record.attributes);
-              setIsEditModalVisible(true);
-            }}
+      title: 'อีเมล',
+      dataIndex: 'email',
+      key: 'email',
+    },
+    {
+      title: 'Role',
+      dataIndex: 'role_in_web',
+      key: 'role_in_web',
+      render: (role, record) => (
+        <Space>
+          <Select
+            value={role?.id || record.role?.id}
+            style={{ width: 120 }}
+            onChange={(value) => handleRoleChange(record.id, value)}
+          >
+            {roles.map(r => (
+              <Select.Option key={r.id} value={r.id}>{r.attributes.RoleName}</Select.Option>
+            ))}
+          </Select>
+          <Button 
+            icon={<SaveOutlined />} 
+            onClick={() => handleSaveRole(record.id)}
+            disabled={!record.roleChanged}
           />
-          <DeleteOutlined className='text-xl' onClick={() => handleDeleteResponsible(record.id)} />
         </Space>
-      )
-    }
-  ].filter(Boolean);
+      ),
+    },
+    {
+      title: 'ชื่อผู้ดูแล',
+      dataIndex: ['responsible', 'responsibleName'],
+      key: 'responsibleName',
+      render: (text, record) => record.responsible?.responsibleName || text,
+    },
+    {
+      title: 'เบอร์โทรผู้ดูแล',
+      dataIndex: ['responsible', 'responsiblePhone'],
+      key: 'responsiblePhone',
+      render: (text, record) => record.responsible?.responsiblePhone || text,
+    },
+      // {
+      //   title: 'อีเมลผู้ดูแล',
+      //   dataIndex: ['responsible', 'responsibleEmail'],
+      //   key: 'responsibleEmail',
+      //   render: (text, record) => record.responsible?.responsibleEmail || text,
+      // },
+    {
+      title: '',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button icon={<DeleteOutlined />} onClick={() => handleDeleteUser(record.id)} danger />
+        </Space>
+      ),
+    },
+   
+  ];
 
   return (
     <>
       <div className='border-b-2 border-black mb-10 flex justify-between items-center'>
-        <h1 className='text-3xl text-blue-800'>ข้อมูลผู้ดูแล</h1>
-        <Space>
-          <Dropdown overlay={menu} trigger={['click']}>
-            <Button icon={<SettingOutlined />} />
-          </Dropdown>
-          <Button type="primary" onClick={() => setIsModalVisible(true)}>
-            เพิ่มข้อมูลผู้ดูแล
-          </Button>
-        </Space>
+        <h1 className='text-3xl text-blue-800'>จัดการข้อมูลผู้ดูแล</h1>
       </div>
-      
       <Space style={{ marginBottom: 16 }}>
         <Search
-          placeholder="ค้นหาชื่อผู้ดูแล"
+          placeholder="ค้นหาตามชื่อผู้ใช้หรือชื่อผู้ดูแล"
           onSearch={handleSearch}
+          onChange={(e) => handleSearch(e.target.value)}
           allowClear
           style={{ width: 300 }}
         />
       </Space>
+
+      <div className='flex flex-row justify-end'>
+      <div className='flex flex-col justify-end'>
+        <Button className='w-32 h-12 mr-10 mb-2' style={{ backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' }} type="primary" onClick={() => setIsAddUserModalVisible(true)} icon={<UserAddOutlined />}>
+          เพิ่มบัญชีผู้ใช้
+        </Button>
+
+        <Button className='w-32 h-12 mr-10 mb-2' style={{ backgroundColor: '#52c41a', borderColor: '#52c41a', color: 'white' }} type="primary" onClick={() => setIsAddResponsibleModalVisible(true)} >
+          เพิ่มผู้ดูแล
+        </Button>
+
+      </div>
+      </div>
       
       <Table
         columns={columns}
@@ -198,37 +423,169 @@ function AddInformationTeacher() {
         pagination={{ pageSize: 10 }}
       />
 
+  <Modal
+      title="เพิ่มผู้ดูแล"
+      visible={isAddResponsibleModalVisible}
+      onOk={handleAddResponsible}
+      onCancel={() => {
+        setIsAddResponsibleModalVisible(false);
+        addResponsibleForm.resetFields();
+      }}
+      okText="ยืนยัน"
+      cancelText="ยกเลิก"
+      okButtonProps={{
+        style: { backgroundColor: '#52c41a', borderColor: '#52c41a', color: 'white' }
+      }}
+      cancelButtonProps={{
+        style: { borderColor: '#52c41a', color: '#52c41a' }
+      }}
+    >
+      <Form form={addResponsibleForm} layout="vertical">
+        <Form.Item
+          name="responsibleName"
+          label="ชื่อผู้ดูแล"
+          rules={[{ required: true, message: 'กรุณากรอกชื่อผู้ดูแล' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="responsiblePhone"
+          label="เบอร์โทรศัพท์"
+          rules={[{ required: true, message: 'กรุณากรอกเบอร์โทรศัพท์' }]}
+        >
+          <Input />
+        </Form.Item>
+        <Form.Item
+          name="responsibleEmail"
+          label="อีเมล"
+          rules={[
+            { required: true, message: 'กรุณากรอกอีเมล' },
+            { type: 'email', message: 'กรุณากรอกอีเมลที่ถูกต้อง' }
+          ]}
+        >
+          <Input />
+        </Form.Item>
+      </Form>
+    </Modal>
+
       <Modal
-        title={editingRecord ? "แก้ไขข้อมูลผู้รับผิดชอบ" : "เพิ่มข้อมูลผู้รับผิดชอบ"}
-        visible={isModalVisible || isEditModalVisible}
-        onOk={editingRecord ? handleEditResponsible : handleAddResponsible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          setIsEditModalVisible(false);
-          setEditingRecord(null);
-          form.resetFields();
-        }}
-        okText={editingRecord ? "บันทึกการแก้ไข" : "บันทึก"}
-        cancelText="ยกเลิก"
-        okButtonProps={{ 
-          style: { backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' } 
-        }}
-        cancelButtonProps={{ 
-          style: { borderColor: '#1890ff', color: '#1890ff' } 
-        }}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item name="responsibleName" label="ชื่อผู้รับผิดชอบ" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="responsiblePhone" label="เบอร์โทร" rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="responsibleEmail" label="อีเมล" rules={[{ required: true, type: 'email' }]}>
-            <Input />
-          </Form.Item>
-        </Form>
-      </Modal>
+  title="เพิ่มบัญชีผู้ใช้"
+  visible={isAddUserModalVisible}
+  onOk={handleAddUser}
+  onCancel={() => {
+    setIsAddUserModalVisible(false);
+    addUserForm.resetFields();
+    setUseExistingResponsibleForNewUser(false);
+  }}
+  okText="ยืนยัน"
+  cancelText="ยกเลิก"
+  okButtonProps={{
+    style: { backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' }
+  }}
+  cancelButtonProps={{
+    style: { borderColor: '#1890ff', color: '#1890ff' }
+  }}
+>
+  <div className="bg-gradient-to-b from-blue-200 to-blue-500 p-6 rounded-lg">
+    <Form form={addUserForm} layout="vertical" className="space-y-4">
+  <div className="text-lg font-semibold mb-2">ข้อมูลบัญชีผู้ใช้</div>
+  <Form.Item name="username" rules={[{ required: true, message: 'กรุณากรอกชื่อบัญชี!' }]}>
+    <Input id="add-username" placeholder="ชื่อบัญชี" className="rounded-md" />
+  </Form.Item>
+  <Form.Item name="email" rules={[{ required: true, type: 'email', message: 'กรุณากรอกอีเมลที่ถูกต้อง!' }]}>
+    <Input id="add-email" placeholder="อีเมล" className="rounded-md" />
+  </Form.Item>
+  <Form.Item name="password" rules={[{ required: true, message: 'กรุณากรอกรหัสผ่าน!' }]}>
+    <Input.Password id="add-password" placeholder="รหัสผ่าน" className="rounded-md" />
+  </Form.Item>
+  <Form.Item name="confirmPassword" rules={[{ required: true, message: 'กรุณายืนยันรหัสผ่าน!' }]}>
+    <Input.Password id="add-confirmPassword" placeholder="ยืนยันรหัสผ่าน" className="rounded-md" />
+  </Form.Item>
+  
+  <div className="text-lg font-semibold mt-6 mb-2">ข้อมูลผู้ดูแล</div>
+      <Form.Item name="useExistingResponsible" valuePropName="checked">
+        <Checkbox onChange={(e) => setUseExistingResponsibleForNewUser(e.target.checked)}>
+          ใช้ข้อมูลผู้ดูแลที่มีอยู่
+        </Checkbox>
+      </Form.Item>
+      
+      {useExistingResponsibleForNewUser ? (
+        <Form.Item name="responsibleId" rules={[{ required: true, message: 'กรุณาเลือกผู้ดูแล!' }]}>
+          <Select placeholder="เลือกผู้ดูแล">
+            {responsibles.map(responsible => (
+              <Select.Option key={responsible.id} value={responsible.id}>
+                {responsible.attributes.responsibleName}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+      ) : (
+        <>
+         <Form.Item name="responsibleName" rules={[{ required: true, message: 'กรุณากรอกชื่อผู้ดูแล!' }]}>
+    <Input id="add-responsibleName" placeholder="ชื่อผู้ดูแล" className="rounded-md" />
+  </Form.Item>
+  <Form.Item name="responsiblePhone" rules={[{ required: true, message: 'กรุณากรอกเบอร์โทรศัพท์ผู้ดูแล!' }]}>
+    <Input id="add-responsiblePhone" placeholder="เบอร์โทรศัพท์ผู้ดูแล" className="rounded-md" />
+  </Form.Item>
+        </>
+      )}
+    </Form>
+  </div>
+</Modal>
+
+
+
+      <Modal
+  title="แก้ไขข้อมูลบัญชีผู้ใช้"
+  visible={isEditModalVisible}
+  onOk={() => handleSave(editingRecord)}
+  onCancel={() => {
+    setIsEditModalVisible(false);
+    setEditingRecord(null);
+    form.resetFields();
+    setUseExistingResponsible(false);
+  }}
+  okText="บันทึกการแก้ไข"
+  cancelText="ยกเลิก"
+  okButtonProps={{ 
+    style: { backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' } 
+  }}
+  cancelButtonProps={{ 
+    style: { borderColor: '#1890ff', color: '#1890ff' } 
+  }}
+>
+  <Form form={form} layout="vertical">
+  <Form.Item name="useExistingResponsible" valuePropName="checked">
+    <Checkbox onChange={(e) => setUseExistingResponsible(e.target.checked)}>
+      ใช้ข้อมูลผู้ดูแลที่มีอยู่
+    </Checkbox>
+  </Form.Item>
+  
+  {useExistingResponsible ? (
+    <Form.Item name="responsibleId" label="เลือกผู้ดูแล" rules={[{ required: true }]}>
+      <Select id="edit-responsibleId">
+        {responsibles.map(responsible => (
+          <Select.Option key={responsible.id} value={responsible.id}>
+            {responsible.attributes.responsibleName}
+          </Select.Option>
+        ))}
+      </Select>
+    </Form.Item>
+  ) : (
+    <>
+      <Form.Item name="responsibleName" label="ชื่อผู้ดูแล" rules={[{ required: true }]}>
+        <Input id="edit-responsibleName" />
+      </Form.Item>
+      <Form.Item name="responsiblePhone" label="เบอร์โทรผู้ดูแล" rules={[{ required: true }]}>
+        <Input id="edit-responsiblePhone" />
+      </Form.Item>
+      <Form.Item name="responsibleEmail" label="อีเมลผู้ดูแล" rules={[{ required: true, type: 'email' }]}>
+        <Input id="edit-responsibleEmail" />
+      </Form.Item>
+    </>
+  )}
+</Form>
+</Modal>
     </>
   );
 }
