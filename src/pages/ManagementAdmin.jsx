@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {Link} from 'react-router-dom';
 import SearchBox from '../components/SearchBox';
 import TableViewInventory from '../components/TableViewInventory';
+import { useAuth } from '../context/AuthContext';
 
 function ManagementAdmin() {
     const [selectedItems, setSelectedItems] = useState([]);
@@ -11,6 +12,14 @@ const [selectedRows, setSelectedRows] = useState([]);
     const [inventoryList, setInventoryList] = useState([]); // เพิ่ม state สำหรับรายการทั้งหมด
     const [foundDataNumber, setFoundDataNumber] = useState(0)
     const [showSubInventoryColumns, setShowSubInventoryColumns] = useState(false);
+
+    const { user } = useAuth();
+
+  if (user) {
+    console.log("user.responsible :",user.responsible);
+    console.log("user.RoleInWeb :",user.RoleInWeb);
+  }
+
     useEffect(() => {
         fetchItems();
     }, []);

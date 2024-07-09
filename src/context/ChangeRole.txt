@@ -1,0 +1,22 @@
+const changeUserRole = async (userId, newRoleId) => {
+  try {
+    const response = await fetch(`http://localhost:1337/api/custom-user/change-role/${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // ใส่ token ที่ได้จากการ login
+      },
+      body: JSON.stringify({ roleId: newRoleId })
+    });
+
+    if (response.ok) {
+      const updatedUser = await response.json();
+      console.log('User role updated:', updatedUser);
+      // อัพเดท state หรือ context ที่เก็บข้อมูล user ตามความเหมาะสม
+    } else {
+      throw new Error('Failed to update user role');
+    }
+  } catch (error) {
+    console.error('Error changing user role:', error);
+  }
+};

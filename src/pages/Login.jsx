@@ -26,11 +26,11 @@ function Login() {
 
             if (response.ok) {
                 const data = await response.json();
+                await login(data.jwt);  // ใช้ await เพื่อรอให้การดึงข้อมูล user เสร็จสมบูรณ์
                 notification.success({
                     message: 'เข้าสู่ระบบสำเร็จ',
                     description: 'คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!',
                 });
-                login(data.jwt);
                 const from = location.state?.from?.pathname || '/manageInventory';
                 navigate(from, { replace: true });
             } else {
