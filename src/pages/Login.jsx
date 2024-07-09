@@ -50,7 +50,7 @@ function Login() {
         <div className="min-h-screen bg-gradient-to-b from-blue-200 to-blue-500 flex items-center justify-center">
             <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
                 <div className="text-center mb-6">
-                    <img src={logo_ICO} alt="Logo" className="mx-auto w-1/2" />
+                   <img src={logo_ICO} alt="Logo" className="mx-auto w-1/2" />
                 </div>
                 <Form
                     name="login"
@@ -93,8 +93,7 @@ function Login() {
             </div>
             <div className="fixed bottom-0 w-full text-center p-4 text-white">
                 <p>
-                    หน้าเว็บนี้ใช้คุกกี้ที่จำเป็นในการจดสถานะการล็อกอินเข้าใช้ระบบด้วยบัญชีมายคอร์สวิลล์แพลตฟอร์มเท่านั้น
-                    หากท่านใช้งานส่วนอื่น ๆ ของแพลตฟอร์มการเรียนรู้ท่านสามารถศึกษาเกี่ยวกับการเก็บรวบรวมและประมวลผลข้อมูลส่วนบุคคลของท่านได้ใน นโยบายคุ้มครองข้อมูลส่วนบุคคลสำหรับแพลตฟอร์มการเรียนรู้อิเล็กทรอนิกส์ โดย ศูนย์นวัตกรรมการเรียนรู้จุฬาลงกรณ์มหาวิทยาลัย และ นโยบายคุ้มครองข้อมูลส่วนบุคคลการใช้งานแอปพลิเคชั่นอื่น ๆ 
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Odit quas quaerat quam numquam nulla illo doloribus molestias eaque nobis aspernatur. Quas nam reiciendis, laudantium architecto hic numquam vitae expedita quos! 
                 </p>
             </div>
         </div>

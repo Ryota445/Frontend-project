@@ -4,6 +4,12 @@ import { useAuth } from "./AuthContext";
 const ProtectedRoute = ({ children }) => {
   const { token } = useAuth();
   const location = useLocation();
+
+    // อนุญาตให้เข้าถึง /register โดยไม่ต้องมี token
+  if (location.pathname === "/register") {
+    return children;
+  }
+  
   if (!token) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

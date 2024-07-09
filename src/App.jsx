@@ -75,8 +75,8 @@ const AppContent = () => {
     }}>
       <Content style={{ margin: '26px 16px' }}>
         <Routes>
-          <Route path="/" element={<Navigate to="/manageInventory" replace />} />
-          <Route path="/manageInventory" element={<ManagementAdmin />} />
+        <Route path="/" element={<Navigate to="/manageInventory" replace />} />
+        <Route path="/manageInventory" element={<ManagementAdmin />} />
                   <Route path="/manageInventory" element={<ManagementAdmin />} />
                   <Route path="/maintenanceInventory" element={<MaintenanceInventoryMain />} />
                   <Route path="/disposeMain" element={<DisposeMain />} />
@@ -115,6 +115,7 @@ const App = () => {
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="/*" element={
           <ProtectedRoute>
             <AppContent />

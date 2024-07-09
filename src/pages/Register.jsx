@@ -64,13 +64,13 @@ function Register() {
                             { type: 'email', message: 'กรุณากรอกอีเมลที่ถูกต้อง!' }
                         ]}
                     >
-                        <Input placeholder="อีเมล" />
+                        <Input placeholder="อีเมล (Email)" />
                     </Form.Item>
                     <Form.Item
                         name="password"
                         rules={[{ required: true, message: 'กรุณากรอกรหัสผ่าน!' }]}
                     >
-                        <Input.Password placeholder="รหัสผ่าน" />
+                        <Input.Password placeholder="รหัสผ่าน (Password)" />
                     </Form.Item>
                     <Form.Item
                         name="confirmPassword"
@@ -87,7 +87,7 @@ function Register() {
                             }),
                         ]}
                     >
-                        <Input.Password placeholder="ยืนยันรหัสผ่าน" />
+                        <Input.Password placeholder="ยืนยันรหัสผ่าน (Confirm Password)" />
                     </Form.Item>
 
                     <Form.Item>
