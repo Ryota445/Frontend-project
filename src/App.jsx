@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import React, { useState,useEffect } from 'react';
+import { Routes, Route, Link, useLocation, Navigate, useNavigate  } from 'react-router-dom';
 import {
   DesktopOutlined,
   IdcardOutlined,
@@ -10,6 +10,8 @@ import {
   FileExcelOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu, theme } from 'antd';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import ProtectedRoute from './context/ProtectedRoute';
 import './index.css';
 
 // component
@@ -47,64 +49,33 @@ import RequestChangeLocation from './pages/RequestChangeLocation';
 import Login from './pages/Login';
 import EditInventory from './pages/EditInventory'
 import ExportFilePage from './pages/ExportFilePage'
+import MainLayout from './pages/MainLayout'; // สร้างคอมโพเนนต์นี้ใหม่
+
 // import InventoryReport from './pages/InventoryReport'
 
 const { Header, Content, Sider } = Layout;
 
-function getItem(label, key, icon, children) {
-  return {
-    key,
-    icon,
-    children,
-    label,
-  };
-}
 
-const items = [
-  getItem('จัดการครุภัณฑ์', '3', <Link to="/manageInventory"><DesktopOutlined /></Link>),
-  getItem('ดูแลครุภัณฑ์', '4', <Link to="/MantenantPage1"><MonitorOutlined /></Link>),
-  getItem('เปลี่ยนที่ตั้ง/ส่งคืนครุภัณฑ์', '5', <Link to="/RequestManagement"><RollbackOutlined /></Link>),
-  getItem('จัดการข้อมูลผู้ดูแล', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
-  getItem('จัดการข้อมูลตัวแทนบริษัท/ผู้บริจาค', '9', <Link to="/AddInformationCompany"><TeamOutlined /></Link>),
-  getItem('ออกรายงาน', '11', <Link to="/ExportFilePage"><FileExcelOutlined /></Link>),
-  getItem('Logout', '2', <Link to="/"><UserOutlined /></Link>),
-];
 
-const App = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
 
-  const location = useLocation(); // ใช้ useLocation เพื่อเช็คตำแหน่งปัจจุบัน
-  const isLoginPage = location.pathname === '/'; // เช็คว่าหน้าปัจจุบันคือหน้าล็อกอินหรือไม่
+
+const AppContent = () => {
+  const { token, logout } = useAuth();
+  const navigate = useNavigate();
+
+  if (!token) {
+    return <Login />;
+  }
 
   return (
-    <>
-      {isLoginPage ? (
+    <MainLayout logout={() => {
+      logout();
+      navigate('/login');
+    }}>
+      <Content style={{ margin: '26px 16px' }}>
         <Routes>
-          <Route path="/" element={<Login />} />
-        </Routes>
-      ) : (
-        <Layout style={{ minHeight: '100vh' }}>
-          <Sider trigger={null} collapsible collapsed={collapsed}>
-            <div className="demo-logo-vertical" />
-            <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
-          </Sider>
-          <Layout>
-            <Header style={{ padding: 0, background: colorBgContainer }}>
-              <NavComponent collapsed={collapsed} setCollapsed={setCollapsed} />
-            </Header>
-            <Content style={{ margin: '26px 16px' }}>
-              <div
-                style={{
-                  padding: 24,
-                  minHeight: 360,
-                  background: colorBgContainer,
-                  borderRadius: borderRadiusLG,
-                }}
-              >
-                <Routes>
+          <Route path="/" element={<Navigate to="/manageInventory" replace />} />
+          <Route path="/manageInventory" element={<ManagementAdmin />} />
                   <Route path="/manageInventory" element={<ManagementAdmin />} />
                   <Route path="/maintenanceInventory" element={<MaintenanceInventoryMain />} />
                   <Route path="/disposeMain" element={<DisposeMain />} />
@@ -131,13 +102,24 @@ const App = () => {
                   <Route path="/EditInventory/:id" element={<EditInventory />} />
                   <Route path="/ExportFilePage" element={<ExportFilePage />} />
                   {/* <Route path="/InventoryReport" element={<InventoryReport />} /> */}
-                </Routes>
-              </div>
-            </Content>
-          </Layout>
-        </Layout>
-      )}
-    </>
+                  </Routes>
+      </Content>
+    </MainLayout>
+  );
+};
+
+const App = () => {
+  return (
+    <AuthProvider>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/*" element={
+          <ProtectedRoute>
+            <AppContent />
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </AuthProvider>
   );
 };
 

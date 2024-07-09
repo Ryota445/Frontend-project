@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Checkbox, notification } from 'antd';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate จาก react-router-dom
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import logo_ICO from '../assets/img/logo-OICT-TH.png';
 
 function Login() {
     const [loading, setLoading] = useState(false);
-    const navigate = useNavigate(); // ใช้ useNavigate เพื่อเข้าถึงออบเจ็กต์การนำทาง
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { login } = useAuth();
 
     const onFinish = async (values) => {
         setLoading(true);
@@ -27,10 +30,9 @@ function Login() {
                     message: 'เข้าสู่ระบบสำเร็จ',
                     description: 'คุณได้เข้าสู่ระบบเรียบร้อยแล้ว!',
                 });
-                // เก็บโทเค็น JWT หรือทำการกระทำเพิ่มเติมตามที่ต้องการ
-                localStorage.setItem('jwt', data.jwt);
-                // เปลี่ยนเส้นทางไปที่หน้า /manageInventory
-                navigate('/manageInventory');
+                login(data.jwt);
+                const from = location.state?.from?.pathname || '/manageInventory';
+                navigate(from, { replace: true });
             } else {
                 throw new Error('Login failed');
             }

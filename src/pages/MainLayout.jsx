@@ -1,0 +1,58 @@
+import React from 'react';
+import { Layout, Menu } from 'antd';
+import { Link } from 'react-router-dom';
+import {
+  DesktopOutlined,
+  IdcardOutlined,
+  MonitorOutlined,
+  TeamOutlined,
+  UserOutlined,
+  RollbackOutlined,
+  FileExcelOutlined,
+} from '@ant-design/icons';
+
+import NavComponent from '../components/NavComponent'; // เพิ่มบรรทัดนี้
+
+const { Sider, Header, Content } = Layout;
+
+function getItem(label, key, icon, children) {
+    return {
+      key,
+      icon,
+      children,
+      label,
+    };
+  }
+
+
+  const MainLayout = ({ children, logout }) => {
+    const [collapsed, setCollapsed] = React.useState(false);
+
+  const items = [  getItem('จัดการครุภัณฑ์', '3', <Link to="/manageInventory"><DesktopOutlined /></Link>),
+    getItem('ดูแลครุภัณฑ์', '4', <Link to="/MantenantPage1"><MonitorOutlined /></Link>),
+    getItem('เปลี่ยนที่ตั้ง/ส่งคืนครุภัณฑ์', '5', <Link to="/RequestManagement"><RollbackOutlined /></Link>),
+    getItem('จัดการข้อมูลผู้ดูแล', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
+    getItem('จัดการข้อมูลตัวแทนบริษัท/ผู้บริจาค', '9', <Link to="/AddInformationCompany"><TeamOutlined /></Link>),
+    getItem('ออกรายงาน', '11', <Link to="/ExportFilePage"><FileExcelOutlined /></Link>),
+    { key: 'logout', icon: <UserOutlined />, label: 'Logout', onClick: logout },
+  ];
+
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+        <div className="demo-logo-vertical" />
+        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
+      </Sider>
+      <Layout>
+        <Header style={{ padding: 0, background: 'white' }}>
+          <NavComponent collapsed={collapsed} setCollapsed={setCollapsed} /> {/* เพิ่มบรรทัดนี้ */}
+        </Header>
+        <Content style={{ margin: '0 16px' }}>
+          {children}
+        </Content>
+      </Layout>
+    </Layout>
+  );
+};
+
+export default MainLayout;
