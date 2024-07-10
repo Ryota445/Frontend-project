@@ -107,7 +107,7 @@ const MantenantPage1 = () => {
                           <> {inventory?.name} </>
                         )}
                       </Link> ?? 'N/A',
-                reportedBy: user?.username ?? 'N/A',
+                reportedBy: item?.attributes?.reportedBy?.data?.attributes?.responsibleName || "N/A", // ใช้บรรทัดนี้เพื่อใส่ค่า reportedBy
                 description: item.attributes.RepairReasonByResponsible ?? 'N/A',
                 FileReport: <a href={`http://localhost:1337${item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url}`} target="_blank" rel="noopener noreferrer"><FileOutlined /><span className='ml-2'>{item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.name || "ไฟล์"}</span></a>,
                 appointmentDate: 'DueDateRepair',

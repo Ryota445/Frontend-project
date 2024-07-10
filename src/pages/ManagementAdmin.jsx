@@ -15,6 +15,8 @@ const [selectedRows, setSelectedRows] = useState([]);
 
     const { user } = useAuth();
 
+    const isAdmin = user?.role_in_web?.RoleName === "Admin";
+
   if (user) {
     console.log("user.responsible :",user.responsible);
     console.log("user.RoleInWeb :",user.RoleInWeb);
@@ -24,23 +26,40 @@ const [selectedRows, setSelectedRows] = useState([]);
         fetchItems();
     }, []);
 
-    const updateSelectedItems = (newItems, newRows) => {
+     // mode1
+     const updateSelectedItems = (newItems, newRows) => {
+     
         setSelectedItems(prevItems => {
-            const uniqueItems = [...new Set([...prevItems, ...newItems])];
-            return uniqueItems;
+            const updatedItems = newItems.filter(item => !prevItems.includes(item));
+            return [...prevItems.filter(item => newItems.includes(item)), ...updatedItems];
         });
         setSelectedRows(prevRows => {
-            const uniqueRows = [...prevRows, ...newRows].reduce((acc, current) => {
-                const x = acc.find(item => item.id === current.id);
-                if (!x) {
-                    return acc.concat([current]);
-                } else {
-                    return acc;
-                }
-            }, []);
-            return uniqueRows;
+            const updatedRows = newRows.filter(row => !prevRows.some(prevRow => prevRow.id === row.id));
+            return [...prevRows.filter(row => newRows.some(newRow => newRow.id === row.id)), ...updatedRows];
         });
-    };
+};
+
+
+    // mode2
+
+// const updateSelectedItems = (newItems, newRows) => {
+//         setSelectedItems(prevItems => {
+//             const uniqueItems = [...new Set([...prevItems, ...newItems])];
+//             return uniqueItems;
+//         });
+//         setSelectedRows(prevRows => {
+//             const uniqueRows = [...prevRows, ...newRows].reduce((acc, current) => {
+//                 const x = acc.find(item => item.id === current.id);
+//                 if (!x) {
+//                     return acc.concat([current]);
+//                 } else {
+//                     return acc;
+//                 }
+//             }, []);
+//             return uniqueRows;
+//         });
+// };
+
 
     const fetchItems = async () => {
         try {
@@ -155,10 +174,12 @@ const [selectedRows, setSelectedRows] = useState([]);
 
             <div className='flex flex-row'>
 
+            {isAdmin ? (
             <div className='ml-5 my-5'>
             {/* ปุ่มเพิ่มครุภัณฑ์ */}
             <Link to="/AddInventory"><button className="btn btn-outline btn-success">เพิ่มครุภัณฑ์</button></Link>
             </div>
+            ):(null)}
 
           
 

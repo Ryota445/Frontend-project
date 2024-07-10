@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { message, Checkbox, Space, Button, Table, Modal, Upload, Dropdown, Menu, Select, Input } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined, CloseOutlined, UploadOutlined, DownOutlined, SettingOutlined} from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
+import { useAuth } from '../context/AuthContext';
 
 function TableViewInventory({ 
   inventoryList, 
@@ -25,6 +26,10 @@ function TableViewInventory({
   const [visibleColumns, setVisibleColumns] = useState(['id_inv', 'name', 'responsible', 'category','location','action','status_inventory']);
   const [buildingOptions, setBuildingOptions] = useState([]);
   const navigate = useNavigate();
+
+  const { user } = useAuth();
+
+  const isAdmin = user?.role_in_web?.RoleName === "Admin";
 
   useEffect(() => {
     async function fetchData() {
@@ -303,7 +308,7 @@ setTimeout(() => {
       key: 'status_inventory',
     },
     {
-      title: 'ดู/แก้ไข',
+      title: isAdmin ? 'ดู/แก้ไข' : 'ดู',
       key: 'action',
       render: (text, record) => (
         <Space size="middle">
@@ -311,14 +316,17 @@ setTimeout(() => {
             className="text-xl"
             onClick={() => handleView(record.id)}
           />
-          <EditOutlined 
-          className="text-xl" 
-          onClick={() => handleEdit(record.id)}
-          />
+
+{isAdmin && (
+            <EditOutlined
+              className="text-xl"
+              onClick={() => handleEdit(record.id)}
+            />
+          )}
         </Space>
       ),
     },
-    {
+    ...(isAdmin ? [{
       title: 'ลบ',
       key: 'delete',
       render: (text, record) => (
@@ -329,7 +337,7 @@ setTimeout(() => {
           />
         </Space>
       ),
-    },
+    }] : []),
   ];
 
   const filteredColumns = allColumns.filter(col => col.key !== 'action' && col.key !== 'delete');
@@ -419,20 +427,21 @@ setTimeout(() => {
   return (
     <>
       <div>
-        <div className="flex justify-between mr-4">
-          <h2 className="ml-4 text-xl font-bold ">
-            ค้นพบ {foundDataNumber} รายการ
-          </h2>
-          
-          <Button
-            className="bg-gray-400 w-[120px] h-[40px]"
-            type="primary"
-            onClick={openModal}
-          >
-             เลือก ({selectedItems.length})
-          </Button>
-        </div>
-      </div>
+  <div className="flex justify-between mr-4">
+    <h2 className="ml-4 text-xl font-bold ">
+      ค้นพบ {foundDataNumber} รายการ
+    </h2>
+    {isAdmin ? (
+      <Button
+        className="bg-gray-400 w-[120px] h-[40px]"
+        type="primary"
+        onClick={openModal}
+      >
+        เลือก ({selectedItems.length})
+      </Button>
+    ) : null}
+  </div>
+</div>
 
       <Modal
         title="จัดการครุภัณฑ์"

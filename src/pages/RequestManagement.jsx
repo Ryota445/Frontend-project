@@ -12,7 +12,7 @@ const RequestManagement = () => {
     const fetchChangeLocationData = async () => {
       try {
         const response = await fetch(
-          "http://localhost:1337/api/request-change-locations?populate[inventories][populate]=building&populate=building"
+          "http://localhost:1337/api/request-change-locations?populate[inventories][populate]=building&populate=building&populate[reportedBy]=*"
         );
         const result = await response.json();
         const formattedData = result.data
@@ -43,7 +43,7 @@ const RequestManagement = () => {
             return {
               key: item.id,
               date: new Date(item.attributes.createdAt), // ใช้ Date object สำหรับการเรียงลำดับ
-              reportedBy: "N/A", // เปลี่ยนตามข้อมูลที่มีใน response
+              reportedBy: item?.attributes?.reportedBy?.data?.attributes?.responsibleName ||"N/A", // เปลี่ยนตามข้อมูลที่มีใน response
               inventoryData,
               formattedDate: new Date(
                 item.attributes.createdAt
@@ -68,7 +68,7 @@ const RequestManagement = () => {
     const fetchReturnEquipmentData = async () => {
       try {
         const response = await fetch(
-          "http://localhost:1337/api/request-sent-backs?populate[inventory][populate]=*"
+          "http://localhost:1337/api/request-sent-backs?populate[inventory][populate]=*&populate=reportedBy"
         );
         const result = await response.json();
         const formattedData = result.data
@@ -83,7 +83,7 @@ const RequestManagement = () => {
                 month: "short",
                 day: "numeric",
               }),
-              reportedBy: item.attributes.reportedBy || "N/A", // เปลี่ยนตามข้อมูลที่มีใน response
+              reportedBy: item?.attributes?.reportedBy?.data?.attributes?.responsibleName || "N/A", // เปลี่ยนตามข้อมูลที่มีใน response
               id_backend_inventory: inventoryData.id, // ใช้ id ของ inventory
               equipmentNumber: inventoryData.attributes.id_inv,
               equipmentName: inventoryData.attributes.name,
@@ -355,15 +355,15 @@ const RequestManagement = () => {
             className="bg-blue-500 text-white"
             onClick={() => handleApproveReturnEquipment(record.key, record.id_backend_inventory)}
           >
-            อนุมัติ
+            รับทราบการส่งคืน
           </Button>
           <Popconfirm
             title="คุณแน่ใจหรือไม่ที่จะลบรายการนี้?"
             onConfirm={() => handleDisapprove(record.key)}
           >
-            <Button type="danger" className="bg-red-500 text-white">
+            {/* <Button type="danger" className="bg-red-500 text-white">
               ไม่อนุมัติ
-            </Button>
+            </Button> */}
           </Popconfirm>
         </div>
       ),

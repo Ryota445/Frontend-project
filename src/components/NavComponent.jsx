@@ -142,7 +142,7 @@ function NavComponent({ collapsed, setCollapsed }) {
   };
 
   return (
-    <div className="navbar bg-base-100">
+    <div className="navbar bg-base-100" style={{ padding: '0' }}>
       <div className="navbar-start">
         <Button
           type="text"
@@ -153,10 +153,15 @@ function NavComponent({ collapsed, setCollapsed }) {
       </div>
 
       <div className="navbar-center">
-        <a className="btn btn-ghost text-xl">
-          <img src={logo_1} alt="โลโก้" style={imgStyle} />
-        </a>
-      </div>
+    <a className="btn btn-ghost p-0">  
+      <img src={logo_1} alt="โลโก้" style={{
+        width: '120px',
+        height: 'auto',
+        borderRadius: '5px',
+        maxHeight: '64px'  // เพิ่มบรรทัดนี้
+      }} />
+    </a>
+  </div>
 
       <div className="navbar-end mr-5">
         <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">

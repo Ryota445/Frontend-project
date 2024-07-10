@@ -36,6 +36,7 @@ import InventoryMaintenanceHistory from "../components/InventoryMaintenanceHisto
 import no_image from "../assets/img/Image.png";
 import { differenceInDays } from 'date-fns';
 const { TextArea } = Input;
+import { useAuth } from '../context/AuthContext';
 
 
 
@@ -83,6 +84,11 @@ function UserDetail() {
   const [searchValue, setSearchValue] = useState("");
   const [companyOptions, setCompanyOptions] = useState([]);
   const [subInventoriesM, setSubInventoriesM] = useState([]);
+
+  const { user } = useAuth();
+
+  const isAdmin = user?.role_in_web?.RoleName === "Admin";
+
   // forModal reportMaintenance
 
   useEffect(() => {
@@ -125,6 +131,7 @@ fetchDataC();
         isSubInventory: clickedButtonM === "sub",
         sub_inventory: clickedButtonM === "sub" ? selectedSubInventoryIdM : null,
         isDone: true,
+        reportedBy: user?.responsible?.id,
         company_inventory: values.companyInventory,
         NameMaintenance: values.nameMaintenance,
         DetailMaintenance: values.detailMaintenance,
@@ -155,6 +162,7 @@ fetchDataC();
           isSubInventory: clickedButtonM === "sub",
           sub_inventory: clickedButtonM === "sub" ? selectedSubInventoryIdM : null,
           isDone: false,
+          reportedBy: 2,
           DetailMaintenance: values.detailMaintenance,
           DueDate: newDueDate.toISOString(),
         };
@@ -201,6 +209,7 @@ fetchDataC();
         inventory: id,
         isSubInventory: clickedButtonM === "sub",
         sub_inventory: clickedButtonM === "sub" ? selectedSubInventoryIdM : null,
+        reportedBy: 2,
         isDone: false,
         DetailMaintenance: values.DetailMaintenance,
         DueDate: dueDate.toISOString(),
@@ -242,36 +251,65 @@ fetchDataC();
   };
 
   const handleLocationChange = async () => {
-    const data = {
-      data: {
-        NewLocationRoom: newLocation.room,
-        NewLocationFloor: newLocation.floor,
-        building: newLocation.building,
-        inventories: id,
-        isDone: false,
-      },
-    };
-
     try {
-      const response = await fetch(
-        "http://localhost:1337/api/request-change-locations",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      if (!isAdmin) {
+        // สำหรับผู้ใช้ทั่วไป
+        const data = {
+          data: {
+            NewLocationRoom: newLocation.room,
+            NewLocationFloor: newLocation.floor,
+            building: newLocation.building,
+            inventories: id,
+            reportedBy: user?.responsible?.id,
+            isDone: false,
           },
-          body: JSON.stringify(data),
-        }
-      );
-
-      if (!response.ok) throw new Error("ไม่สามารถเปลี่ยนที่ตั้งได้");
-
-      const responseData = await response.json();
-      console.log("Change Location Success:", responseData);
-      message.success("เปลี่ยนที่ตั้งสำเร็จ");
+        };
+  
+        const response = await fetch(
+          "http://localhost:1337/api/request-change-locations",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
+          }
+        );
+  
+        if (!response.ok) throw new Error("ไม่สามารถส่งคำขอเปลี่ยนที่ตั้งได้");
+  
+        const responseData = await response.json();
+        console.log("Change Location Request Success:", responseData);
+        message.success("ส่งคำขอเปลี่ยนที่ตั้งสำเร็จ");
+      } else {
+        // สำหรับ Admin
+        const formData = new FormData();
+        formData.append(
+          "data",
+          JSON.stringify({
+            building: newLocation.building,
+            floor: newLocation.floor,
+            room: newLocation.room,
+          })
+        );
+  
+        const response = await fetch(`http://localhost:1337/api/inventories/${id}`, {
+          method: "PUT",
+          body: formData,
+        });
+  
+        if (!response.ok) throw new Error("ไม่สามารถเปลี่ยนที่ตั้งได้");
+  
+        const responseData = await response.json();
+        console.log("Change Location Success:", responseData);
+        message.success("เปลี่ยนที่ตั้งสำเร็จ");
+        setTimeout(() => {
+          window.location.reload();
+      }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
+      }
     } catch (error) {
       console.error("Error:", error);
-      message.error("เกิดข้อผิดพลาดในการเปลี่ยนที่ตั้ง");
+      message.error("เกิดข้อผิดพลาดในการดำเนินการ");
     }
   };
 
@@ -412,7 +450,10 @@ fetchDataC();
       console.log("Response:", responseData);
 
       // ย้ายข้อความแจ้งเตือนไปที่นี่
-      await message.success("บันทึกข้อมูลสำเร็จ");
+      await message.success("แก้ไขข้อมูลสถานะสำเร็จ");
+      setTimeout(() => {
+        window.location.reload();
+    }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
 
       return responseData; // คืนค่า response data
     } catch (error) {
@@ -435,6 +476,7 @@ fetchDataC();
           inventory: id,
           RepairReasonByResponsible: values.repairReason,
           status_repair: 1,
+          reportedBy: user?.responsible?.id,
           isDone: false,
           isSubInventory: clickedButton === "sub", // Check which button was clicked
           sub_inventory:
@@ -502,6 +544,7 @@ fetchDataC();
         JSON.stringify({
           ReasonSentBack: values.repairReason, // เปลี่ยนจาก RepairReasonByResponsible เป็น ReasonSentBack
           inventory: id,
+          reportedBy: user?.responsible?.id,
           isDone: false,
         })
       );
@@ -594,12 +637,16 @@ fetchDataC();
       <div className="w-full ">
         <div className="flex  justify-between ">
           <h1 className="text-4xl font-semibold">รายละเอียดครุภัณฑ์</h1>
+          {( user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
           <button
             onClick={openModalSentBack}
             className="font-bold rounded text-sm mt-2 w-40 h-10 bg-red-500 text-white"
           >
             <WarningOutlined /> แจ้งส่งคืนครุภัณฑ์นี้
           </button>
+)}
+
+
         </div>
 
         <div className=" w-full h-[300px] mt-5 grid grid-cols-8 ">
@@ -629,12 +676,16 @@ fetchDataC();
                 )}
 </div>
 <div className="flex justify-self-end ">
-{allowedRepair ? ( <>   <button
+{allowedRepair ? ( <>   
+  {(isAdmin) && (
+<button
                         className=" my-2 mx-2 font-bold rounded text-base w-48 h-12 bg-[#4de83f] text-[#ffffff] justify-center"
                         onClick={() => openModalMan("main")}
                       >
                       <SafetyOutlined className="text-xl " /> บำรุงรักษา<span className="flex justify-center">(ครุภัณฑ์หลัก)</span>
-                      </button></> ):(<div></div> )}
+                      </button>
+)}
+                      </> ):(<div></div> )}
                     </div>
                     </div>
                 <div>
@@ -668,12 +719,16 @@ fetchDataC();
                     <div className="flex flex-col w-3/4 mt-2 border-2 border-blue-500 rounded-md">
                       <h1 className="text-lg text-gray-400 ">
                         ที่ตั้งครุภัณฑ์
-                        <Button
-                          className="w-2/5  m-2 bg-blue-400 text-white"
-                          onClick={() => openModal2()}
-                        >
-                          เปลี่ยนที่ตั้ง
-                        </Button>
+
+                        {(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
+  <Button
+    className="w-2/5 m-2 bg-blue-400 text-white"
+    onClick={() => openModal2()}
+  >
+    เปลี่ยนที่ตั้ง
+  </Button>
+)}
+
                       </h1>
                       <div className="flex flex-row">
                         <h1 className="text-lg text-gray-400 mr-2 ">อาคาร</h1>{" "}
@@ -729,10 +784,12 @@ fetchDataC();
                         สถานะครุภัณฑ์
                       </h1>
 
+                      
                       <select
                         className="select select-bordered w-1/3 mr-4"
                         onChange={handleChange}
                         value={selectedStatus}
+                        disabled={!(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id)}
                       >
                         {status_inventoryOptions
                           .filter((status) => status.id !== 4) // กรองรายการที่ไม่ต้องการแสดง
@@ -743,6 +800,7 @@ fetchDataC();
                           ))}
                       </select>
 
+{(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
                       <button
                         className={`font-bold rounded-lg text-sm mt-2 mr-24 w-24 h-8 bg-blue-500  justify-center ${
                           selectedStatus === initialStatus
@@ -754,6 +812,8 @@ fetchDataC();
                       >
                         บันทึก
                       </button>
+)}
+
                     </div>
                   ) : (
                     <div>
@@ -778,12 +838,17 @@ fetchDataC();
                   <div className="flex flex-row justify-center mr-36  ">
                   {statusInventoryId === 2 && allowedRepair && (
                     <div className="flex  ">
+                        {(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
                       <button
                         className="  mt-5 font-bold rounded-lg text-base w-36 h-10 bg-[#276ff4] text-[#ffffff] justify-center"
                         onClick={() => openModal("main")}
                       >
                         แจ้งซ่อม <SettingOutlined />
                       </button>
+
+)}
+
+
                     </div>
                   )}
 
@@ -804,7 +869,6 @@ fetchDataC();
                         </Button>,
                         <Button
                           key="submit"
-                          type="primary"
                           onClick={handleLocationChange}
                         >
                           ยืนยัน
@@ -1576,21 +1640,24 @@ fetchDataC();
                         {item.attributes.model}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {statusInventoryId === 2 && allowedRepair && (
+                      {statusInventoryId === 2 && allowedRepair && (isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
   <button
     className="font-bold rounded-lg text-base w-32 h-8 bg-[#276ff4] text-[#ffffff]"
-    onClick={() => openModal("sub", item.id)} // Pass sub-inventory ID when clicked
+    onClick={() => openModal("sub", item.id)}
   >
     แจ้งซ่อม <SettingOutlined />
   </button>
 )}
-{statusInventoryId === 2 && allowedRepair && (
-<button
+                      { allowedRepair && (isAdmin) && (
+  <button
   className="ml-2 font-bold rounded-lg text-base w-32 h-8 bg-[#4de83f] text-[#ffffff]"
   onClick={() => openModalMan("sub", item.id)} // Pass sub-inventory ID when clicked
 >
   <SafetyOutlined className="text-xl " />บำรุงรักษา 
-</button>)}
+</button>
+)}
+
+
                           
                       </td>
                     </tr>

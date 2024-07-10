@@ -299,6 +299,9 @@ useEffect(() => {
       content: 'คุณแน่ใจหรือไม่ว่าต้องการลบบัญชีผู้ใช้นี้?',
       okText: 'ยืนยัน',
       cancelText: 'ยกเลิก',
+      okButtonProps: {
+        style: { backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' }
+      },
       onOk: async () => {
         try {
           const response = await fetch(`http://localhost:1337/api/users/${record.id}`, {
