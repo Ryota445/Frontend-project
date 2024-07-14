@@ -6,6 +6,7 @@ import TableExportFile from '../components/TableExportFile';
 
 
 function ExportFilePage() {
+    const API_URL = import.meta.env.VITE_API_URL;
     const [selectedItems, setSelectedItems] = useState([]);
     const [selectedRows, setSelectedRows] = useState([]);
     const [searchData, setSearchData] = useState(null);
@@ -59,13 +60,14 @@ function ExportFilePage() {
     
     const fetchItems = async () => {
         try {
-            const response = await fetch("http://localhost:1337/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories,how_to_get,year_money_get");
+            const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories,how_to_get,year_money_get`);
             if (!response.ok) {
                 throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
             }
             const result = await response.json();
             
-            const filteredData = result.data.filter(inventory => !inventory.attributes.isDisposal);
+            const filteredData = result
+            .data.filter(inventory => (!inventory.attributes.isDisposal ||inventory.attributes.isDisposal));
             
             setFilteredInventoryList(filteredData);
             setInventoryList(filteredData);
@@ -103,6 +105,10 @@ function ExportFilePage() {
                     : true)
                 : true;
 
+                const responsibleMatch = searchData.responsible
+                ? inventory?.attributes?.responsible?.data?.id === parseInt(searchData.responsible)
+                : true;
+
             return (
                 (searchData.id_inv && inventory.attributes.id_inv
                     ? inventory.attributes.id_inv.toLowerCase().includes(searchData.id_inv.toLowerCase())
@@ -110,9 +116,7 @@ function ExportFilePage() {
                 (searchData.name && inventory.attributes.name
                     ? inventory.attributes.name.toLowerCase().includes(searchData.name.toLowerCase())
                     : true) &&
-                (searchData.responsible && inventory?.attributes?.responsible?.data
-                    ? inventory.attributes.responsible.data.id === searchData.responsible
-                    : true) &&
+                    responsibleMatch &&
                 (searchData.category && inventory?.attributes?.category?.data
                     ? inventory.attributes.category.data.id === searchData.category
                     : true) &&
@@ -162,7 +166,7 @@ function ExportFilePage() {
 
     
 
-    {filteredInventoryList.length > 0 ? (
+    {/* {filteredInventoryList.length > 0 ? ( */}
         <TableExportFile
             inventoryList={filteredInventoryList}
             onDeleteSuccess={handleDeleteSuccess}
@@ -172,11 +176,11 @@ function ExportFilePage() {
             onSelectionChange={updateSelectedItems}
             showSubInventoryColumns={showSubInventoryColumns}
         />
-    ) : (
+    {/* ) : (
         <div className='flex flex-col justify-center items-center h-full mt-10'>
             <p className='text-xl'> -ไม่พบข้อมูล- </p>
         </div>
-    )}
+    )} */}
 </>
 
   )

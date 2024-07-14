@@ -7,6 +7,7 @@ import MaintenanceState4 from '../components/MaintenanceState4';
 import MaintenanceState5 from '../components/MaintenanceState5';
 
 function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [dataInv, setDataInv] = useState(null);
   const [dataRepairReport, setDataRepairReport] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,13 +30,13 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:1337/api/repair-reports/${repairReportId}?populate=*`);
+      const response = await fetch(`${API_URL}/api/repair-reports/${repairReportId}?populate=*`);
       if (!response.ok) throw new Error(`HTTP Error status: ${response.status}`);
       const repairReportData = await response.json();
       setDataRepairReport(repairReportData.data);
 
       const inventoryId = repairReportData.data.attributes.inventory.data.id;
-      const inventoryResponse = await fetch(`http://localhost:1337/api/inventories/${inventoryId}?populate=*`);
+      const inventoryResponse = await fetch(`${API_URL}/api/inventories/${inventoryId}?populate=*`);
       if (!inventoryResponse.ok) throw new Error(`HTTP Error status: ${inventoryResponse.status}`);
       const inventoryData = await inventoryResponse.json();
       setDataInv(inventoryData.data);
@@ -91,7 +92,7 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
       }
 
       console.log("formDataToSend", formDataToSend);
-      const response = await fetch(`http://localhost:1337/api/repair-reports/${repairReportId}`, {
+      const response = await fetch(`${API_URL}/api/repair-reports/${repairReportId}`, {
         method: 'PUT',
         body: formDataToSend,
       });

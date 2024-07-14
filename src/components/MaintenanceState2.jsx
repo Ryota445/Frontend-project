@@ -6,12 +6,13 @@ import CardInventoryDetail from './CardInventoryDetail';
 import CardSubInventoryDetail from './CardSubInventoryDetail';
 
 function MaintenanceState2({ dataInvForCard, dataRepairReport, onFormDataChange, onFormDataChangeFile }) {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [dataInv, setDataInv] = useState(dataInvForCard);
   const [idSubInventory, setIdSubInventory] = useState(null);
   const [componentDisabled, setComponentDisabled] = useState(false);
 
   const fileUrl = dataRepairReport?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url 
-    ? `http://localhost:1337${dataRepairReport.attributes.ReportFileByResponsible.data[0].attributes.url}`
+    ? `${API_URL}${dataRepairReport.attributes.ReportFileByResponsible.data[0].attributes.url}`
     : null;
 
   const fileName = dataRepairReport?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.name || "ไฟล์";

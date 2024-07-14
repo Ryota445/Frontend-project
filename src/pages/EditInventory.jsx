@@ -17,7 +17,7 @@ const normFile = (e) => {
 function EditInventory() {
   const { id } = useParams(); // Get ID from route
   const [form] = Form.useForm();
-
+  const API_URL = import.meta.env.VITE_API_URL;
   const [companyOptions, setCompanyOptions] = useState([]);
   const [responsibleOptions, setResponsibleOptions] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
@@ -46,7 +46,7 @@ function EditInventory() {
     async function fetchData() {
       try {
         // Fetch companies
-        const companyResponse = await fetch("http://localhost:1337/api/company-inventories");
+        const companyResponse = await fetch(`${API_URL}/api/company-inventories`);
         const companyData = await companyResponse.json();
         setCompanyOptions(companyData.data.map((item) => ({
           id: item.id,
@@ -54,7 +54,7 @@ function EditInventory() {
         })));
 
         // Fetch responsibles
-        const responsibleResponse = await fetch("http://localhost:1337/api/responsibles");
+        const responsibleResponse = await fetch(`${API_URL}/api/responsibles`);
         const responsibleData = await responsibleResponse.json();
         setResponsibleOptions(responsibleData.data.map((item) => ({
           id: item.id,
@@ -62,7 +62,7 @@ function EditInventory() {
         })));
 
         // Fetch categories
-        const categoryResponse = await fetch("http://localhost:1337/api/categories");
+        const categoryResponse = await fetch(`${API_URL}/api/categories`);
         const categoryData = await categoryResponse.json();
         setCategoryOptions(categoryData.data.map((item) => ({
           id: item.id,
@@ -70,7 +70,7 @@ function EditInventory() {
         })));
 
         // Fetch buildings
-        const buildingResponse = await fetch("http://localhost:1337/api/buildings");
+        const buildingResponse = await fetch(`${API_URL}/api/buildings`);
         const buildingData = await buildingResponse.json();
         setBuildingOptions(buildingData.data.map((item) => ({
           id: item.id,
@@ -78,7 +78,7 @@ function EditInventory() {
         })));
 
         // Fetch howToGet
-        const howToGetResponse = await fetch("http://localhost:1337/api/how-to-gets");
+        const howToGetResponse = await fetch(`${API_URL}/api/how-to-gets`);
         const howToGetData = await howToGetResponse.json();
         setHowToGetOptions(howToGetData.data.map((item) => ({
           id: item.id,
@@ -86,7 +86,7 @@ function EditInventory() {
         })));
 
         // Fetch sourceMoney
-        const sourceMoneyResponse = await fetch("http://localhost:1337/api/source-monies");
+        const sourceMoneyResponse = await fetch(`${API_URL}/api/source-monies`);
         const sourceMoneyData = await sourceMoneyResponse.json();
         setSourceMoneyOptions(sourceMoneyData.data.map((item) => ({
           id: item.id,
@@ -94,7 +94,7 @@ function EditInventory() {
         })));
 
         // Fetch yearMoneyGet options
-        const yearMoneyGetResponse = await fetch("http://localhost:1337/api/year-money-gets");
+        const yearMoneyGetResponse = await fetch(`${API_URL}/api/year-money-gets`);
         const yearMoneyGetData = await yearMoneyGetResponse.json();
 
         // Sort yearMoneyGet options by name
@@ -109,7 +109,7 @@ function EditInventory() {
         setYearMoneyGetOptions(sortedYearMoneyGetOptions);
         
         // Fetch inventory data to edit
-        const inventoryResponse = await fetch(`http://localhost:1337/api/inventories/${id}?populate=*`);
+        const inventoryResponse = await fetch(`${API_URL}/api/inventories/${id}?populate=*`);
         const inventoryData = await inventoryResponse.json();
         form.setFieldsValue({
           name: inventoryData.data.attributes.name,
@@ -230,7 +230,7 @@ const updateSubInventory = (index, field, value) => {
 
       // Log the formData for inspection
     try {
-      const response = await fetch(`http://localhost:1337/api/inventories/${id}`, {
+      const response = await fetch(`${API_URL}/api/inventories/${id}`, {
         method: "PUT",
         body: formData,
       });
@@ -258,7 +258,7 @@ const updateSubInventory = (index, field, value) => {
     }));
   
     try {
-      const response = await fetch(`http://localhost:1337/api/sub-inventories/${subInventory.id}`, {
+      const response = await fetch(`${API_URL}/api/sub-inventories/${subInventory.id}`, {
         method: "PUT",
         // Do not set the Content-Type header manually when using FormData
         body: formDataSub,
@@ -280,7 +280,7 @@ const updateSubInventory = (index, field, value) => {
 
   const postSubInventoryData = async (subItem) => {
     try {
-      const response = await fetch("http://localhost:1337/api/sub-inventories", {
+      const response = await fetch(`${API_URL}/api/sub-inventories`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json'
@@ -298,7 +298,7 @@ const updateSubInventory = (index, field, value) => {
 
   const postInventoryData = async (formData) => {
     try {
-      const response = await fetch(`http://localhost:1337/api/inventories/${id}`, {
+      const response = await fetch(`${API_URL}/api/inventories/${id}`, {
         method: "PUT",
         body: formData,
       });

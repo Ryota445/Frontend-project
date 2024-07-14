@@ -5,6 +5,7 @@ import { SearchOutlined, CloseOutlined,DownOutlined } from '@ant-design/icons';
 const { Option } = Select;
 
 function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
+    const API_URL = import.meta.env.VITE_API_URL;
     const [responsibleOptions, setResponsibleOptions] = useState([]);
     const [categoryOptions, setCategoryOptions] = useState([]);
     const [buildingOptions, setBuildingOptions] = useState([]);
@@ -27,7 +28,7 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
         async function fetchData() {
             try {
                 // Fetch responsibles
-                const responsibleResponse = await fetch('http://localhost:1337/api/responsibles');
+                const responsibleResponse = await fetch(`${API_URL}/api/responsibles`);
                 const responsibleData = await responsibleResponse.json();
                 setResponsibleOptions(responsibleData.data.map(item => ({
                     id: item.id,
@@ -35,7 +36,7 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                 })));
 
                 // Fetch categories
-                const categoryResponse = await fetch('http://localhost:1337/api/categories');
+                const categoryResponse = await fetch(`${API_URL}/api/categories`);
                 const categoryData = await categoryResponse.json();
                 setCategoryOptions(categoryData.data.map(item => ({
                     id: item.id,
@@ -43,7 +44,7 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                 })));
 
                 // Fetch buildings
-                const buildingResponse = await fetch("http://localhost:1337/api/buildings");
+                const buildingResponse = await fetch(`${API_URL}/api/buildings`);
                 const buildingData = await buildingResponse.json();
                 setBuildingOptions(buildingData.data.map(item => ({
                     id: item.id,
@@ -51,7 +52,7 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                 })));
 
                 // Fetch status inventories
-                const statusInventoryResponse = await fetch("http://localhost:1337/api/status-inventories");
+                const statusInventoryResponse = await fetch(`${API_URL}/api/status-inventories`);
                 const statusInventoryData = await statusInventoryResponse.json();
                 setStatusInventoryOptions(statusInventoryData.data.map(item => ({
                     id: item.id,
@@ -90,14 +91,14 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
 
     return (
         <>
-            <div className='grid grid-cols-8 gap-4'>
+            <div className='grid grid-cols-12 gap-4'>
                 <div className='col-span-1'></div>
-                <div className='col-span-6'>
+                <div className='col-span-10'>
                     <div className='border-4 rounded-lg'>
                         <div className="flex flex-col m-4 mt-4 md:flex-row space-y-2 md:space-y-0 md:space-x-2">
                             <div>
                                 <label htmlFor="id_inv" className="block text-sm font-medium text-gray-700 mb-2 mx-1">หมายเลขครุภัณฑ์</label>
-                                <Input placeholder="หมายเลขครุภัณฑ์" id="id_inv" name="id_inv" value={formData.id_inv} onChange={handleInputChange} style={{ width: 250 }} />
+                                <Input placeholder="หมายเลขครุภัณฑ์" id="id_inv" name="id_inv" value={formData.id_inv} onChange={handleInputChange} style={{ width: 200 }} />
                             </div>
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2 mx-1">ชื่อครุภัณฑ์</label>
@@ -111,7 +112,7 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                                     name="responsible"
                                     value={formData.responsible}
                                     onChange={(value) => setFormData({ ...formData, responsible: value })}
-                                    style={{ width: 250 }}
+                                    style={{ width: 200 }}
                                     suffixIcon={formData.responsible ? (
                                         <Button
                                             type="text"
@@ -125,8 +126,6 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                                     ))}
                                 </Select>
                             </div>
-                        </div>
-                        <div className="flex flex-col m-4 mt-4 md:flex-row space-y-2 md:space-y-0 md:space-x-2">
                             <div className='mt-10'>
                                 <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2 mx-1">ประเภทครุภัณฑ์</label>
                                 <Select
@@ -135,7 +134,7 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                                     name="category"
                                     value={formData.category}
                                     onChange={(value) => setFormData({ ...formData, category: value })}
-                                    style={{ width: 250 }}
+                                    style={{ width: 200 }}
                                     suffixIcon={formData.category ? (
                                         <Button
                                             type="text"
@@ -149,10 +148,13 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                                     ))}
                                 </Select>
                             </div>
+                        </div>
+                        <div className="flex flex-col m-4 mt-4 md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+                            
 
                             <div className='border-2 border-gray500 rounded-md flex flex-col p-2 '>
                                 
-                              <div><h1 className='text-md font-bold ml-1'>ที่ตั้ง</h1></div>  
+                              {/* <div><h1 className='text-md font-bold ml-1'>ที่ตั้ง</h1></div>   */}
                               <div className='flex flex-row gap-2'>
                             <div >
                                 <label htmlFor="building" className="block text-sm font-medium text-gray-700 mb-2 mx-1">อาคาร</label>
@@ -191,7 +193,7 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                             </div>
                             </div>
 
-                            <div className='mt-10 pt-10'>
+                            <div className='p-2'>
                                 <label htmlFor="statusInventory" className="block text-sm font-medium text-gray-700 mb-2 mx-1">สถานะครุภัณฑ์</label>
                                 <Select
                                     placeholder="เลือกสถานะครุภัณฑ์"
@@ -199,7 +201,7 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                                     name="statusInventory"
                                     value={formData.statusInventory}
                                     onChange={(value) => setFormData({ ...formData, statusInventory: value })}
-                                    style={{ width: 250 }}
+                                    style={{ width: 200 }}
                                     suffixIcon={formData.statusInventory ? (
                                         <Button
                                             type="text"
@@ -214,59 +216,43 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                                 </Select>
                             </div>
 
-                           
-
-
-                        <div>
-                     
-                
-                        </div>
-
-                           
-
-                        </div>
-                        
-                        <div className="flex flex-col m-4 mt-4 md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-                           
-                        <div className="flex flex-col m-4 mt-4 md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-
-                            <div className='flex flex-col gap-2'>
-                <div>
+                            <div>
+                            <div>
                     <Checkbox 
                         id="searchSubInventory"
                         checked={searchSubInventory}
                         onChange={handleCheckboxChange}
                     >
-                        ค้นหาครุภัณฑ์ที่มีองค์ประกอบ
+                        ครุภัณฑ์ที่มีองค์ประกอบ
                     </Checkbox>
                 </div>
                 {searchSubInventory && (
                     <div>
-                        <label htmlFor="sub_inventory" className="block text-sm font-medium text-gray-700 mb-2 mx-1">
+                        {/* <label htmlFor="sub_inventory" className="block text-sm font-medium text-gray-700 mb-2 mx-1">
                             ชื่อองค์ประกอบในชุดครุภัณฑ์ 
-                        </label>
+                        </label> */}
                         <Input 
                             placeholder="ชื่อองค์ประกอบในชุดครุภัณฑ์" 
                             id="sub_inventory" 
                             name="sub_inventory" 
                             value={formData.sub_inventory} 
                             onChange={handleInputChange} 
-                            style={{ width: 250 }} 
+                            style={{ width: 200 }} 
+                            className='mt-2'
                         />
                     </div>
                 )}
+                            </div>
 
-
-</div>
-            </div>
-                        </div>
-                        <div className='flex flex-row justify-end  m-4'>
                             <div className='flex items-center'>
                                 <Button className="text-gray-800 bg-gray-300 px-10 w-32 h-10" type="primary" onClick={handleSearch}>
                                     <SearchOutlined className='text-base' /> <span className="hidden md:inline">ค้นหา</span>
                                 </Button>
                             </div>
+
+
                         </div>
+                        
                     </div>
                 </div>
                 <div className='col-span-1'></div>

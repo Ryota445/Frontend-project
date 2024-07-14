@@ -1,7 +1,9 @@
 import React from 'react';
 import { Form, Input, Button, Space } from 'antd';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const AddInventoryItem = ({ index, remove, onFinish }) => (
+  
   <Space key={index} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
     <Form.Item
       name={['sub_inventory', index, 'inventoryNumber']}

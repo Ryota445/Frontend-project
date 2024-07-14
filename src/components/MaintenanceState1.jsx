@@ -6,12 +6,12 @@ import CardInventoryDetail from './CardInventoryDetail';
 
 
 function MaintenanceState1( {dataInvForCard ,dataRepairReport} ) {
-
+  const API_URL = import.meta.env.VITE_API_URL;
   
   const [dataInv, setdataInv] = useState(dataInvForCard)
 
   const fileUrl = dataRepairReport?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url 
-    ? `http://localhost:1337${dataRepairReport.attributes.ReportFileByResponsible.data[0].attributes.url}`
+    ? `${API_URL}${dataRepairReport.attributes.ReportFileByResponsible.data[0].attributes.url}`
     : null;
 
   const fileName = dataRepairReport?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.name || "ไฟล์";

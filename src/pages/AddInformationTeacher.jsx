@@ -5,6 +5,7 @@ import { EditOutlined, DeleteOutlined, SettingOutlined ,SaveOutlined ,UserAddOut
 const { Search } = Input;
 
 function AddInformationTeacher() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
@@ -22,7 +23,7 @@ function AddInformationTeacher() {
 const fetchResponsibles = async () => {
   try {
     const token = localStorage.getItem('jwt');
-    const response = await fetch('http://localhost:1337/api/responsibles', {
+    const response = await fetch(`${API_URL}/api/responsibles`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -44,7 +45,7 @@ useEffect(() => {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('jwt');
-      const response = await fetch('http://localhost:1337/api/users?populate=*', {
+      const response = await fetch(`${API_URL}/api/users?populate=*`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -65,7 +66,7 @@ useEffect(() => {
   const fetchRoles = async () => {
     try {
       const token = localStorage.getItem('jwt');
-      const response = await fetch('http://localhost:1337/api/role-in-webs', {
+      const response = await fetch(`${API_URL}/api/role-in-webs`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -88,7 +89,7 @@ useEffect(() => {
   const handleSaveRole = async (userId) => {
     try {
       const newRoleId = changedRoles[userId];
-      const response = await fetch(`http://localhost:1337/api/users/${userId}`, {
+      const response = await fetch(`${API_URL}/api/users/${userId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -144,7 +145,7 @@ useEffect(() => {
       };
     }
 
-    const response = await fetch(`http://localhost:1337/api/users/${record.id}?populate=*`, {
+    const response = await fetch(`${API_URL}/api/users/${record.id}?populate=*`, {
       method: 'PUT',
       headers: { 
         'Content-Type': 'application/json',
@@ -187,7 +188,7 @@ useEffect(() => {
       const values = await addResponsibleForm.validateFields();
       
       // Post responsible data
-      const response = await fetch('http://localhost:1337/api/responsibles', {
+      const response = await fetch(`${API_URL}/api/responsibles`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -235,7 +236,7 @@ useEffect(() => {
       responsibleId = values.responsibleId;
     } else {
       // Create new responsible
-      const responsibleResponse = await fetch('http://localhost:1337/api/responsibles', {
+      const responsibleResponse = await fetch(`${API_URL}/api/responsibles`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -257,7 +258,7 @@ useEffect(() => {
     }
 
     // Create User
-    const userResponse = await fetch('http://localhost:1337/api/users', {
+    const userResponse = await fetch(`${API_URL}/api/users`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -304,7 +305,7 @@ useEffect(() => {
       },
       onOk: async () => {
         try {
-          const response = await fetch(`http://localhost:1337/api/users/${record.id}`, {
+          const response = await fetch(`${API_URL}/api/users/${record.id}`, {
             method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('jwt')}`
@@ -327,17 +328,23 @@ useEffect(() => {
 
   const columns = [
     {
-      title: 'ชื่อบัญชีผู้ใช้',
+      title: 'เลขประจำตัวพนักงาน',
       dataIndex: 'username',
       key: 'username',
     },
+    // {
+    //   title: 'อีเมล',
+    //   dataIndex: 'email',
+    //   key: 'email',
+    // },
     {
-      title: 'อีเมล',
-      dataIndex: 'email',
-      key: 'email',
+      title: 'ชื่อ',
+      dataIndex: ['responsible', 'responsibleName'],
+      key: 'responsibleName',
+      render: (text, record) => record.responsible?.responsibleName || text,
     },
     {
-      title: 'Role',
+      title: 'สิทธิ์การใช้งาน',
       dataIndex: 'role_in_web',
       key: 'role_in_web',
       render: (role, record) => (
@@ -355,38 +362,33 @@ useEffect(() => {
             icon={<SaveOutlined />} 
             onClick={() => handleSaveRole(record.id)}
             disabled={!record.roleChanged}
-          />
+          >บันทึก</Button >
         </Space>
       ),
     },
-    {
-      title: 'ชื่อผู้ดูแล',
-      dataIndex: ['responsible', 'responsibleName'],
-      key: 'responsibleName',
-      render: (text, record) => record.responsible?.responsibleName || text,
-    },
-    {
-      title: 'เบอร์โทรผู้ดูแล',
-      dataIndex: ['responsible', 'responsiblePhone'],
-      key: 'responsiblePhone',
-      render: (text, record) => record.responsible?.responsiblePhone || text,
-    },
+    
+    // {
+    //   title: 'เบอร์โทรผู้ดูแล',
+    //   dataIndex: ['responsible', 'responsiblePhone'],
+    //   key: 'responsiblePhone',
+    //   render: (text, record) => record.responsible?.responsiblePhone || text,
+    // },
       // {
       //   title: 'อีเมลผู้ดูแล',
       //   dataIndex: ['responsible', 'responsibleEmail'],
       //   key: 'responsibleEmail',
       //   render: (text, record) => record.responsible?.responsibleEmail || text,
       // },
-    {
-      title: '',
-      key: 'actions',
-      render: (_, record) => (
-        <Space>
-          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-          <Button icon={<DeleteOutlined />} onClick={() => handleDeleteUser(record.id)} danger />
-        </Space>
-      ),
-    },
+    // {
+    //   title: '',
+    //   key: 'actions',
+    //   render: (_, record) => (
+    //     <Space>
+    //       <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+    //       <Button icon={<DeleteOutlined />} onClick={() => handleDeleteUser(record.id)} danger />
+    //     </Space>
+    //   ),
+    // },
    
   ];
 
@@ -405,7 +407,7 @@ useEffect(() => {
         />
       </Space>
 
-      <div className='flex flex-row justify-end'>
+      {/* <div className='flex flex-row justify-end'>
       <div className='flex flex-col justify-end'>
         <Button className='w-32 h-12 mr-10 mb-2' style={{ backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' }} type="primary" onClick={() => setIsAddUserModalVisible(true)} icon={<UserAddOutlined />}>
           เพิ่มบัญชีผู้ใช้
@@ -416,7 +418,7 @@ useEffect(() => {
         </Button>
 
       </div>
-      </div>
+      </div> */}
       
       <Table
         columns={columns}

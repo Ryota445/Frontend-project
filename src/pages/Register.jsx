@@ -3,6 +3,7 @@ import { Form, Input, Button, Checkbox, notification } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 function Register() {
+    const API_URL = import.meta.env.VITE_API_URL;
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -11,7 +12,7 @@ function Register() {
         try {
             // ทำการลงทะเบียนผู้ใช้ใหม่ที่นี่
             // ตัวอย่าง:
-            const response = await fetch('http://localhost:1337/api/auth/local/register', {
+            const response = await fetch(`${API_URL}/api/auth/local/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

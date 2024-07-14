@@ -26,7 +26,6 @@ import {
 } from "@ant-design/icons";
 import TableDetailMantenant from "../components/TableDetailMantenant";
 import TableDetailRepair from "../components/TableDetailRepair";
-import Modal from "react-modal";
 import ModalDetailCompany from "../components/ModalDetailCompany";
 import ModalFeedbackRepair from "../components/ModalFeedbackRepair";
 import ModalSentBack from "../components/ModalSentBack";
@@ -42,6 +41,7 @@ import { useAuth } from '../context/AuthContext';
 
 
 function UserDetail() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [form] = Form.useForm();
   const { id } = useParams();
   const [statusBTN, setStatusBTN] = useState("mantenant");
@@ -95,7 +95,7 @@ function UserDetail() {
     async function fetchDataC() {
       try {
     // Fetch companies
-    const companyResponse = await fetch("http://localhost:1337/api/company-inventories");
+    const companyResponse = await fetch(`${API_URL}/api/company-inventories`);
     const companyData = await companyResponse.json();
     setCompanyOptions(companyData.data.map((item) => ({
       id: item.id,
@@ -146,7 +146,7 @@ fetchDataC();
         formData.append('files.FileMaintenanceByAdmin', file.originFileObj);
       });
   
-      const response = await fetch(`http://localhost:1337/api/maintenance-reports`, {
+      const response = await fetch(`${API_URL}/api/maintenance-reports`, {
         method: "POST",
         body: formData,
       });
@@ -167,7 +167,7 @@ fetchDataC();
           DueDate: newDueDate.toISOString(),
         };
   
-        const appointmentResponse = await fetch(`http://localhost:1337/api/maintenance-reports`, {
+        const appointmentResponse = await fetch(`${API_URL}/api/maintenance-reports`, {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
@@ -215,7 +215,7 @@ fetchDataC();
         DueDate: dueDate.toISOString(),
       };
   
-      const response = await fetch(`http://localhost:1337/api/maintenance-reports`, {
+      const response = await fetch(`${API_URL}/api/maintenance-reports`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -259,6 +259,9 @@ fetchDataC();
             NewLocationRoom: newLocation.room,
             NewLocationFloor: newLocation.floor,
             building: newLocation.building,
+            OldLocationRoom: dataInv?.attributes?.room,
+            OldLocationFloor: dataInv?.attributes?.floor,
+            Oldbuilding: dataInv?.attributes?.building?.data?.attributes?.buildingName ,
             inventories: id,
             reportedBy: user?.responsible?.id,
             isDone: false,
@@ -266,7 +269,7 @@ fetchDataC();
         };
   
         const response = await fetch(
-          "http://localhost:1337/api/request-change-locations",
+          `${API_URL}/api/request-change-locations`,
           {
             method: "POST",
             headers: {
@@ -275,12 +278,31 @@ fetchDataC();
             body: JSON.stringify(data),
           }
         );
+
+        const formData = new FormData();
+        formData.append(
+          "data",
+          JSON.stringify({
+            building: newLocation.building,
+            floor: newLocation.floor,
+            room: newLocation.room,
+          })
+        );
   
-        if (!response.ok) throw new Error("ไม่สามารถส่งคำขอเปลี่ยนที่ตั้งได้");
+        const response2 = await fetch(`${API_URL}/api/inventories/${id}`, {
+          method: "PUT",
+          body: formData,
+        });
+  
+        if (!response.ok) throw new Error("ไม่สามารถแจ้งเปลี่ยนที่ตั้งได้");
+        if (!response2.ok) throw new Error("เกิดข้อผิดพลาดในการเปลี่ยนที่ตั้ง");
   
         const responseData = await response.json();
         console.log("Change Location Request Success:", responseData);
-        message.success("ส่งคำขอเปลี่ยนที่ตั้งสำเร็จ");
+        message.success("แจ้งเปลี่ยนที่ตั้งสำเร็จ");
+        setTimeout(() => {
+          window.location.reload();
+      }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
       } else {
         // สำหรับ Admin
         const formData = new FormData();
@@ -293,7 +315,7 @@ fetchDataC();
           })
         );
   
-        const response = await fetch(`http://localhost:1337/api/inventories/${id}`, {
+        const response = await fetch(`${API_URL}/api/inventories/${id}`, {
           method: "PUT",
           body: formData,
         });
@@ -349,7 +371,7 @@ fetchDataC();
     try {
       // Fetch staustInventory
       const statusInventoryResponse = await fetch(
-        "http://localhost:1337/api/status-inventories"
+        `${API_URL}/api/status-inventories`
       );
       const statusInventoryData = await statusInventoryResponse.json();
       setStatus_inventoryOptions(
@@ -360,7 +382,7 @@ fetchDataC();
       );
       //  Fetch buildOptions
       const buildingResponse = await fetch(
-        "http://localhost:1337/api/buildings"
+        `${API_URL}/api/buildings`
       );
       const buildingData = await buildingResponse.json();
       setBuildingOptions(
@@ -371,7 +393,7 @@ fetchDataC();
       );
 
       const response = await fetch(
-        `http://localhost:1337/api/inventories/${id}?populate=*`
+        `${API_URL}/api/inventories/${id}?populate=*`
       );
       if (!response.ok) {
         throw new Error(`HTTP Error status :${response.status}`);
@@ -401,7 +423,7 @@ fetchDataC();
 
   const fetchSubInventoriesM = async (ids) => {
     try {
-      const promises = ids.map(id => fetch(`http://localhost:1337/api/sub-inventories/${id}?populate=*`).then(res => res.json()));
+      const promises = ids.map(id => fetch(`${API_URL}/api/sub-inventories/${id}?populate=*`).then(res => res.json()));
       const results = await Promise.all(promises);
       setSubInventoriesM(results.map(result => result.data));
     } catch (error) {
@@ -437,7 +459,7 @@ fetchDataC();
       );
 
       const response = await fetch(
-        `http://localhost:1337/api/inventories/${inventoryId}`,
+        `${API_URL}/api/inventories/${inventoryId}`,
         {
           method: "PUT",
           body: formData,
@@ -492,7 +514,7 @@ fetchDataC();
       }
 
       // ส่งข้อมูลไปยังเซิร์ฟเวอร์
-      const response = await fetch(`http://localhost:1337/api/repair-reports`, {
+      const response = await fetch(`${API_URL}/api/repair-reports`, {
         method: "POST",
         body: formData,
       });
@@ -556,7 +578,7 @@ fetchDataC();
       }
 
       const response = await fetch(
-        `http://localhost:1337/api/request-sent-backs`,
+        `${API_URL}/api/request-sent-backs`,
         {
           method: "POST",
           body: formData,
@@ -657,7 +679,7 @@ fetchDataC();
               <Image
                 src={
                   dataInv?.attributes?.img_inv?.data?.attributes?.url
-                    ? `http://localhost:1337${dataInv.attributes.img_inv.data.attributes.url}`
+                    ? `${API_URL}${dataInv.attributes.img_inv.data.attributes.url}`
                     : no_image
                 }
                 alt="รูปครุภัณฑ์"
@@ -800,6 +822,22 @@ fetchDataC();
                           ))}
                       </select>
 
+                      {statusInventoryId === 2 && allowedRepair && (
+                    <div className="flex  ">
+                        {(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
+                      <button
+                        className="  mt-5 font-bold rounded-lg text-base w-36 h-10 bg-[#276ff4] text-[#ffffff] justify-center"
+                        onClick={() => openModal("main")}
+                      >
+                        แจ้งซ่อม <SettingOutlined />
+                      </button>
+
+)}
+
+
+                    </div>
+                  )}
+
 {(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
                       <button
                         className={`font-bold rounded-lg text-sm mt-2 mr-24 w-24 h-8 bg-blue-500  justify-center ${
@@ -836,21 +874,7 @@ fetchDataC();
 
 
                   <div className="flex flex-row justify-center mr-36  ">
-                  {statusInventoryId === 2 && allowedRepair && (
-                    <div className="flex  ">
-                        {(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
-                      <button
-                        className="  mt-5 font-bold rounded-lg text-base w-36 h-10 bg-[#276ff4] text-[#ffffff] justify-center"
-                        onClick={() => openModal("main")}
-                      >
-                        แจ้งซ่อม <SettingOutlined />
-                      </button>
-
-)}
-
-
-                    </div>
-                  )}
+                  
 
                    
                     </div>
@@ -1008,119 +1032,102 @@ fetchDataC();
                       {/* content สำหรับFeedbackrepair  */}
                       <div className="h-[500px]"></div>
                     </ModalFeedbackRepair>
-                    <Modal
-                      isOpen={isModalOpen}
-                      onRequestClose={closeModal}
-                      contentLabel="แจ้งซ่อม"
-                    >
-                      <h2 className="text-lg font-bold mb-4">แจ้งซ่อม</h2>
-                      <Form
-                        form={form}
-                        name="equipment-form"
-                        onFinish={onFinish}
-                        layout="vertical"
-                        className="m-4"
-                      >
-                        <div className="mb-4">
-                          <label className="block text-gray-700 text-sm font-bold mb-2">
-                            เหตุผลในการแจ้งซ่อม:
-                          </label>
-                          <Form.Item
-                            name="repairReason"
-                            rules={[
-                              {
-                                required: true,
-                                message: "กรุณาระบุเหตุผลในการแจ้งซ่อม",
-                              },
-                            ]}
-                          >
-                            <TextArea rows={4} />
-                          </Form.Item>
-                        </div>
-                        <div className="mb-4">
-                          <label className="block text-gray-700 text-sm font-bold mb-2">
-                            อัปโหลดไฟล์
-                          </label>
-                          <Form.Item
-                            name="file_repair"
-                            valuePropName="fileList"
-                            getValueFromEvent={normFile}
-                            rules={[
-                              {
-                                validator: (rule, value) =>
-                                  value && value.length === 1
-                                    ? Promise.resolve()
-                                    : Promise.reject(
-                                        "กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น"
-                                      ),
-                              },
-                            ]}
-                          >
-                            <Upload
-                              name="file_repair"
-                              listType="picture-card"
-                              beforeUpload={() => false}
-                              onChange={handleFileChange}
-                            >
-                              <button
-                                style={{ border: 0, background: "none" }}
-                                type="button"
-                              >
-                                <PlusOutlined />
-                                <div style={{ marginTop: 8 }}>เพิ่มไฟล์</div>
-                              </button>
-                            </Upload>
-                          </Form.Item>
-                          <p className="text-red-500">***กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น***</p>
-                        </div>
-                        <div className="flex justify-end">
-                          <Form.Item>
-                            <button
-                              className="bg-blue-500  hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
-                              htmlType="submit"
-                            >
-                              ยืนยัน
-                            </button>
-                          </Form.Item>
-                          <Form.Item>
-                            <button
-                              onClick={closeModal}
-                              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-                            >
-                              ยกเลิก
-                            </button>
-                          </Form.Item>
-                        </div>
-                      </Form>
-                    </Modal>
+
+                    <AntdModal
+  open={isModalOpen}
+  onCancel={closeModal}
+  title="แจ้งซ่อม"
+  footer={null}
+>
+  <Form
+    form={form}
+    name="equipment-form"
+    onFinish={onFinish}
+    layout="vertical"
+    className="m-4"
+  >
+    <Form.Item
+      name="repairReason"
+      label="เหตุผลในการแจ้งซ่อม:"
+      rules={[
+        {
+          required: true,
+          message: "กรุณาระบุเหตุผลในการแจ้งซ่อม",
+        },
+      ]}
+    >
+      <TextArea rows={4} />
+    </Form.Item>
+
+    <Form.Item
+      name="file_repair"
+      label="อัปโหลดไฟล์"
+      valuePropName="fileList"
+      getValueFromEvent={normFile}
+      rules={[
+        {
+          validator: (rule, value) =>
+            value && value.length === 1
+              ? Promise.resolve()
+              : Promise.reject(
+                  "กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น"
+                ),
+        },
+      ]}
+    >
+      <Upload
+        name="file_repair"
+        listType="picture-card"
+        beforeUpload={() => false}
+        onChange={handleFileChange}
+      >
+        <button
+          style={{ border: 0, background: "none" }}
+          type="button"
+        >
+          <PlusOutlined />
+          <div style={{ marginTop: 8 }}>เพิ่มไฟล์</div>
+        </button>
+      </Upload>
+    </Form.Item>
+    <p className="text-red-500">***กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น***</p>
+
+    <div className="flex justify-end">
+      <Button type="primary" htmlType="submit" className="mr-2">
+        ยืนยัน
+      </Button>
+      <Button onClick={closeModal}>
+        ยกเลิก
+      </Button>
+    </div>
+  </Form>
+</AntdModal>
 
 
                     {/* modal addMantenant */}
-                    <Modal
-      isOpen={isModalOpenMan}
-      onRequestClose={closeModalMan}
-      contentLabel="เพิ่มข้อมูลบำรุงรักษา"
+                    <AntdModal
+  open={isModalOpenMan}
+  onCancel={closeModalMan}
+  title="เพิ่มข้อมูลบำรุงรักษา"
+  footer={null}
+>
+  <div className="mb-4">
+    <Button onClick={() => setFormType('saveMaintenance')} className={formType === 'saveMaintenance' ? 'btn-primary text-blue-500' : 'default'}>
+      บันทึกข้อมูลบำรุงรักษา
+    </Button>
+    <Button onClick={() => setFormType('addAppointment')} className={formType === 'addAppointment' ? 'btn-primary text-blue-500' : 'default'}>
+      เพิ่มนัดหมายบำรุงรักษา
+    </Button>
+  </div>
+
+  {formType === 'saveMaintenance' && (
+    <Form
+      form={form}
+      name="maintenance-form"
+      layout="vertical"
+      className="m-4"
+      onFinish={handleSaveMaintenance}
     >
-      <h2 className="text-lg font-bold mb-4">เพิ่มข้อมูลบำรุงรักษา</h2>
-
-     
-       <div className="mb-4">
-        <Button onClick={() => setFormType('saveMaintenance')} className={formType === 'saveMaintenance' ? 'btn-primary text-blue-500' : 'default'}>
-          บันทึกข้อมูลบำรุงรักษา
-        </Button>
-        <Button onClick={() => setFormType('addAppointment')} className={formType === 'addAppointment' ? 'btn-primary text-blue-500' : 'default'}>
-          เพิ่มนัดหมายบำรุ่งรักษา
-        </Button>
-      </div>
-
-      {formType === 'saveMaintenance' && (
-  <Form
-    form={form}
-    name="maintenance-form"
-    layout="vertical"
-    className="m-4"
-    onFinish={handleSaveMaintenance}
-  >
     <Form.Item
       name="companyInventory"
       label="ตัวแทน/บริษัท"
@@ -1222,13 +1229,13 @@ fetchDataC();
     </Form.Item>
 
     {dateInputType === 'formInput' && (
-      <Form.Item name="formInputDate" label="กรอกจำนวนวันในการบำรุงรักษารอบถัดไป (วัน)">
+      <Form.Item name="formInputDate" >
         <Input placeholder="ใส่จำนวนวัน" />
       </Form.Item>
     )}
 
     {dateInputType === 'datePicker' && (
-      <Form.Item name="datePickerDate" label="เลือกวันที่">
+      <Form.Item name="datePickerDate">
         <DatePicker />
       </Form.Item>
     )}
@@ -1247,17 +1254,18 @@ fetchDataC();
               </Button>
             </Form.Item>
           </div>
-        </Form>
-      )}
+          </Form>
+  )}
 
-{formType === 'addAppointment' && (
+  {formType === 'addAppointment' && (
     <Form
-    form={form}
-    name="appointment-form"
-    layout="vertical"
-    className="m-4"
-    onFinish={handleAddAppointment}
-  >
+      form={form}
+      name="appointment-form"
+      layout="vertical"
+      className="m-4"
+      onFinish={handleAddAppointment}
+    >
+
     <Form.Item
       name="DetailMaintenance"
       label="รายละเอียดการบำรุงรักษา"
@@ -1297,9 +1305,9 @@ fetchDataC();
               </Button>
             </Form.Item>
           </div>
-        </Form>
-      )}
-    </Modal>
+          </Form>
+  )}
+</AntdModal>
 
 
 

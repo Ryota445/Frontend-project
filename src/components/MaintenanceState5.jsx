@@ -4,6 +4,7 @@ import { UploadOutlined } from '@ant-design/icons';
 const { TextArea } = Input;
 
 function MaintenanceState5({ onFormDataChange  ,onFormDataChangeFile}) {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [componentDisabled, setComponentDisabled] = useState(false);
   const [componentDisabled2, setComponentDisabled2] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -14,7 +15,7 @@ function MaintenanceState5({ onFormDataChange  ,onFormDataChangeFile}) {
     async function fetchData() {
       try {
     // Fetch companies
-    const companyResponse = await fetch("http://localhost:1337/api/company-inventories");
+    const companyResponse = await fetch(`${API_URL}/api/company-inventories`);
     const companyData = await companyResponse.json();
     setCompanyOptions(companyData.data.map((item) => ({
       id: item.id,

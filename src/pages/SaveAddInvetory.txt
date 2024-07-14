@@ -22,7 +22,7 @@ const normFile = (e) => {
 function AddInventory() {
 
   const [form] = Form.useForm();
-
+  const API_URL = import.meta.env.VITE_API_URL;
   const onFinish = async (values) => {
     console.log('ค่าที่ได้จากฟอร์ม:', values);
 
@@ -71,7 +71,7 @@ function AddInventory() {
   // ฟังก์ชัน postInventoryData แก้ไขให้รองรับ FormData
   const postInventoryData = async (formData) => {
     try {
-      const response = await fetch('http://localhost:1337/api/inventories', {
+      const response = await fetch(`${API_URL}/api/inventories`, {
         method: 'POST',
         body: formData, // ไม่ต้องตั้งค่า headers ที่นี่ เพราะ FormData จะกำหนด Content-Type ให้เอง
       });

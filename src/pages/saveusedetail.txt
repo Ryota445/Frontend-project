@@ -32,6 +32,7 @@ import ThaiDateFormat from "../components/ThaiDateFormat";
 import no_image from "../assets/img/Image.png";
 const { TextArea } = Input;
 function UserDetail() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [form] = Form.useForm();
   const { id } = useParams();
   const [statusBTN, setStatusBTN] = useState("mantenant");
@@ -162,7 +163,7 @@ function UserDetail() {
 
     try {
       const response = await fetch(
-        "http://localhost:1337/api/request-change-locations",
+        `http://localhost:1337/api/request-change-locations`,
         {
           method: "POST",
           headers: {
@@ -219,7 +220,7 @@ function UserDetail() {
     try {
       // Fetch staustInventory
       const statusInventoryResponse = await fetch(
-        "http://localhost:1337/api/status-inventories"
+        `http://localhost:1337/api/status-inventories`
       );
       const statusInventoryData = await statusInventoryResponse.json();
       setStatus_inventoryOptions(
@@ -230,7 +231,7 @@ function UserDetail() {
       );
       //  Fetch buildOptions
       const buildingResponse = await fetch(
-        "http://localhost:1337/api/buildings"
+        `http://localhost:1337/api/buildings`
       );
       const buildingData = await buildingResponse.json();
       setBuildingOptions(

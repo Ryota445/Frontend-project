@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 
 function CardSubInventoryDetail({data,idSubInventory}) {
   console.log("Data received in CardInventoryDetail:", data);
-
+    const API_URL = import.meta.env.VITE_API_URL;
     const [dataInv, setDataInv] = useState(data);
     const [IdSubInv, setIdSubInv] = useState(idSubInventory);
     
@@ -26,7 +26,7 @@ function CardSubInventoryDetail({data,idSubInventory}) {
               <Image
                 src={
                   dataInv?.attributes?.img_inv?.data?.attributes?.url
-                    ? `http://localhost:1337${dataInv.attributes.img_inv.data.attributes.url}`
+                    ? `${API_URL}${dataInv.attributes.img_inv.data.attributes.url}`
                     : no_image
                 }
                 alt="รูปครุภัณฑ์"

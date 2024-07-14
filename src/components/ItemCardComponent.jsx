@@ -8,6 +8,7 @@ import {
 } from '@ant-design/icons';
 
 function ItemCardComponent(props) {
+  const API_URL = import.meta.env.VITE_API_URL;
   const { data, onDeleteSuccess } = props; // รับ onDeleteSuccess จาก props
   const itemData = data; // เก็บข้อมูล inventory จาก props
   // console.log(itemData)
@@ -15,7 +16,7 @@ function ItemCardComponent(props) {
     // ฟังก์ชันสำหรับการลบ item
     const handleDelete = async () => {
       try {
-        const response = await fetch(`http://localhost:1337/api/inventories/${itemData.id}`, {
+        const response = await fetch(`${API_URL}/api/inventories/${itemData.id}`, {
           method: 'DELETE', // ใช้เมธอด DELETE
         });
         if (!response.ok) throw new Error('ไม่สามารถลบข้อมูลได้');
@@ -35,7 +36,7 @@ function ItemCardComponent(props) {
     <>
   <div className="bg-sky-100 border-2 border-black w-11/12 flex m-2.5 p-2.5 rounded-xl">
       <div className="w-1/3 rounded-2xl flex items-center">
-        <Image width={400} src={`http://localhost:1337${itemData.attributes.img_inv.data.attributes.url}`} placeholder={<Image preview={false} src={image} width={400} />} />
+        <Image width={400} src={`${API_URL}${itemData.attributes.img_inv.data.attributes.url}`} placeholder={<Image preview={false} src={image} width={400} />} />
       </div>
       <div className="w-2/3 m-1">
         <h1 className="ml-10 mt-1 text-xl font-sans font-semibold" style={{ color: '#2B3674' }}>

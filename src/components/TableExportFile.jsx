@@ -17,7 +17,7 @@ function TableExportFile({
   onSelectionChange,
   showSubInventoryColumns 
 }) {
-
+  const API_URL = import.meta.env.VITE_API_URL;
     const [sortedInventoryList, setSortedInventoryList] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [visibleColumns, setVisibleColumns] = useState(['id_inv', 'name', 'responsible', 'category', 'location', 'action', 'status_inventory']);
@@ -39,7 +39,7 @@ function TableExportFile({
     // useEffect(() => {
     //     async function fetchData() {
     //       try {
-    //         const buildingResponse = await fetch("http://localhost:1337/api/buildings");
+    //         const buildingResponse = await fetch("${API_URL}/api/buildings");
     //         const buildingData = await buildingResponse.json();
     //         setBuildingOptions(
     //           buildingData.data.map((item) => ({
@@ -343,7 +343,7 @@ function TableExportFile({
     
       const handleDelete = async (id) => {
         try {
-          const response = await fetch(`http://localhost:1337/api/inventories/${id}`, {
+          const response = await fetch(`${API_URL}/api/inventories/${id}`, {
             method: "DELETE",
           });
           if (!response.ok) throw new Error("ไม่สามารถลบข้อมูลได้");
@@ -508,19 +508,6 @@ function TableExportFile({
   
 
   const exportToExcel = async () => {
-
-    let workbook = new ExcelJS.Workbook();
-  let worksheet;
-  let fileName;
-  let finalFileName; // ประกาศตัวแปรนี้ที่นี่
-
-  switch (exportType) {
-    case '1':
-      // นำออกไฟล์ Excel ตามคอลัมน์ที่เลือก
-      workbook = new ExcelJS.Workbook();
-      worksheet = workbook.addWorksheet('ข้อมูลครุภัณฑ์');
-
-  
     // กำหนดสไตล์สำหรับหัวข้อคอลัมน์
     const headerStyle = {
       font: { bold: true, size: 14 },
@@ -544,6 +531,71 @@ function TableExportFile({
         right: {style:'thin'}
       }
     };
+    let workbook = new ExcelJS.Workbook();
+  let worksheet;
+  let fileName;
+  let finalFileName; // ประกาศตัวแปรนี้ที่นี่
+
+  switch (exportType) {
+    case '1':
+    default:
+      // นำออกไฟล์ Excel ข้อมูลทั่วไปครุภัณฑ์ (ทุก column)
+      workbook = new ExcelJS.Workbook();
+      worksheet = workbook.addWorksheet('ข้อมูลทั่วไปครุภัณฑ์');
+      
+      // ใช้ทุก column
+      const allHeaders = excelColumns.map(col => col.title);
+      const allHeaderRow = worksheet.addRow(allHeaders);
+      allHeaderRow.eachCell((cell) => {
+        cell.style = headerStyle;
+      });
+      
+      // เพิ่มข้อมูล
+      selectedRows.forEach(row => {
+        const rowData = excelColumns.map(col => {
+      // ใช้ลอจิกเดิมในการดึงข้อมูลแต่ละ column
+      if (col.key === 'sub_inventories_id' || col.key === 'sub_inventories_name') {
+        const subInventories = row.attributes.sub_inventories?.data;
+        if (subInventories && subInventories.length > 0) {
+          return subInventories.map(subInv => 
+            col.key === 'sub_inventories_id' ? subInv.attributes.id_inv : subInv.attributes.name
+          ).join(', ');
+        }
+        return '-';
+      }
+      if (col.key === 'companyContact') {
+        const contactName = row.attributes.company_inventory?.data?.attributes?.contactName || '';
+        const companyName = row.attributes.company_inventory?.data?.attributes?.Cname || '';
+        return `${contactName}/${companyName}`;
+      }
+      if (col.key === 'estimatedAge') {
+        return `${row.attributes.age_use} ปี`;
+      }
+      if (col.key === 'actualAge') {
+        return calculateAgeDifference(row.attributes.DateRecive);
+      }
+      if (col.dataIndex) {
+        return col.dataIndex.reduce((obj, key) => obj && obj[key], row) || '';
+      }
+      return '';
+    });
+    worksheet.addRow(rowData);
+  });
+
+  // ปรับความกว้างคอลัมน์และความสูงแถว
+  worksheet.columns.forEach(column => {
+    column.width = 30;
+  });
+  worksheet.getRow(1).height = 50;
+  break;
+
+case '2':
+      // นำออกไฟล์ Excel ตามคอลัมน์ที่เลือก
+      workbook = new ExcelJS.Workbook();
+      worksheet = workbook.addWorksheet('ข้อมูลครุภัณฑ์');
+
+  
+    
   
     // เพิ่มหัวข้อคอลัมน์
     const headers = excelColumns.map(col => col.title);
@@ -594,47 +646,15 @@ function TableExportFile({
 
   
   break;
-
-  case '2':
-      // นำออกไฟล์ Excel ประวัติการการบำรุงรักษา
-      worksheet = workbook.addWorksheet('ประวัติการบำรุงรักษา');
-      fileName = `ประวัติการบำรุงรักษา_${new Date().toISOString().split('T')[0]}.xlsx`;
-      // exportMaintenanceHistory(worksheet);
-      break;
-    case '3':
-      // นำออกไฟล์ Excel ประวัติการซ่อมแซม
-      worksheet = workbook.addWorksheet('ประวัติการซ่อมแซม');
-      fileName = `ประวัติการซ่อมแซม_${new Date().toISOString().split('T')[0]}.xlsx`;
-      // exportRepairHistory(worksheet);
-      break;
-    case '4':
-      // นำออกไฟล์ Excel ประวัติการซ่อมแซมและบำรุงรักษา
-      worksheet = workbook.addWorksheet('ประวัติการซ่อมแซมและบำรุงรักษา');
-      fileName = `ประวัติการซ่อมแซมและบำรุงรักษา_${new Date().toISOString().split('T')[0]}.xlsx`;
-      exportMaintenanceAndRepairHistory(worksheet);
-      break;
-    case '5':
-      // นำออกไฟล์ Excel นำออกรายการข้อมูลทั่วไปครุภัณฑ์
-      // (เพิ่มโค้ดสำหรับการ export ข้อมูลทั่วไปครุภัณฑ์)
-      break;
-
-
-
-
-
-  default:
-    message.error('กรุณาเลือกประเภทรายงาน');
-    return;
 }
+
 // สร้างชื่อไฟล์
 const thaiDate = new Date().toLocaleDateString('th-TH', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
 });
-const defaultFileName = `${
-  exportType === '1' ? 'รายงานครุภัณฑ์' : 'รายงานตามที่เลือก'
-} - ${thaiDate}`;
+const defaultFileName = `รายงานข้อมูลทั่วไปครุภัณฑ์ - ${thaiDate}`;
 finalFileName = `${fileName || defaultFileName}.xlsx`;
 
   // สร้างไฟล์ Excel
@@ -672,110 +692,110 @@ const calculateAgeDifference = (dateReceive) => {
 };
 
 
-const exportMaintenanceAndRepairHistory = (worksheet) => {
-  // กำหนดหัวข้อคอลัมน์
-  worksheet.columns = [
-    { header: 'วันที่', key: 'date', width: 15 },
-    { header: 'หมายเลขครุภัณฑ์', key: 'id_inv', width: 20 },
-    { header: 'ชื่อครุภัณฑ์', key: 'name', width: 30 },
-    { header: 'รายละเอียด', key: 'details', width: 40 },
-    { header: 'ค่าใช้จ่าย (บาท)', key: 'price', width: 15 },
-    { header: 'ประเภท', key: 'type', width: 15 }
-  ];
+// const exportMaintenanceAndRepairHistory = (worksheet) => {
+//   // กำหนดหัวข้อคอลัมน์
+//   worksheet.columns = [
+//     { header: 'วันที่', key: 'date', width: 15 },
+//     { header: 'หมายเลขครุภัณฑ์', key: 'id_inv', width: 20 },
+//     { header: 'ชื่อครุภัณฑ์', key: 'name', width: 30 },
+//     { header: 'รายละเอียด', key: 'details', width: 40 },
+//     { header: 'ค่าใช้จ่าย (บาท)', key: 'price', width: 15 },
+//     { header: 'ประเภท', key: 'type', width: 15 }
+//   ];
 
-  // สร้างข้อมูลรายงาน
-  const reportData = generateMaintenanceRepairReport(selectedRows);
+//   // สร้างข้อมูลรายงาน
+//   const reportData = generateMaintenanceRepairReport(selectedRows);
 
-  // เพิ่มข้อมูลลงในแผ่นงาน
-  worksheet.addRows(reportData);
+//   // เพิ่มข้อมูลลงในแผ่นงาน
+//   worksheet.addRows(reportData);
 
-  // จัดรูปแบบหัวข้อคอลัมน์
-  worksheet.getRow(1).font = { bold: true };
-  worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
-};
+//   // จัดรูปแบบหัวข้อคอลัมน์
+//   worksheet.getRow(1).font = { bold: true };
+//   worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+// };
 
-const generateMaintenanceRepairReport = (selectedRows) => {
-  let reportData = [];
+// const generateMaintenanceRepairReport = (selectedRows) => {
+//   let reportData = [];
 
-  selectedRows.forEach(inventory => {
-    // ตรวจสอบว่า inventory และ attributes มีอยู่จริง
-    if (inventory && inventory.attributes) {
-      // ข้อมูลซ่อมแซมของครุภัณฑ์หลัก
-      if (inventory.attributes.repair_reports && inventory.attributes.repair_reports.data) {
-        inventory.attributes.repair_reports.data.forEach(report => {
-          if (report && report.attributes && report.attributes.isDone && report.attributes.isCanRepair) {
-            reportData.push({
-              date: report.attributes.dateFinishRepair,
-              id_inv: inventory.attributes.id_inv,
-              name: inventory.attributes.name,
-              details: report.attributes.ListDetailRepair,
-              price: report.attributes.RepairPrice,
-              type: 'ซ่อมแซม'
-            });
-          }
-        });
-      }
+//   selectedRows.forEach(inventory => {
+//     // ตรวจสอบว่า inventory และ attributes มีอยู่จริง
+//     if (inventory && inventory.attributes) {
+//       // ข้อมูลซ่อมแซมของครุภัณฑ์หลัก
+//       if (inventory.attributes.repair_reports && inventory.attributes.repair_reports.data) {
+//         inventory.attributes.repair_reports.data.forEach(report => {
+//           if (report && report.attributes && report.attributes.isDone && report.attributes.isCanRepair) {
+//             reportData.push({
+//               date: report.attributes.dateFinishRepair,
+//               id_inv: inventory.attributes.id_inv,
+//               name: inventory.attributes.name,
+//               details: report.attributes.ListDetailRepair,
+//               price: report.attributes.RepairPrice,
+//               type: 'ซ่อมแซม'
+//             });
+//           }
+//         });
+//       }
 
-      // ข้อมูลบำรุงรักษาของครุภัณฑ์หลัก
-      if (inventory.attributes.maintenance_reports && inventory.attributes.maintenance_reports.data) {
-        inventory.attributes.maintenance_reports.data.forEach(report => {
-          if (report && report.attributes && report.attributes.isDone) {
-            reportData.push({
-              date: report.attributes.DateToDo,
-              id_inv: inventory.attributes.id_inv,
-              name: inventory.attributes.name,
-              details: report.attributes.DetailMaintenance,
-              price: report.attributes.prize,
-              type: 'บำรุงรักษา'
-            });
-          }
-        });
-      }
+//       // ข้อมูลบำรุงรักษาของครุภัณฑ์หลัก
+//       if (inventory.attributes.maintenance_reports && inventory.attributes.maintenance_reports.data) {
+//         inventory.attributes.maintenance_reports.data.forEach(report => {
+//           if (report && report.attributes && report.attributes.isDone) {
+//             reportData.push({
+//               date: report.attributes.DateToDo,
+//               id_inv: inventory.attributes.id_inv,
+//               name: inventory.attributes.name,
+//               details: report.attributes.DetailMaintenance,
+//               price: report.attributes.prize,
+//               type: 'บำรุงรักษา'
+//             });
+//           }
+//         });
+//       }
 
-      // ข้อมูลซ่อมแซมและบำรุงรักษาของครุภัณฑ์ย่อย
-      if (inventory.attributes.sub_inventories && inventory.attributes.sub_inventories.data) {
-        inventory.attributes.sub_inventories.data.forEach(subInventory => {
-          if (subInventory && subInventory.attributes) {
-            if (subInventory.attributes.repair_reports && subInventory.attributes.repair_reports.data) {
-              subInventory.attributes.repair_reports.data.forEach(report => {
-                if (report && report.attributes && report.attributes.isDone && report.attributes.isCanRepair) {
-                  reportData.push({
-                    date: report.attributes.dateFinishRepair,
-                    id_inv: `${inventory.attributes.id_inv} ${subInventory.attributes.id_inv}`,
-                    name: `(องค์ประกอบในชุดครุภัณฑ์) ${subInventory.attributes.name}`,
-                    details: report.attributes.ListDetailRepair,
-                    price: report.attributes.RepairPrice,
-                    type: 'ซ่อมแซม'
-                  });
-                }
-              });
-            }
+//       // ข้อมูลซ่อมแซมและบำรุงรักษาของครุภัณฑ์ย่อย
+//       if (inventory.attributes.sub_inventories && inventory.attributes.sub_inventories.data) {
+//         inventory.attributes.sub_inventories.data.forEach(subInventory => {
+//           if (subInventory && subInventory.attributes) {
+//             if (subInventory.attributes.repair_reports && subInventory.attributes.repair_reports.data) {
+//               subInventory.attributes.repair_reports.data.forEach(report => {
+//                 if (report && report.attributes && report.attributes.isDone && report.attributes.isCanRepair) {
+//                   reportData.push({
+//                     date: report.attributes.dateFinishRepair,
+//                     id_inv: `${inventory.attributes.id_inv} ${subInventory.attributes.id_inv}`,
+//                     name: `(องค์ประกอบในชุดครุภัณฑ์) ${subInventory.attributes.name}`,
+//                     details: report.attributes.ListDetailRepair,
+//                     price: report.attributes.RepairPrice,
+//                     type: 'ซ่อมแซม'
+//                   });
+//                 }
+//               });
+//             }
 
-            if (subInventory.attributes.maintenance_reports && subInventory.attributes.maintenance_reports.data) {
-              subInventory.attributes.maintenance_reports.data.forEach(report => {
-                if (report && report.attributes && report.attributes.isDone) {
-                  reportData.push({
-                    date: report.attributes.DateToDo,
-                    id_inv: `${inventory.attributes.id_inv} ${subInventory.attributes.id_inv}`,
-                    name: `(องค์ประกอบในชุดครุภัณฑ์) ${subInventory.attributes.name}`,
-                    details: report.attributes.DetailMaintenance,
-                    price: report.attributes.prize,
-                    type: 'บำรุงรักษา'
-                  });
-                }
-              });
-            }
-          }
-        });
-      }
-    }
-  });
+//             if (subInventory.attributes.maintenance_reports && subInventory.attributes.maintenance_reports.data) {
+//               subInventory.attributes.maintenance_reports.data.forEach(report => {
+//                 if (report && report.attributes && report.attributes.isDone) {
+//                   reportData.push({
+//                     date: report.attributes.DateToDo,
+//                     id_inv: `${inventory.attributes.id_inv} ${subInventory.attributes.id_inv}`,
+//                     name: `(องค์ประกอบในชุดครุภัณฑ์) ${subInventory.attributes.name}`,
+//                     details: report.attributes.DetailMaintenance,
+//                     price: report.attributes.prize,
+//                     type: 'บำรุงรักษา'
+//                   });
+//                 }
+//               });
+//             }
+//           }
+//         });
+//       }
+//     }
+//   });
 
-  // เรียงข้อมูลตามวันที่
-  reportData.sort((a, b) => new Date(b.date) - new Date(a.date));
+//   // เรียงข้อมูลตามวันที่
+//   reportData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  return reportData;
-};
+//   return reportData;
+// };
 
 
 
@@ -828,7 +848,8 @@ const generateMaintenanceRepairReport = (selectedRows) => {
         onCancel={handleCancel}
         footer={null}
         className="w-3/4 max-w-screen-lg"
-        width={1000}
+        width="95%"
+        style={{ maxWidth: '1200px' }}
       >
         <div className="mb-4">
           <h2 className="text-lg font-bold">เลือก ({selectedItems.length}) รายการ</h2>
@@ -840,11 +861,8 @@ const generateMaintenanceRepairReport = (selectedRows) => {
     onChange={handleExportTypeChange}
     value={exportType}
   >
-    <Option value="1">1. นำออกไฟล์ Excel ตามคอลัมน์ที่เลือก</Option>
-    <Option value="2">2. นำออกไฟล์ Excel ประวัติการการบำรุงรักษา</Option>
-    <Option value="3">3. นำออกไฟล์ Excel ประวัติการซ่อมแซม</Option>
-    <Option value="4">4. นำออกไฟล์ Excel ประวัติการซ่อมแซมและบำรุงรักษา</Option>
-    <Option value="5">5. นำออกไฟล์ Excel นำออกรายการข้อมูลทั่วไปครุภัณฑ์</Option>
+    <Option value="1">1. ข้อมูลทั่วไปครุภัณฑ์</Option>
+    <Option value="2">2. ตามคอลัมน์ที่เลือก</Option>
   </Select>
 
   <Input 
@@ -866,7 +884,7 @@ const generateMaintenanceRepairReport = (selectedRows) => {
           columns={modalColumns}
           dataSource={selectedRows}
           pagination={{ pageSize: 10 }}
-          scroll={{ y: 240 ,x: 'max-content'}}
+          scroll={{ x: 'max-content', y: 400 }}
           rowKey="id"
           className="w-full overflow-x-auto"
         />

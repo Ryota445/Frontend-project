@@ -5,6 +5,7 @@ import TableViewInventory from '../components/TableViewInventory';
 import { useAuth } from '../context/AuthContext';
 
 function ManagementAdmin() {
+    const API_URL = import.meta.env.VITE_API_URL;
     const [selectedItems, setSelectedItems] = useState([]);
 const [selectedRows, setSelectedRows] = useState([]);
     const [searchData, setSearchData] = useState(null);
@@ -21,6 +22,8 @@ const [selectedRows, setSelectedRows] = useState([]);
     console.log("user.responsible :",user.responsible);
     console.log("user.RoleInWeb :",user.RoleInWeb);
   }
+
+
 
     useEffect(() => {
         fetchItems();
@@ -63,7 +66,7 @@ const [selectedRows, setSelectedRows] = useState([]);
 
     const fetchItems = async () => {
         try {
-            const response = await fetch("http://localhost:1337/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories");
+            const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories`);
             if (!response.ok) {
                 throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
             }
@@ -111,6 +114,10 @@ const [selectedRows, setSelectedRows] = useState([]);
                       )
                     : true)
                 : true;
+                
+            const responsibleMatch = searchData.responsible
+            ? inventory?.attributes?.responsible?.data?.id === parseInt(searchData.responsible)
+            : true;
 
             return (
                 (searchData.id_inv && inventory.attributes.id_inv
@@ -119,9 +126,7 @@ const [selectedRows, setSelectedRows] = useState([]);
                 (searchData.name && inventory.attributes.name
                     ? inventory.attributes.name.toLowerCase().includes(searchData.name.toLowerCase())
                     : true) &&
-                (searchData.responsible && inventory?.attributes?.responsible?.data
-                    ? inventory.attributes.responsible.data.id === searchData.responsible
-                    : true) &&
+                    responsibleMatch &&
                 (searchData.category && inventory?.attributes?.category?.data
                     ? inventory.attributes.category.data.id === searchData.category
                     : true) &&
@@ -185,7 +190,7 @@ const [selectedRows, setSelectedRows] = useState([]);
 
             </div>
 
-            {filteredInventoryList.length > 0 ? (
+            {/* {filteredInventoryList.length > 0 ? ( */}
                 <TableViewInventory
     inventoryList={filteredInventoryList}
     onDeleteSuccess={handleDeleteSuccess}
@@ -197,12 +202,12 @@ const [selectedRows, setSelectedRows] = useState([]);
     showSubInventoryColumns={showSubInventoryColumns}
 />
             
-            ) : (
+            {/* ) : (
                 <div className='flex flex-col justify-center items-center h-full mt-10'>
                 <p className='text-xl'> -ไม่พบข้อมูล- </p>
                 </div>
                
-            )}
+            )} */}
         </>
     );
 }

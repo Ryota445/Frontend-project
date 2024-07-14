@@ -16,6 +16,8 @@ function TableViewInventory({
 }) {
   // const [selectedItems, setSelectedItems] = useState([]);
   // const [selectedRows, setSelectedRows] = useState([]);
+
+  const API_URL = import.meta.env.VITE_API_URL;
   const [sortedInventoryList, setSortedInventoryList] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showLocationFields, setShowLocationFields] = useState(false);
@@ -34,7 +36,7 @@ function TableViewInventory({
   useEffect(() => {
     async function fetchData() {
       try {
-        const buildingResponse = await fetch("http://localhost:1337/api/buildings");
+        const buildingResponse = await fetch(`${API_URL}/api/buildings`);
         const buildingData = await buildingResponse.json();
         setBuildingOptions(
           buildingData.data.map((item) => ({
@@ -104,7 +106,7 @@ function TableViewInventory({
     };
 
     try {
-      const response = await fetch("http://localhost:1337/api/request-change-locations", {
+      const response = await fetch(`${API_URL}/api/request-change-locations`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -142,7 +144,7 @@ function TableViewInventory({
     });
   
     try {
-      const response = await fetch("http://localhost:1337/api/request-disposals", {
+      const response = await fetch(`${API_URL}/api/request-disposals`, {
         method: "POST",
         body: formData,
       });
@@ -158,11 +160,13 @@ function TableViewInventory({
         const requestBody = { 
           data: {
           
-          isDisposal: true,}, };
+          isDisposal: true,
+          status_inventory:3,
+        }, };
         console.log(`PUT Request to /api/inventories/${row.id}:`, requestBody);
         
         
-        return fetch(`http://localhost:1337/api/inventories/${row.id}`, {
+        return fetch(`${API_URL}/api/inventories/${row.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -391,7 +395,7 @@ setTimeout(() => {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:1337/api/inventories/${id}`, {
+      const response = await fetch(`${API_URL}/api/inventories/${id}`, {
         method: "DELETE",
       });
       if (!response.ok) throw new Error("ไม่สามารถลบข้อมูลได้");
@@ -433,11 +437,11 @@ setTimeout(() => {
     </h2>
     {isAdmin ? (
       <Button
-        className="bg-gray-400 w-[120px] h-[40px]"
+        className="bg-gray-400 w-[150px] h-[50px] pl-2"
         type="primary"
         onClick={openModal}
       >
-        เลือก ({selectedItems.length})
+        เปลี่ยนที่ตั้ง/ทำจำหน่าย <br/>({selectedItems.length}) รายการ
       </Button>
     ) : null}
   </div>

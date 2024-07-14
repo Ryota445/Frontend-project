@@ -6,6 +6,7 @@ import { Table, Button, Input, Space, Modal, Form, Checkbox, Dropdown, Menu, mes
 const { Search } = Input;
 
 function AddInformationCompany() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
@@ -24,7 +25,7 @@ function AddInformationCompany() {
   });
 
   useEffect(() => {
-    fetch('http://localhost:1337/api/company-inventories')
+    fetch(`${API_URL}/api/company-inventories`)
       .then(response => response.json())
       .then(data => {
         setData(data.data || []);
@@ -47,7 +48,7 @@ function AddInformationCompany() {
 
   const handleAddCompany = () => {
     form.validateFields().then(values => {
-      fetch('http://localhost:1337/api/company-inventories', {
+      fetch(`${API_URL}/api/company-inventories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -70,7 +71,7 @@ function AddInformationCompany() {
 
   const handleEditCompany = () => {
     form.validateFields().then(values => {
-      fetch(`http://localhost:1337/api/company-inventories/${editingRecord.id}`, {
+      fetch(`${API_URL}/api/company-inventories/${editingRecord.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -94,7 +95,7 @@ function AddInformationCompany() {
   };
 
   const handleDeleteCompany = id => {
-    fetch(`http://localhost:1337/api/company-inventories/${id}`, {
+    fetch(`${API_URL}/api/company-inventories/${id}`, {
       method: 'DELETE'
     })
       .then(response => response.json())

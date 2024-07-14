@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import logo_ICO from '../assets/img/logo-OICT-TH.png';
 
 function Login() {
+    const API_URL = import.meta.env.VITE_API_URL;
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
@@ -13,7 +14,7 @@ function Login() {
     const onFinish = async (values) => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:1337/api/auth/local', {
+            const response = await fetch(`${API_URL}/api/auth/local`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -80,11 +81,11 @@ function Login() {
                                 เข้าสู่ระบบ
                             </Button>
                         </Form.Item>
-                        <Form.Item>
+            {/* <Form.Item>
             <Button type="default" onClick={() => navigate('/register')} className="bg-green-500 text-white">
                 ลงทะเบียน
             </Button>
-        </Form.Item>
+        </Form.Item> */}
                         <Form.Item className="text-center">
                             <Button type="link">ย้อนกลับ</Button>
                         </Form.Item>

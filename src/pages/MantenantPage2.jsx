@@ -9,7 +9,7 @@ const { TextArea } = Input;
 function MantenantPage2() {
 
   const { id } = useParams();
-  
+  const API_URL = import.meta.env.VITE_API_URL;
   const [statusBTN, setStatusBTN] = useState("mantenant");
   const [dataInv, setDataInv] = useState(null);
   const [dataRepairReport, setDataRepairReport] = useState(null);
@@ -29,7 +29,7 @@ function MantenantPage2() {
     try {
        // Fetch StatusRepiar
        const statusRepairResponse = await fetch(
-        "http://localhost:1337/api/status-repairs"
+        `${API_URL}/api/status-repairs`
       );
       const statusRepairData = await statusRepairResponse.json();
       setStatusRepair_inventoryOptions(
@@ -41,7 +41,7 @@ function MantenantPage2() {
   
       // Fetch Repair Report data
       const response = await fetch(
-        `http://localhost:1337/api/repair-reports/${id}?populate=*`
+        `${API_URL}/api/repair-reports/${id}?populate=*`
       );
       if (!response.ok) {
         throw new Error(`HTTP Error status :${response.status}`);
@@ -52,7 +52,7 @@ function MantenantPage2() {
       // Fetch Inventory data
       const inventoryId = repairReportData.data.attributes.inventory.data.id;
       const inventoryResponse = await fetch(
-        `http://localhost:1337/api/inventories/${inventoryId}?populate=*`
+        `${API_URL}/api/inventories/${inventoryId}?populate=*`
       );
       if (!inventoryResponse.ok) {
         throw new Error(`HTTP Error status :${inventoryResponse.status}`);
@@ -110,7 +110,7 @@ function MantenantPage2() {
       formData.append("data", JSON.stringify(dataToUpdate));
       console.log("formData before sent",dataToUpdate )
 
-      const response = await fetch(`http://localhost:1337/api/inventories/${inventoryId}`, {
+      const response = await fetch(`${API_URL}/api/inventories/${inventoryId}`, {
         method: "PUT",
         body: formData,
       });
@@ -142,7 +142,7 @@ function MantenantPage2() {
       );
   
       const response = await fetch(
-        `http://localhost:1337/api/inventories/${inventoryId}`,
+        `${API_URL}/api/inventories/${inventoryId}`,
         {
           method: "PUT",
           body: formData,
@@ -184,7 +184,7 @@ function MantenantPage2() {
               <Image
                 src={
                   dataInv?.attributes?.img_inv?.data?.attributes?.url
-                    ? `http://localhost:1337${dataInv.attributes.img_inv.data.attributes.url}`
+                    ? `${API_URL}${dataInv.attributes.img_inv.data.attributes.url}`
                     : no_image
                 }
                 alt="รูปครุภัณฑ์"

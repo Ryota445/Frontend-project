@@ -16,6 +16,7 @@ import MaintenanceState5 from '../components/MaintenanceState5';
 
 
 function MaintenancePage3() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const { id } = useParams();
   const [dataInv, setDataInv] = useState(null);
   const [dataRepairReport, setDataRepairReport] = useState(null);
@@ -53,7 +54,7 @@ function MaintenancePage3() {
     try {
       // ดึงข้อมูล Repair Report
       const response = await fetch(
-        `http://localhost:1337/api/repair-reports/${id}?populate=*`
+        `${API_URL}/api/repair-reports/${id}?populate=*`
       );
       if (!response.ok) {
         throw new Error(`HTTP Error status: ${response.status}`);
@@ -64,7 +65,7 @@ function MaintenancePage3() {
       // ดึงข้อมูล Inventory
       const inventoryId = repairReportData.data.attributes.inventory.data.id;
       const inventoryResponse = await fetch(
-        `http://localhost:1337/api/inventories/${inventoryId}?populate=*`
+        `${API_URL}/api/inventories/${inventoryId}?populate=*`
       );
       if (!inventoryResponse.ok) {
         throw new Error(`HTTP Error status: ${inventoryResponse.status}`);

@@ -53,9 +53,9 @@ function getItem(label, key, icon, children) {
         <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
         {!collapsed && user && (
           <div style={{ padding: '16px', color: 'white', textAlign: 'center' }}>
-            <Text strong style={{ color: 'white', display: 'block',fontSize: '16px' }}>{user.username}</Text>
-            <Text style={{ color: 'rgba(255, 255, 255, 0.65)', display: 'block', fontSize: '14px' }}>Role: {user.role_in_web?.RoleName}</Text>
+           
             <Text style={{ color: 'rgba(255, 255, 255, 0.65)', display: 'block', fontSize: '14px' }}>{user.responsible?.responsibleName}</Text>
+            <Text style={{ color: 'rgba(255, 255, 255, 0.65)', display: 'block', fontSize: '14px' }}>สิทธิ์การใช้งาน: {user.role_in_web?.RoleName}</Text>
           </div>
         )}
 

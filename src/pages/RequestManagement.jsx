@@ -3,61 +3,50 @@ import { Table, Button, Popconfirm, message } from "antd";
 import { FileOutlined } from "@ant-design/icons"; // Ensure this import is present
 
 const RequestManagement = () => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [showChangeLocation, setShowChangeLocation] = useState(true);
   const [showReturnEquipment, setShowReturnEquipment] = useState(false);
   const [dataChangeLocation, setDataChangeLocation] = useState([]);
   const [dataReturnEquipment, setDataReturnEquipment] = useState([]);
 
   useEffect(() => {
-    const fetchChangeLocationData = async () => {
+      const fetchChangeLocationData = async () => {
       try {
         const response = await fetch(
-          "http://localhost:1337/api/request-change-locations?populate[inventories][populate]=building&populate=building&populate[reportedBy]=*"
+          `${API_URL}/api/request-change-locations?populate[inventories][populate]=building&populate=building&populate[reportedBy]=*`
         );
         const result = await response.json();
         const formattedData = result.data
-          .filter((item) => !item.attributes.isDone) // filter out items where isDone is true
-          .map((item) => {
-            const inventoryData = item.attributes.inventories.data.map(
-              (inventory) => ({
-                key: inventory.id,
-                equipmentName: inventory.attributes.name,
-                equipmentNumber: inventory.attributes.id_inv,
-                oldLocation: {
-                  building:
-                    inventory.attributes.building?.data?.attributes
-                      ?.buildingName || "N/A",
-                  floor: inventory.attributes.floor || "N/A",
-                  room: inventory.attributes.room || "N/A",
-                },
-                newLocation: {
-                  buildingId:item?.attributes?.building?.data?.id,
-                  building:
-                    item.attributes.building.data.attributes.buildingName,
-                  floor: item.attributes.NewLocationFloor,
-                  room: item.attributes.NewLocationRoom,
-                },
-              })
-            );
-            
-            return {
-              key: item.id,
-              date: new Date(item.attributes.createdAt), // ใช้ Date object สำหรับการเรียงลำดับ
-              reportedBy: item?.attributes?.reportedBy?.data?.attributes?.responsibleName ||"N/A", // เปลี่ยนตามข้อมูลที่มีใน response
-              inventoryData,
-              formattedDate: new Date(
-                item.attributes.createdAt
-              ).toLocaleDateString("th-TH", {
+          .filter((item) => !item.attributes.isDone)
+          .flatMap((item) => 
+            item.attributes.inventories.data.map((inventory) => ({
+              key: `${item.id}_${inventory.id}`,
+              date: new Date(item.attributes.createdAt),
+              formattedDate: new Date(item.attributes.createdAt).toLocaleDateString("th-TH", {
                 year: "numeric",
                 month: "short",
                 day: "numeric",
               }),
-            };
-          });
-
-        // เรียงลำดับข้อมูลตามวันที่ล่าสุด
+              reportedBy: item?.attributes?.reportedBy?.data?.attributes?.responsibleName || "N/A",
+              equipmentName: inventory.attributes.name,
+              equipmentNumber: inventory.attributes.id_inv,
+              oldLocation: {
+                building: item.attributes?.Oldbuilding || "N/A",
+                floor: item.attributes.OldLocationFloor || "N/A",
+                room: item.attributes.OldLocationRoom || "N/A",
+              },
+              newLocation: {
+                buildingId: item?.attributes?.building?.data?.id,
+                building: item.attributes.building.data.attributes.buildingName,
+                floor: item.attributes.NewLocationFloor,
+                room: item.attributes.NewLocationRoom,
+              },
+              requestId: item.id,
+              inventoryId: inventory.id,
+            }))
+          );
+    
         const sortedData = formattedData.sort((a, b) => b.date - a.date);
-
         setDataChangeLocation(sortedData);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -68,7 +57,7 @@ const RequestManagement = () => {
     const fetchReturnEquipmentData = async () => {
       try {
         const response = await fetch(
-          "http://localhost:1337/api/request-sent-backs?populate[inventory][populate]=*&populate=reportedBy"
+          `${API_URL}/api/request-sent-backs?populate[inventory][populate]=*&populate=reportedBy`
         );
         const result = await response.json();
         const formattedData = result.data
@@ -90,7 +79,7 @@ const RequestManagement = () => {
               returnReason: item.attributes.ReasonSentBack,
               file: fileData ? (
                 <a
-                  href={`http://localhost:1337${fileData.url}`}
+                  href={`${API_URL}${fileData.url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-500"
@@ -125,23 +114,23 @@ const RequestManagement = () => {
 
   const handleApprove = async (key, inventoryData) => {
     try {
-      for (const inventory of inventoryData) {
-        const formData = new FormData();
-        formData.append(
-          "data",
-          JSON.stringify({
-            building: inventory.newLocation.buildingId,
-            floor: inventory.newLocation.floor,
-            room: inventory.newLocation.room,
-          })
-        );
+      // for (const inventory of inventoryData) {
+      //   const formData = new FormData();
+      //   formData.append(
+      //     "data",
+      //     JSON.stringify({
+      //       building: inventory.newLocation.buildingId,
+      //       floor: inventory.newLocation.floor,
+      //       room: inventory.newLocation.room,
+      //     })
+      //   );
 
-        console.log("formData: ",formData)
-        await fetch(`http://localhost:1337/api/inventories/${inventory.key}`, {
-          method: "PUT",
-          body: formData,
-        });
-      }
+      //   console.log("formData: ",formData)
+      //   await fetch(`${API_URL}/api/inventories/${inventory.key}`, {
+      //     method: "PUT",
+      //     body: formData,
+      //   });
+      // }
 
       const data = {
         data: {
@@ -149,7 +138,7 @@ const RequestManagement = () => {
         },
       };
 
-      await fetch(`http://localhost:1337/api/request-change-locations/${key}`, {
+      await fetch(`${API_URL}/api/request-change-locations/${key}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -181,7 +170,7 @@ const RequestManagement = () => {
         })
       );
   
-      await fetch(`http://localhost:1337/api/inventories/${id_backend_inventory}`, {
+      await fetch(`${API_URL}/api/inventories/${id_backend_inventory}`, {
         method: "PUT",
         body: formData,
       });
@@ -192,7 +181,7 @@ const RequestManagement = () => {
         },
       };
   
-      await fetch(`http://localhost:1337/api/request-sent-backs/${key}`, {
+      await fetch(`${API_URL}/api/request-sent-backs/${key}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -290,6 +279,56 @@ const RequestManagement = () => {
       key: "reportedBy",
     },
     {
+      title: "ชื่อครุภัณฑ์",
+      dataIndex: "equipmentName",
+      key: "equipmentName",
+    },
+    {
+      title: "หมายเลขครุภัณฑ์",
+      dataIndex: "equipmentNumber",
+      key: "equipmentNumber",
+    },
+    {
+      title: "ที่ตั้งเดิม",
+      children: [
+        {
+          title: "อาคาร",
+          dataIndex: ["oldLocation", "building"],
+          key: "oldLocationBuilding",
+        },
+        {
+          title: "ชั้น",
+          dataIndex: ["oldLocation", "floor"],
+          key: "oldLocationFloor",
+        },
+        {
+          title: "ห้อง",
+          dataIndex: ["oldLocation", "room"],
+          key: "oldLocationRoom",
+        },
+      ],
+    },
+    {
+      title: "ที่ตั้งใหม่",
+      children: [
+        {
+          title: "อาคาร",
+          dataIndex: ["newLocation", "building"],
+          key: "newLocationBuilding",
+        },
+        {
+          title: "ชั้น",
+          dataIndex: ["newLocation", "floor"],
+          key: "newLocationFloor",
+        },
+        {
+          title: "ห้อง",
+          dataIndex: ["newLocation", "room"],
+          key: "newLocationRoom",
+        },
+      ],
+    },
+    {
       title: "การกระทำ",
       key: "action",
       render: (_, record) => (
@@ -297,18 +336,13 @@ const RequestManagement = () => {
           <Button
             type="primary"
             className="bg-blue-500 text-white"
-            onClick={() => handleApprove(record.key, record.inventoryData)}
+            onClick={() => handleApprove(record.requestId, [{
+              key: record.inventoryId,
+              newLocation: record.newLocation,
+            }])}
           >
-            เปลี่ยนที่ตั้ง
+            รับทราบ
           </Button>
-          {/* <Popconfirm
-              title="คุณแน่ใจหรือไม่ที่จะไม่อนุญาตรายการนี้?"
-              onConfirm={() => handleDisapprove(record.key)}
-            >
-              <Button type="danger" className="bg-red-500 text-white">
-                ไม่อนุญาต
-              </Button>
-            </Popconfirm> */}
         </div>
       ),
     },
@@ -355,7 +389,7 @@ const RequestManagement = () => {
             className="bg-blue-500 text-white"
             onClick={() => handleApproveReturnEquipment(record.key, record.id_backend_inventory)}
           >
-            รับทราบการส่งคืน
+            รับทราบ
           </Button>
           <Popconfirm
             title="คุณแน่ใจหรือไม่ที่จะลบรายการนี้?"
@@ -396,26 +430,22 @@ const RequestManagement = () => {
       </div>
 
       {showChangeLocation ? (
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-2">คำร้องขอเปลี่ยนที่ตั้ง</h2>
-          {dataChangeLocation.length > 0 ? (
-            <Table
-              columns={columnsChangeLocation}
-              dataSource={dataChangeLocation}
-              expandable={{
-                expandedRowRender,
-                defaultExpandAllRows: true,
-              }}
-              pagination={false}
-              rowClassName={(record, index) =>
-                index % 2 === 0 ? "bg-gray-50 border-2 border-blue-500" : "bg-white"
-              }
-            />
-          ) : (
-            <p>ไม่มีข้อมูลคำร้องขอเปลี่ยนที่ตั้ง</p>
-          )}
-        </div>
-      ) : null}
+  <div className="mb-8">
+    <h2 className="text-lg font-semibold mb-2">คำร้องขอเปลี่ยนที่ตั้ง</h2>
+    {dataChangeLocation.length > 0 ? (
+      <Table
+        columns={columnsChangeLocation}
+        dataSource={dataChangeLocation}
+        pagination={false}
+        rowClassName={(record, index) =>
+          index % 2 === 0 ? "bg-gray-50 border-2 border-blue-500" : "bg-white"
+        }
+      />
+    ) : (
+      <p>ไม่มีข้อมูลคำร้องขอเปลี่ยนที่ตั้ง</p>
+    )}
+  </div>
+) : null}
 
       {showReturnEquipment ? (
         <div>

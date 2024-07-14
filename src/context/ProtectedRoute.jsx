@@ -3,8 +3,13 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const { token, user } = useAuth();
+  const { token, user, loading } = useAuth();
   const location = useLocation();
+
+  if (loading) {
+    // แสดง loading indicator หรือ null ขณะรอข้อมูล
+    return null;  // หรือ return <LoadingSpinner /> ถ้าคุณมี component สำหรับแสดง loading
+  }
 
   if (location.pathname === "/register") {
     return children;

@@ -4,7 +4,7 @@ import no_image from "../assets/img/Image.png";
 
 
 function CardInventoryDetail({data}) {
-
+    const API_URL = import.meta.env.VITE_API_URL;
     const [dataInv, setDataInv] = useState(data);
     
     useEffect(() => {
@@ -20,7 +20,7 @@ function CardInventoryDetail({data}) {
               <Image
                 src={
                   dataInv?.attributes?.img_inv?.data?.attributes?.url
-                    ? `http://localhost:1337${dataInv.attributes.img_inv.data.attributes.url}`
+                    ? `${API_URL}${dataInv.attributes.img_inv.data.attributes.url}`
                     : no_image
                 }
                 alt="รูปครุภัณฑ์"

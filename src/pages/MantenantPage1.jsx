@@ -11,6 +11,7 @@ import MaintenancePage3 from './MaintenancePage3';
 const { Option } = Select;
 
 const MantenantPage1 = () => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [data, setData] = useState([]);
   const [dataMaintenance, setDataMaintenance] = useState([]);
   const [isRepairActive, setIsRepairActive] = useState(true);
@@ -39,7 +40,7 @@ const MantenantPage1 = () => {
 
   const fetchData = async () => {
     try {
-      const statusRepairResponse = await fetch("http://localhost:1337/api/status-repairs");
+      const statusRepairResponse = await fetch(`${API_URL}/api/status-repairs`);
       const statusRepairData = await statusRepairResponse.json();
       setStatusRepair_inventoryOptions(
         statusRepairData.data.map(item => ({
@@ -54,7 +55,7 @@ const MantenantPage1 = () => {
 
   const fetchCompanyData = async () => {
     try {
-      const companyResponse = await fetch("http://localhost:1337/api/company-inventories");
+      const companyResponse = await fetch(`${API_URL}/api/company-inventories`);
       const companyData = await companyResponse.json();
       setCompanyOptions(companyData.data.map((item) => ({
         id: item.id,
@@ -66,7 +67,7 @@ const MantenantPage1 = () => {
   };
 
   useEffect(() => {
-    fetch('http://localhost:1337/api/repair-reports?populate=*')
+    fetch(`${API_URL}/api/repair-reports?populate=*`)
       .then(response => response.json())
       .then(data => {
         if (data && data.data) {
@@ -101,7 +102,7 @@ const MantenantPage1 = () => {
                 name: <Link to={`/UserDetailInventory/${inventoryId}`}>
                         {item.attributes.isSubInventory ? (
                           <>
-                            <span className='text-red-500'>(องค์ประกอบในชุดครุภัณฑ์)</span> {item?.attributes?.sub_inventory?.data?.attributes?.name} <span className='text-red-500'>(ของ)</span>{inventory?.name}
+                            {item?.attributes?.sub_inventory?.data?.attributes?.name} 
                           </>
                         ) : (
                           <> {inventory?.name} </>
@@ -109,7 +110,7 @@ const MantenantPage1 = () => {
                       </Link> ?? 'N/A',
                 reportedBy: item?.attributes?.reportedBy?.data?.attributes?.responsibleName || "N/A", // ใช้บรรทัดนี้เพื่อใส่ค่า reportedBy
                 description: item.attributes.RepairReasonByResponsible ?? 'N/A',
-                FileReport: <a href={`http://localhost:1337${item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url}`} target="_blank" rel="noopener noreferrer"><FileOutlined /><span className='ml-2'>{item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.name || "ไฟล์"}</span></a>,
+                FileReport: <a href={`${API_URL}${item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url}`} target="_blank" rel="noopener noreferrer"><FileOutlined /><span className='ml-2'>{item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.name || "ไฟล์"}</span></a>,
                 appointmentDate: 'DueDateRepair',
                 maintenanceType: 'repair',
                 status: (
@@ -154,7 +155,7 @@ const MantenantPage1 = () => {
     }, [statusRepair_inventoryOptions, selectedStatus]);
   
     useEffect(() => {
-      fetch('http://localhost:1337/api/maintenance-reports?populate=*')
+      fetch(`${API_URL}/api/maintenance-reports?populate=*`)
         .then(response => response.json())
         .then(data => {
           if (data && data.data) {
@@ -180,7 +181,7 @@ const MantenantPage1 = () => {
                 name: <Link to={`/UserDetailInventory/${inventoryId}`}>
                         {item.attributes.isSubInventory ? (
                           <>
-                            <span className='text-red-500'>(องค์ประกอบในชุดครุภัณฑ์)</span> {item?.attributes?.sub_inventory?.data?.attributes?.name} <span className='text-red-500'>(ของ)</span>{inventory?.name}
+                             {item?.attributes?.sub_inventory?.data?.attributes?.name} 
                           </>
                         ) : (
                           <> {inventory?.name} </>
@@ -262,7 +263,7 @@ const MantenantPage1 = () => {
           formData.append('files.FileMaintenanceByAdmin', file.originFileObj);
         });
     
-        const response = await fetch(`http://localhost:1337/api/maintenance-reports/${selectedMaintenanceReportId}`, {
+        const response = await fetch(`${API_URL}/api/maintenance-reports/${selectedMaintenanceReportId}`, {
           method: "PUT",
           body: formData,
         });
@@ -302,7 +303,7 @@ const MantenantPage1 = () => {
           DueDate: dueDate.toISOString(),
         };
     
-        const response = await fetch(`http://localhost:1337/api/maintenance-reports/${selectedMaintenanceReportId}`, {
+        const response = await fetch(`${API_URL}/api/maintenance-reports/${selectedMaintenanceReportId}`, {
           method: "PUT",
           headers: {
             'Content-Type': 'application/json',

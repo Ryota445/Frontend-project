@@ -28,6 +28,7 @@ const suffix = (
 const { Option } = Select;
 
 function ManageInventoryMain() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [isTable,setIsTable] = useState(true)
 
   const [InventoryList, setInventoryList] = useState([]);
@@ -35,7 +36,7 @@ function ManageInventoryMain() {
 
 
     useEffect(() => {
-      fetch("http://localhost:1337/api/inventories?populate=img_inv")
+      fetch(`http://localhost:1337/api/inventories?populate=img_inv`)
         .then(res => res.json())
         .then(
           (result) => {
@@ -47,7 +48,7 @@ function ManageInventoryMain() {
 
     const fetchItems = async () => {
       // รับข้อมูลจาก API และอัปเดต state
-      fetch("http://localhost:1337/api/inventories?populate=img_inv")
+      fetch(`http://localhost:1337/api/inventories?populate=img_inv`)
         .then(res => res.json())
         .then(
           (result) => {

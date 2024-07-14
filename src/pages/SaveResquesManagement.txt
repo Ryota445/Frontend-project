@@ -3,6 +3,7 @@ import { Table, Button, Popconfirm, message } from 'antd';
 import { Link } from 'react-router-dom';
 
 const RequestManagement = () => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [showChangeLocation, setShowChangeLocation] = useState(true);
   const [showReturnEquipment, setShowReturnEquipment] = useState(false);
   const [dataChangeLocation, setDataChangeLocation] = useState([]);
@@ -22,7 +23,7 @@ const RequestManagement = () => {
   useEffect(() => {
     const fetchChangeLocationData = async () => {
       try {
-        const response = await fetch('http://localhost:1337/api/request-change-locations?populate[inventories][populate]=building&populate=building');
+        const response = await fetch(`${API_URL}/api/request-change-locations?populate[inventories][populate]=building&populate=building`);
         const result = await response.json();
         const formattedData = result.data.map(item => {
           const inventoryData = item.attributes.inventories.data.map(inventory => ({

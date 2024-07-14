@@ -10,6 +10,7 @@ const normFile = (e) => {
 };
 
 function TestAddInventory() {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [form] = Form.useForm();
   const fileInput = React.useRef(null); // เพิ่มเพื่อเก็บอ้างอิงไฟล์
 
@@ -38,7 +39,7 @@ function TestAddInventory() {
 
   const postInventoryData = async (formData, headers) => {
     try {
-      const response = await fetch('http://localhost:1337/api/inventories?populate=img_inv', {
+      const response = await fetch(`${API_URL}/api/inventories?populate=img_inv`, {
         method: 'POST',
         headers: headers, // headers นี้จะถูกใช้เพื่อส่ง token อื่นๆ ที่ไม่เกี่ยวข้องกับการระบุ content-type เพราะ FormData จะกำหนดเอง
         body: formData,
