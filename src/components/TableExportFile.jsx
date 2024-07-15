@@ -12,8 +12,8 @@ function TableExportFile({
   inventoryList, 
   onDeleteSuccess, 
   foundDataNumber, 
-  selectedItems, 
-  selectedRows, 
+  selectedItemsE, 
+  selectedRowsE, 
   onSelectionChange,
   showSubInventoryColumns 
 }) {
@@ -295,7 +295,7 @@ function TableExportFile({
       const filteredColumns = allColumns.filter(col => col.key !== 'action' && col.key !== 'delete');
     
       const modalColumns = filteredColumns.filter(col => visibleColumns.includes(col.key)).concat({
-        title: 'การจัดการ',
+        title: '',
         key: 'action',
         render: (text, record) => (
           <Space size="middle">
@@ -331,15 +331,11 @@ function TableExportFile({
         message.info(`เลือกแล้ว ${updatedSelectedItems.length} รายการ`);
     };
     
-      const handleDeleteFromSelected = (id) => {
-        const updatedSelectedItems = selectedItems.filter((itemId) => itemId !== id);
-        const updatedSelectedRows = selectedRows.filter((row) => row.id !== id);
-    
-        setSelectedItems(updatedSelectedItems);
-        setSelectedRows(updatedSelectedRows);
-    
-        message.info(`ลบรายการออกจากที่เลือกแล้ว`);
-      };
+    const handleDeleteFromSelected = (id) => {
+      const updatedSelectedItems = selectedItemsE.filter((itemId) => itemId !== id);
+      const updatedSelectedRows = selectedRowsE.filter((row) => row.id !== id);
+      onSelectionChange(updatedSelectedItems, updatedSelectedRows);
+    };
     
       const handleDelete = async (id) => {
         try {
@@ -836,7 +832,7 @@ const calculateAgeDifference = (dateReceive) => {
             type="primary"
             onClick={openModal}
           >
-             เลือก ({selectedItems.length})
+             เลือก ({selectedItemsE.length})
           </Button>
         </div>
       </div>
@@ -852,7 +848,7 @@ const calculateAgeDifference = (dateReceive) => {
         style={{ maxWidth: '1200px' }}
       >
         <div className="mb-4">
-          <h2 className="text-lg font-bold">เลือก ({selectedItems.length}) รายการ</h2>
+          <h2 className="text-lg font-bold">เลือก ({selectedItemsE.length}) รายการ</h2>
         </div>
         <div className="mb-4">
   <Select
@@ -877,12 +873,12 @@ const calculateAgeDifference = (dateReceive) => {
     onClick={exportToExcel}
     className="ml-2"
   >
-    นำออกไฟล์ Excel
+    นำออกไฟล์ Excel 
   </Button>
 </div>
         <Table
           columns={modalColumns}
-          dataSource={selectedRows}
+          dataSource={selectedRowsE}
           pagination={{ pageSize: 10 }}
           scroll={{ x: 'max-content', y: 400 }}
           rowKey="id"
@@ -903,19 +899,20 @@ const calculateAgeDifference = (dateReceive) => {
       </div>
 
       <Table
-  columns={columns}
-  dataSource={sortedInventoryList}
-  pagination={{ pageSize: 10 }}
-  scroll={{ x: 'max-content' }}
-  rowKey="id"
-  rowSelection={{
-    selectedRowKeys: selectedItems,
-    onChange: (selectedRowKeys, selectedRows) => {
-      onSelectionChange(selectedRowKeys, selectedRows);
-    },
-  }}
-  className="w-full overflow-x-auto"
-/>  
+        columns={columns}
+        dataSource={sortedInventoryList}
+        pagination={{ pageSize: 10 }}
+        scroll={{ x: 'max-content' }}
+        rowKey="id"
+        rowSelection={{
+          selectedRowKeys: selectedItemsE,
+          onChange: (selectedRowKeys, selectedRows) => {
+            onSelectionChange(selectedRowKeys, selectedRows);
+          },
+          preserveSelectedRowKeys: true, // เพิ่มบรรทัดนี้
+        }}
+        className="w-full overflow-x-auto"
+      />  
     
     
     </>

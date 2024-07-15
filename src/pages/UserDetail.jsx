@@ -1,5 +1,7 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
+import domtoimage from 'dom-to-image';
+import { saveAs } from 'file-saver';
 import { useParams } from "react-router-dom";
 import {
   message,
@@ -23,6 +25,7 @@ import {
   PrinterOutlined,
   WarningOutlined,
   SafetyOutlined,
+  CameraOutlined,
 } from "@ant-design/icons";
 import TableDetailMantenant from "../components/TableDetailMantenant";
 import TableDetailRepair from "../components/TableDetailRepair";
@@ -88,6 +91,33 @@ function UserDetail() {
   const { user } = useAuth();
 
   const isAdmin = user?.role_in_web?.RoleName === "Admin";
+
+
+  const pageRef = useRef(null);
+
+  const captureScreenshot = () => {
+    const page = pageRef.current;
+
+    domtoimage.toBlob(page)
+      .then((blob) => {
+        saveAs(blob, 'screenshot.png');
+      })
+      .catch((error) => {
+        console.error('oops, something went wrong!', error);
+      });
+  };
+
+
+  
+
+
+
+
+
+
+
+
+
 
   // forModal reportMaintenance
 
@@ -656,9 +686,26 @@ fetchDataC();
 
   return (
     <>
-      <div className="w-full ">
-        <div className="flex  justify-between ">
+    <div className="flex justify-end">
+      <Button className="opacity-50 hover:opacity-100"
+      style={{
+        backgroundColor: '#1890ff', // กำหนดสีพื้นหลัง
+        color: '#fff', // กำหนดสีข้อความ
+        borderColor: '#1890ff', // กำหนดสีเส้นขอบ
+        width: '150px', // กำหนดความกว้าง
+      }}
+      icon={<CameraOutlined />} // ใส่ไอคอนเหมือนเดิม
+      onClick={captureScreenshot} // ใส่ฟังก์ชันการคลิกเหมือนเดิม
+    >
+      บันทึกภาพหน้าจอ
+    </Button>
+      </div>
+    <div className="" style={{  background: '#F7F7F8'}} ref={pageRef}>
+      <div className="w-full "  >
+     
+        <div className="flex  justify-between " >
           <h1 className="text-4xl font-semibold">รายละเอียดครุภัณฑ์</h1>
+          
           {( user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
           <button
             onClick={openModalSentBack}
@@ -822,21 +869,7 @@ fetchDataC();
                           ))}
                       </select>
 
-                      {statusInventoryId === 2 && allowedRepair && (
-                    <div className="flex  ">
-                        {(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
-                      <button
-                        className="  mt-5 font-bold rounded-lg text-base w-36 h-10 bg-[#276ff4] text-[#ffffff] justify-center"
-                        onClick={() => openModal("main")}
-                      >
-                        แจ้งซ่อม <SettingOutlined />
-                      </button>
-
-)}
-
-
-                    </div>
-                  )}
+                     
 
 {(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
                       <button
@@ -851,6 +884,21 @@ fetchDataC();
                         บันทึก
                       </button>
 )}
+ {statusInventoryId === 2 && allowedRepair && (
+                    <div className=" mr-2">
+                        {(isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
+                      <button
+                        className="   font-bold rounded-lg text-base w-36 h-10 bg-[#276ff4] text-[#ffffff]"
+                        onClick={() => openModal("main")}
+                      >
+                        แจ้งซ่อม <SettingOutlined />
+                      </button>
+
+)}
+
+
+                    </div>
+                  )}
 
                     </div>
                   ) : (
@@ -862,9 +910,10 @@ fetchDataC();
                             openModalFeedbackRepair();
                           }}
                         > */}
-                          ***ครุภัณฑ์นี้ไม่ได้รับอนุมัติการซ่อม***
+                          
                           
                         {/* </a> */}
+                        ***ครุภัณฑ์นี้ไม่ได้รับอนุมัติการซ่อม***
                       </p>
                       <p className="my-2 text-lg  text-red-500">
                         โปรดทำเรื่องส่งคืนครุภัณฑ์
@@ -1584,37 +1633,37 @@ fetchDataC();
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-lg font-thin text-gray-500 uppercase tracking-wider"
                   >
                     หมายเลขครุภัณฑ์
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-lg font-thin text-gray-500 uppercase tracking-wider"
                   >
                     ชื่อครุภัณฑ์
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-lg font-thin text-gray-500 uppercase tracking-wider"
                   >
                     หมายเลข SN
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-lg font-thin text-gray-500 uppercase tracking-wider"
                   >
                     ยี่ห้อ
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-lg font-thin text-gray-500 uppercase tracking-wider"
                   >
                     รุ่น
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    className="px-6 py-3 text-left text-lg font-thin text-gray-500 uppercase tracking-wider"
                   ></th>
                 </tr>
               </thead>
@@ -1650,15 +1699,15 @@ fetchDataC();
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {statusInventoryId === 2 && allowedRepair && (isAdmin || user?.responsible?.id === dataInv?.attributes?.responsible?.data?.id) && (
   <button
-    className="font-bold rounded-lg text-base w-32 h-8 bg-[#276ff4] text-[#ffffff]"
+    className="font-bold rounded-lg text-base w-28 h-8 bg-[#276ff4] text-[#ffffff]"
     onClick={() => openModal("sub", item.id)}
   >
-    แจ้งซ่อม <SettingOutlined />
+     <SettingOutlined /> แจ้งซ่อม
   </button>
 )}
                       { allowedRepair && (isAdmin) && (
   <button
-  className="ml-2 font-bold rounded-lg text-base w-32 h-8 bg-[#4de83f] text-[#ffffff]"
+  className="ml-1 font-bold rounded-lg text-base w-28 h-8 bg-[#4de83f] text-[#ffffff]"
   onClick={() => openModalMan("sub", item.id)} // Pass sub-inventory ID when clicked
 >
   <SafetyOutlined className="text-xl " />บำรุงรักษา 
@@ -1680,41 +1729,19 @@ fetchDataC();
 
       <div className="w-full h-[150px]"></div>
 
-      <div className=" w-full  grid grid-cols-5 ">
-        <div>{/* col-1 */}</div>
+<div className="w-full grid grid-cols-5">
+  <div>{/* col-1 */}</div>
 
-        {/* <div className=" col-span-3">
-          <div className=" w-full ">
-            <button
-              className={`font-bold rounded-t-lg text-lg w-48 h-16 bg-[#8dd15c] text-[#ffffff] justify-center ${
-                statusBTN === "mantenant" ? "opacity-100" : "opacity-50"
-              }`}
-              onClick={handelMantenantBTN}
-            >
-              ประวัติการบำรุงรักษา
-            </button>
-            <button
-              className={`font-bold rounded-t-lg text-lg w-48 h-16 bg-[#2d6eca] text-[#ffffff] justify-center ${
-                statusBTN === "repair" ? "opacity-100" : "opacity-50"
-              }`}
-              onClick={handelRepairBTN}
-            >
-              ประวัติการซ่อมแซม
-            </button>
-          </div>
-          {statusBTN === "mantenant" ? (
-            <TableDetailMantenant />
-          ) : (
-            <>
-              <TableDetailRepair />
-            </>
-          )}
-        </div> */}
-        <InventoryMaintenanceHistory dataInv={dataInv} subInventories={subInventoriesM} />
+  <div className="col-span-3 mt-8"> {/* ใส่ marginTop เพิ่มที่นี่ */}
+    {/* ส่วนของปุ่มแท็บและตารางข้อมูล */}
+    <InventoryMaintenanceHistory dataInv={dataInv} subInventories={subInventoriesM} />
+  </div>
 
-
-        <div>{/* col-3 */}</div>
+  <div>{/* col-3 */}</div>
+</div>
       </div>
+      
+        
     </>
   );
 }

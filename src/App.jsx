@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import AppContent from './AppContent';  // แยก AppContent เป็นไฟล์ใหม่
 
+
 const App = () => {
   return (
     <AuthProvider>

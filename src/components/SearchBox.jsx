@@ -78,7 +78,7 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
     };
 
     const handleSearch = () => {
-        const searchData = { ...formData, searchSubInventory };
+        const searchData = { ...formData, searchSubInventory, selectedItems: selectedItemsE, selectedRows: selectedRowsE };
         onSearch(searchData);
     };
 

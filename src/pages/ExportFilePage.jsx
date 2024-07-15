@@ -7,33 +7,39 @@ import TableExportFile from '../components/TableExportFile';
 
 function ExportFilePage() {
     const API_URL = import.meta.env.VITE_API_URL;
-    const [selectedItems, setSelectedItems] = useState([]);
-    const [selectedRows, setSelectedRows] = useState([]);
+    const [selectedItemsE, setSelectedItemsE] = useState(() => {
+        const saved = localStorage.getItem('selectedItemsE');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [selectedRowsE, setSelectedRowsE] = useState(() => {
+        const saved = localStorage.getItem('selectedRowsE');
+        return saved ? JSON.parse(saved) : [];
+    });
     const [searchData, setSearchData] = useState(null);
     const [filteredInventoryList, setFilteredInventoryList] = useState([]);
     const [inventoryList, setInventoryList] = useState([]);
-    const [foundDataNumber, setFoundDataNumber] = useState(0)
+    const [foundDataNumber, setFoundDataNumber] = useState(0);
     const [showSubInventoryColumns, setShowSubInventoryColumns] = useState(false);
-    const [modeSelected, setModeSelected] = useState('mode1'); // initial mode
 
     useEffect(() => {
         fetchItems();
     }, []);
 
+    useEffect(() => {
+        localStorage.setItem('selectedItemsE', JSON.stringify(selectedItemsE));
+        localStorage.setItem('selectedRowsE', JSON.stringify(selectedRowsE));
+    }, [selectedItemsE, selectedRowsE]);
 
-
-    // mode1
-    const updateSelectedItems = (newItems, newRows) => {
-     
-            setSelectedItems(prevItems => {
-                const updatedItems = newItems.filter(item => !prevItems.includes(item));
-                return [...prevItems.filter(item => newItems.includes(item)), ...updatedItems];
-            });
-            setSelectedRows(prevRows => {
-                const updatedRows = newRows.filter(row => !prevRows.some(prevRow => prevRow.id === row.id));
-                return [...prevRows.filter(row => newRows.some(newRow => newRow.id === row.id)), ...updatedRows];
-            });
-    };
+   const updateSelectedItems = (newItems, newRows) => {
+    setSelectedItemsE(prevItems => {
+        const updatedItems = newItems.filter(item => !prevItems.includes(item));
+        return [...prevItems.filter(item => newItems.includes(item)), ...updatedItems];
+    });
+    setSelectedRowsE(prevRows => {
+        const updatedRows = newRows.filter(row => !prevRows.some(prevRow => prevRow.id === row.id));
+        return [...prevRows.filter(row => newRows.some(newRow => newRow.id === row.id)), ...updatedRows];
+    });
+};
 
 
         // mode2
@@ -66,11 +72,10 @@ function ExportFilePage() {
             }
             const result = await response.json();
             
-            const filteredData = result
-            .data.filter(inventory => (!inventory.attributes.isDisposal ||inventory.attributes.isDisposal));
+            const filteredData = result.data.filter(inventory => !inventory.attributes.isDisposal );
             
             setFilteredInventoryList(filteredData);
-            setInventoryList(filteredData);
+            setInventoryList(result.data); // เก็บข้อมูลทั้งหมดไว้ใน inventoryList
             setFoundDataNumber(filteredData.length);
             console.log("InventoryData :", filteredData);
         } catch (error) {
@@ -80,22 +85,25 @@ function ExportFilePage() {
 
     const handleSearch = (searchData) => {
         setSearchData(searchData);
-        const tempSelectedItems = [...selectedItems];
-        const tempSelectedRows = [...selectedRows];
         filterInventoryList(searchData);
-        setTimeout(() => {
-            updateSelectedItems(tempSelectedItems, tempSelectedRows);
-        }, 0);
     };
 
     const filterInventoryList = (searchData) => {
         if (!searchData) {
-            setFilteredInventoryList(inventoryList);
-            setFoundDataNumber(inventoryList.length);
+            const nonDisposalInventory = inventoryList.filter(inventory => !inventory.attributes.isDisposal);
+            setFilteredInventoryList(nonDisposalInventory);
+            setFoundDataNumber(nonDisposalInventory.length);
             return;
         }
     
         const filteredList = inventoryList.filter(inventory => {
+            // ตรวจสอบสถานะการจำหน่าย
+            const isDisposalMatch = searchData.statusInventory === '3'
+                ? inventory.attributes.isDisposal
+                : searchData.statusInventory
+                    ? inventory.attributes.status_inventory.data.id === searchData.statusInventory
+                    : !inventory.attributes.isDisposal;
+    
             const subInventoryMatch = searchData.searchSubInventory
                 ? inventory.attributes.sub_inventories.data.length > 0 &&
                   (searchData.sub_inventory
@@ -104,40 +112,31 @@ function ExportFilePage() {
                       )
                     : true)
                 : true;
-
-                const responsibleMatch = searchData.responsible
+    
+            const responsibleMatch = searchData.responsible
                 ? inventory?.attributes?.responsible?.data?.id === parseInt(searchData.responsible)
                 : true;
-
+    
             return (
-                (searchData.id_inv && inventory.attributes.id_inv
-                    ? inventory.attributes.id_inv.toLowerCase().includes(searchData.id_inv.toLowerCase())
-                    : true) &&
-                (searchData.name && inventory.attributes.name
-                    ? inventory.attributes.name.toLowerCase().includes(searchData.name.toLowerCase())
-                    : true) &&
-                    responsibleMatch &&
-                (searchData.category && inventory?.attributes?.category?.data
-                    ? inventory.attributes.category.data.id === searchData.category
-                    : true) &&
-                (searchData.building && inventory?.attributes?.building?.data
-                    ? inventory.attributes.building.data.id === searchData.building
-                    : true) &&
-                (searchData.statusInventory && inventory?.attributes?.status_inventory?.data
-                    ? inventory.attributes.status_inventory.data.id === searchData.statusInventory
-                    : true) &&
-                (searchData.floor && inventory.attributes.floor
-                    ? inventory.attributes.floor.toLowerCase().includes(searchData.floor.toLowerCase())
-                    : true) &&
-                (searchData.room && inventory.attributes.room
-                    ? inventory.attributes.room.toLowerCase().includes(searchData.room.toLowerCase())
-                    : true) &&
+                isDisposalMatch &&
+                (searchData.id_inv ? inventory.attributes.id_inv.toLowerCase().includes(searchData.id_inv.toLowerCase()) : true) &&
+                (searchData.name ? inventory.attributes.name.toLowerCase().includes(searchData.name.toLowerCase()) : true) &&
+                responsibleMatch &&
+                (searchData.category ? inventory?.attributes?.category?.data?.id === searchData.category : true) &&
+                (searchData.building ? inventory?.attributes?.building?.data?.id === searchData.building : true) &&
+                (searchData.floor ? inventory.attributes.floor.toLowerCase().includes(searchData.floor.toLowerCase()) : true) &&
+                (searchData.room ? inventory.attributes.room.toLowerCase().includes(searchData.room.toLowerCase()) : true) &&
                 subInventoryMatch
             );
         });
-    
+
         setFilteredInventoryList(filteredList);
-        setFoundDataNumber(filteredList.length);
+    setFoundDataNumber(filteredList.length);
+    
+    if (searchData.selectedItems && searchData.selectedRows) {
+        setSelectedItemsE(searchData.selectedItems);
+        setSelectedRowsE(searchData.selectedRows);
+    }
     };
 
     const handleDeleteSuccess = () => {
@@ -155,11 +154,11 @@ function ExportFilePage() {
 
     
             
-    <SearchBox  className=""
-        onSearch={handleSearch} 
-        mode={"Disposal"} 
-        onSubInventorySearchChange={handleSubInventorySearchChange}
-    />
+    <SearchBox 
+    onSearch={handleSearch} 
+    mode={"Disposal"} 
+    onSubInventorySearchChange={handleSubInventorySearchChange}
+/>
     <div className='h-[50px]'>
         {/*  gap*/}
     </div>
@@ -167,15 +166,15 @@ function ExportFilePage() {
     
 
     {/* {filteredInventoryList.length > 0 ? ( */}
-        <TableExportFile
-            inventoryList={filteredInventoryList}
-            onDeleteSuccess={handleDeleteSuccess}
-            foundDataNumber={foundDataNumber}
-            selectedItems={selectedItems}
-            selectedRows={selectedRows}
-            onSelectionChange={updateSelectedItems}
-            showSubInventoryColumns={showSubInventoryColumns}
-        />
+    <TableExportFile
+                inventoryList={filteredInventoryList}
+                onDeleteSuccess={handleDeleteSuccess}
+                foundDataNumber={foundDataNumber}
+                selectedItemsE={selectedItemsE}
+                selectedRowsE={selectedRowsE}
+                onSelectionChange={updateSelectedItems}
+                showSubInventoryColumns={showSubInventoryColumns}
+            />
     {/* ) : (
         <div className='flex flex-col justify-center items-center h-full mt-10'>
             <p className='text-xl'> -ไม่พบข้อมูล- </p>

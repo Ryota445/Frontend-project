@@ -10,7 +10,7 @@ function TableViewInventory({
   onDeleteSuccess, 
   foundDataNumber, 
   selectedItems, 
-  selectedRows, 
+  selectedRows,  
   onSelectionChange,
   showSubInventoryColumns 
 }) {
@@ -437,12 +437,12 @@ setTimeout(() => {
     </h2>
     {isAdmin ? (
       <Button
-        className="bg-gray-400 w-[150px] h-[50px] pl-2"
-        type="primary"
-        onClick={openModal}
-      >
-        เปลี่ยนที่ตั้ง/ทำจำหน่าย <br/>({selectedItems.length}) รายการ
-      </Button>
+      className="bg-gray-400 w-[150px] h-[50px] pl-2 inline-block"
+      type="primary"
+      onClick={openModal}
+    >
+      เปลี่ยนที่ตั้ง/ทำจำหน่าย <br className="hidden md:inline" /> {selectedItems.length} รายการ
+    </Button>
     ) : null}
   </div>
 </div>
