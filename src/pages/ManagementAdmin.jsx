@@ -6,14 +6,8 @@ import { useAuth } from '../context/AuthContext';
 
 function ManagementAdmin() {
     const API_URL = import.meta.env.VITE_API_URL;
-    const [selectedItems, setSelectedItems] = useState(() => {
-        const saved = localStorage.getItem('selectedItemsE');
-        return saved ? JSON.parse(saved) : [];
-    });
-    const [selectedRows, setSelectedRows] = useState(() => {
-        const saved = localStorage.getItem('selectedRowsE');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [selectedItems, setSelectedItems] = useState([]);
+const [selectedRows, setSelectedRows] = useState([]);
     const [searchData, setSearchData] = useState(null);
     const [filteredInventoryList, setFilteredInventoryList] = useState([]);
     const [inventoryList, setInventoryList] = useState([]); // เพิ่ม state สำหรับรายการทั้งหมด
@@ -34,12 +28,10 @@ function ManagementAdmin() {
     useEffect(() => {
         fetchItems();
     }, []);
-    useEffect(() => {
-        localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
-        localStorage.setItem('selectedRows', JSON.stringify(selectedRows));
-    }, [selectedItems, selectedRows]);
 
-    const updateSelectedItems = (newItems, newRows) => {
+     // mode1
+     const updateSelectedItems = (newItems, newRows) => {
+     
         setSelectedItems(prevItems => {
             const updatedItems = newItems.filter(item => !prevItems.includes(item));
             return [...prevItems.filter(item => newItems.includes(item)), ...updatedItems];
@@ -48,7 +40,7 @@ function ManagementAdmin() {
             const updatedRows = newRows.filter(row => !prevRows.some(prevRow => prevRow.id === row.id));
             return [...prevRows.filter(row => newRows.some(newRow => newRow.id === row.id)), ...updatedRows];
         });
-    };
+};
 
 
     // mode2
@@ -99,13 +91,17 @@ function ManagementAdmin() {
 
     const handleSearch = (searchData) => {
         setSearchData(searchData);
+        const tempSelectedItems = [...selectedItems];
+        const tempSelectedRows = [...selectedRows];
         filterInventoryList(searchData);
+        setTimeout(() => {
+            updateSelectedItems(tempSelectedItems, tempSelectedRows);
+        }, 0);
     };
     const filterInventoryList = (searchData) => {
         if (!searchData) {
-            const nonDisposalInventory = inventoryList.filter(inventory => !inventory.attributes.isDisposal);
-            setFilteredInventoryList(nonDisposalInventory);
-            setFoundDataNumber(nonDisposalInventory.length);
+            setFilteredInventoryList(inventoryList);
+            setFoundDataNumber(inventoryList.length);
             return;
         }
     
@@ -151,12 +147,7 @@ function ManagementAdmin() {
         });
     
         setFilteredInventoryList(filteredList);
-        setFoundDataNumber(filteredList.length);    
-    
-        if (searchData.selectedItems && searchData.selectedRows) {
-        setSelectedItems(searchData.selectedItems);
-        setSelectedRows(searchData.selectedRows);
-    }
+        setFoundDataNumber(filteredList.length);
     };
 
     const handleDeleteSuccess = () => {

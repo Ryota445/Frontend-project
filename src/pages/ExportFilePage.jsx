@@ -7,39 +7,33 @@ import TableExportFile from '../components/TableExportFile';
 
 function ExportFilePage() {
     const API_URL = import.meta.env.VITE_API_URL;
-    const [selectedItemsE, setSelectedItemsE] = useState(() => {
-        const saved = localStorage.getItem('selectedItemsE');
-        return saved ? JSON.parse(saved) : [];
-    });
-    const [selectedRowsE, setSelectedRowsE] = useState(() => {
-        const saved = localStorage.getItem('selectedRowsE');
-        return saved ? JSON.parse(saved) : [];
-    });
+    const [selectedItems, setSelectedItems] = useState([]);
+    const [selectedRows, setSelectedRows] = useState([]);
     const [searchData, setSearchData] = useState(null);
     const [filteredInventoryList, setFilteredInventoryList] = useState([]);
     const [inventoryList, setInventoryList] = useState([]);
-    const [foundDataNumber, setFoundDataNumber] = useState(0);
+    const [foundDataNumber, setFoundDataNumber] = useState(0)
     const [showSubInventoryColumns, setShowSubInventoryColumns] = useState(false);
+    const [modeSelected, setModeSelected] = useState('mode1'); // initial mode
 
     useEffect(() => {
         fetchItems();
     }, []);
 
-    useEffect(() => {
-        localStorage.setItem('selectedItemsE', JSON.stringify(selectedItemsE));
-        localStorage.setItem('selectedRowsE', JSON.stringify(selectedRowsE));
-    }, [selectedItemsE, selectedRowsE]);
 
-   const updateSelectedItems = (newItems, newRows) => {
-    setSelectedItemsE(prevItems => {
-        const updatedItems = newItems.filter(item => !prevItems.includes(item));
-        return [...prevItems.filter(item => newItems.includes(item)), ...updatedItems];
-    });
-    setSelectedRowsE(prevRows => {
-        const updatedRows = newRows.filter(row => !prevRows.some(prevRow => prevRow.id === row.id));
-        return [...prevRows.filter(row => newRows.some(newRow => newRow.id === row.id)), ...updatedRows];
-    });
-};
+
+    // mode1
+    const updateSelectedItems = (newItems, newRows) => {
+     
+            setSelectedItems(prevItems => {
+                const updatedItems = newItems.filter(item => !prevItems.includes(item));
+                return [...prevItems.filter(item => newItems.includes(item)), ...updatedItems];
+            });
+            setSelectedRows(prevRows => {
+                const updatedRows = newRows.filter(row => !prevRows.some(prevRow => prevRow.id === row.id));
+                return [...prevRows.filter(row => newRows.some(newRow => newRow.id === row.id)), ...updatedRows];
+            });
+    };
 
 
         // mode2
@@ -62,8 +56,6 @@ function ExportFilePage() {
     //         });
     // };
 
-    
-    
     const fetchItems = async () => {
         try {
             const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories,how_to_get,year_money_get`);
@@ -72,7 +64,7 @@ function ExportFilePage() {
             }
             const result = await response.json();
             
-            const filteredData = result.data.filter(inventory => !inventory.attributes.isDisposal );
+            const filteredData = result.data.filter(inventory => !inventory.attributes.isDisposal);
             
             setFilteredInventoryList(filteredData);
             setInventoryList(result.data); // เก็บข้อมูลทั้งหมดไว้ใน inventoryList
@@ -82,12 +74,7 @@ function ExportFilePage() {
             console.error('Error fetching data:', error);
         }
     };
-
-    const handleSearch = (searchData) => {
-        setSearchData(searchData);
-        filterInventoryList(searchData);
-    };
-
+    
     const filterInventoryList = (searchData) => {
         if (!searchData) {
             const nonDisposalInventory = inventoryList.filter(inventory => !inventory.attributes.isDisposal);
@@ -129,16 +116,20 @@ function ExportFilePage() {
                 subInventoryMatch
             );
         });
-
-        setFilteredInventoryList(filteredList);
-    setFoundDataNumber(filteredList.length);
     
-    if (searchData.selectedItems && searchData.selectedRows) {
-        setSelectedItemsE(searchData.selectedItems);
-        setSelectedRowsE(searchData.selectedRows);
-    }
+        setFilteredInventoryList(filteredList);
+        setFoundDataNumber(filteredList.length);
     };
-
+    
+    const handleSearch = (searchData) => {
+        setSearchData(searchData);
+        const tempSelectedItems = [...selectedItems];
+        const tempSelectedRows = [...selectedRows];
+        filterInventoryList(searchData);
+        setTimeout(() => {
+            updateSelectedItems(tempSelectedItems, tempSelectedRows);
+        }, 0);
+    };
     const handleDeleteSuccess = () => {
         fetchItems();
     };
@@ -154,11 +145,11 @@ function ExportFilePage() {
 
     
             
-    <SearchBox 
-    onSearch={handleSearch} 
-    mode={"Disposal"} 
-    onSubInventorySearchChange={handleSubInventorySearchChange}
-/>
+    <SearchBox  className=""
+        onSearch={handleSearch} 
+        mode={"Disposal"} 
+        onSubInventorySearchChange={handleSubInventorySearchChange}
+    />
     <div className='h-[50px]'>
         {/*  gap*/}
     </div>
@@ -166,15 +157,15 @@ function ExportFilePage() {
     
 
     {/* {filteredInventoryList.length > 0 ? ( */}
-    <TableExportFile
-                inventoryList={filteredInventoryList}
-                onDeleteSuccess={handleDeleteSuccess}
-                foundDataNumber={foundDataNumber}
-                selectedItemsE={selectedItemsE}
-                selectedRowsE={selectedRowsE}
-                onSelectionChange={updateSelectedItems}
-                showSubInventoryColumns={showSubInventoryColumns}
-            />
+        <TableExportFile
+            inventoryList={filteredInventoryList}
+            onDeleteSuccess={handleDeleteSuccess}
+            foundDataNumber={foundDataNumber}
+            selectedItems={selectedItems}
+            selectedRows={selectedRows}
+            onSelectionChange={updateSelectedItems}
+            showSubInventoryColumns={showSubInventoryColumns}
+        />
     {/* ) : (
         <div className='flex flex-col justify-center items-center h-full mt-10'>
             <p className='text-xl'> -ไม่พบข้อมูล- </p>
