@@ -397,40 +397,51 @@ const updateSubInventory = (index, field, value) => {
             <Input />
           </Form.Item> */}
 
-            <Form.Item
-              name="category"
-              label="หมวดหมู่ครุภัณฑ์"
-              rules={[{ required: false, message: "กรุณาเลือกหมวดหมู่" }]}
-            >
-              <Select>
-                {categoryOptions.map((category) => (
-                  <Option key={category.id} value={category.id}>
-                    {category.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+<Form.Item
+  name="category"
+  label="หมวดหมู่ครุภัณฑ์"
+  rules={[{ required: false, message: "กรุณาเลือกหมวดหมู่" }]}
+>
+  <Select
+    showSearch
+    optionFilterProp="children"
+    filterOption={(input, option) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    }
+  >
+    {categoryOptions.map((category) => (
+      <Option key={category.id} value={category.id}>
+        {category.name}
+      </Option>
+    ))}
+  </Select>
+</Form.Item>
           </div>
           <div>
             {/* คอลัมน์ขวา */}
             <label>ที่ตั้งครุภัณฑ์</label>
 
             <div className="flex space-x-2">
-              <Form.Item
-                name="building"
-                label="อาคาร"
-                className="w-full"
-                rules={[{ required: false, message: "กรุณาเลือกอาคาร" }]}
-              >
-                <Select>
-                  {buildingOptions.map((building) => (
-                    <Option key={building.id} value={building.id}>
-                      {building.name}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-
+            <Form.Item
+  name="building"
+  label="อาคาร"
+  className="w-full"
+  rules={[{ required: false, message: "กรุณาเลือกอาคาร" }]}
+>
+  <Select
+    showSearch
+    optionFilterProp="children"
+    filterOption={(input, option) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    }
+  >
+    {buildingOptions.map((building) => (
+      <Option key={building.id} value={building.id}>
+        {building.name}
+      </Option>
+    ))}
+  </Select>
+</Form.Item>
               <Form.Item
                 name="floor"
                 label="ชั้น"
@@ -446,18 +457,24 @@ const updateSubInventory = (index, field, value) => {
             </div>
 
             <Form.Item
-              name="responsible"
-              label="ผู้ดูแล"
-              rules={[{ required: false, message: "กรุณาเลือกผู้รับผิดชอบ" }]}
-            >
-              <Select>
-                {responsibleOptions.map((responsible) => (
-                  <Option key={responsible.id} value={responsible.id}>
-                    {responsible.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
+  name="responsible"
+  label="ผู้ดูแล"
+  rules={[{ required: false, message: "กรุณาเลือกผู้รับผิดชอบ" }]}
+>
+  <Select
+    showSearch
+    optionFilterProp="children"
+    filterOption={(input, option) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    }
+  >
+    {responsibleOptions.map((responsible) => (
+      <Option key={responsible.id} value={responsible.id}>
+        {responsible.name}
+      </Option>
+    ))}
+  </Select>
+</Form.Item>
 
             <Form.Item
               name="img_inv"
