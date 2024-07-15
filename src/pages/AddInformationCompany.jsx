@@ -151,7 +151,7 @@ function AddInformationCompany() {
       key: 'taxId'
     },
     columnSettings.contactName && {
-      title: 'ชื่อตัวแทน/ชื่อผู้บริจาค',
+      title: 'ชื่อตัวแทน',
       dataIndex: ['attributes', 'contactName'],
       key: 'contactName'
     },
@@ -201,14 +201,14 @@ function AddInformationCompany() {
   return (
     <>
       <div className='border-b-2 border-black mb-10 flex justify-between items-center'>
-        <h1 className='text-3xl text-blue-800'>ข้อมูลตัวแทนบริษัท/ผู้บริจาค</h1>
+        <h1 className='text-3xl text-blue-800'>ข้อมูลตัวแทนบริษัท</h1>
       </div>
       
       <div className='flex flex-col'>
       
         <Space style={{ marginBottom: 16 }}>
           <Search
-            placeholder="ค้นหาชื่อบริษัท ชื่อตัวแทนหรือชื่ผู้บริจาค"
+            placeholder="ค้นหาชื่อบริษัท ชื่อตัวแทน"
             onSearch={handleSearch}
             style={{ width: 300 }}
             allowClear
@@ -259,7 +259,7 @@ function AddInformationCompany() {
           <Form.Item name="taxId" label="เลขประจำตัวผู้เสียภาษี" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="contactName" label="ชื่อตัวแทน/ชื่อผู้บริจาค" rules={[{ required: true }]}>
+          <Form.Item name="contactName" label="ชื่อตัวแทน" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
           <Form.Item name="role" label="หน้าที่" rules={[{ required: false }]}>

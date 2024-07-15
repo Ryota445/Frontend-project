@@ -9,7 +9,7 @@ const AddInventoryItem = ({ index, item, handleInputChange, remove }) => (
       rules={[{ required: false, message: 'กรุณากรอกหมายเลขครุภัณฑ์' }]}
     >
       
-      <Input placeholder="หมายเลขครุภัณฑ์" value={item.id_inv} onChange={(e) => handleInputChange(e, index, 'id_inv')} />
+      <Input placeholder="หมายเลขต่อท้าย" value={item.id_inv} onChange={(e) => handleInputChange(e, index, 'id_inv')} />
     </Form.Item>
     <Form.Item
       name={[index, 'name']}

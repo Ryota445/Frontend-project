@@ -1409,7 +1409,7 @@ fetchDataC();
                 </div>
 
                 <div className="flex flex-row my-2">
-                  <h1 className="text-lg text-gray-400 mr-4">ตัวแทนบริษัท/ผู้บริจาค</h1>
+                  <h1 className="text-lg text-gray-400 mr-4">ตัวแทนบริษัท</h1>
                   {dataInv?.attributes?.company_inventory?.data?.attributes
                     ?.contactName ? (
                     <h1 className="text-lg">

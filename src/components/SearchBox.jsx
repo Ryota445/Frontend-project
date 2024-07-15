@@ -158,25 +158,25 @@ function SearchBox({ onSearch ,mode ,onSubInventorySearchChange}) {
                               <div className='flex flex-row gap-2'>
                             <div >
                                 <label htmlFor="building" className="block text-sm font-medium text-gray-700 mb-2 mx-1">อาคาร</label>
-                                <Select
-                                    placeholder="เลือกอาคาร"
-                                    id="building"
-                                    name="building"
-                                    value={formData.building}
-                                    onChange={(value) => setFormData({ ...formData, building: value })}
-                                    style={{ width: 100 }}
-                                    suffixIcon={formData.building ? (
-                                        <Button
-                                            type="text"
-                                            onClick={() => setFormData({ ...formData, building: '' })}
-                                            icon={<CloseOutlined />}
-                                        />
-                                    ) : <DownOutlined />}
-                                >
-                                    {buildingOptions.map(building => (
-                                        <Option key={building.id} value={building.id}>{building.name}</Option>
-                                    ))}
-                                </Select>
+                                    <Select
+                                        placeholder="เลือกอาคาร"
+                                        id="building"
+                                        name="building"
+                                        value={formData.building}
+                                        onChange={(value) => setFormData({ ...formData, building: value })}
+                                        style={{ width: 100 }}
+                                        suffixIcon={formData.building ? (
+                                            <Button
+                                                type="text"
+                                                onClick={() => setFormData({ ...formData, building: '' })}
+                                                icon={<CloseOutlined />}
+                                            />
+                                        ) : <DownOutlined />}
+                                    >
+                                        {buildingOptions.map(building => (
+                                            <Option key={building.id} value={building.id}>{building.name}</Option>
+                                        ))}
+                                    </Select>
                             </div>
                             
 
