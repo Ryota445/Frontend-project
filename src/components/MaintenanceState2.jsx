@@ -69,23 +69,23 @@ function MaintenanceState2({ dataInvForCard, dataRepairReport, onFormDataChange,
             </a>
           </div>
 
-          <div>
+          {/* <div>
             <Checkbox
               checked={componentDisabled}
               onChange={(e) => setComponentDisabled(e.target.checked)}
             >
               <p className='text-lg'>มีรายละเอียดที่ต้องการเพิ่ม</p>
             </Checkbox>
-          </div>
+          </div> */}
 
-          {componentDisabled && (
+          {/* {componentDisabled && ( */}
             <div className='border-2 border-blue-500 rounded-md px-4 mt-2'>
               <h1 className='text-2xl text-gray-500'>รายละเอียดและเอกสารเพิ่มเติมโดยเจ้าหน้าที่</h1>
               <Form
                 labelCol={{ span: 4 }}
                 wrapperCol={{ span: 14 }}
                 layout="horizontal"
-                disabled={!componentDisabled}
+                // disabled={!componentDisabled}
                 onValuesChange={(changedValues, allValues) => onFormDataChange(allValues)}
               >
                 <Form.Item name="DetailRepairByAdmin">
@@ -124,7 +124,7 @@ function MaintenanceState2({ dataInvForCard, dataRepairReport, onFormDataChange,
                 </Form.Item>
               </Form>
             </div>
-          )}
+          {/* )} */}
         </div>
         <div>{/* ขอบขวา*/}</div>
       </div>

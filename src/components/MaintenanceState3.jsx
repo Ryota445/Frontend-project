@@ -39,16 +39,16 @@ function MaintenanceState3({ onFormDataChange, onFormDataChangeFile }) {
             </div>
           </div>
 
-          <div>
+          {/* <div>
             <Checkbox
               checked={componentDisabled}
               onChange={(e) => setComponentDisabled(e.target.checked)}
             >
               <p className='text-lg'>มีรายละเอียดที่ต้องการเพิ่ม</p>
             </Checkbox>
-          </div>
+          </div> */}
 
-          {componentDisabled && (
+          {/* {componentDisabled && ( */}
             <div className='border-2 border-blue-500 rounded-md px-4 mt-2'>
               <h1 className='text-2xl text-gray-500'>รายละเอียดและเอกสารเพิ่มเติมโดยเจ้าหน้าที่</h1>
               <Form
@@ -59,7 +59,7 @@ function MaintenanceState3({ onFormDataChange, onFormDataChangeFile }) {
                   span: 14,
                 }}
                 layout="horizontal"
-                disabled={!componentDisabled}
+                // disabled={!componentDisabled}
               >
                 <Form.Item>
                   <div className='mt-2'>
@@ -100,7 +100,7 @@ function MaintenanceState3({ onFormDataChange, onFormDataChangeFile }) {
                 </Form.Item>
               </Form>
             </div>
-          )}
+          {/* )} */}
         </div>
         <div>{/* ขอบขวา */}</div>
       </div>

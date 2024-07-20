@@ -836,7 +836,7 @@ const calculateAgeDifference = (dateReceive) => {
             type="primary"
             onClick={openModal}
           >
-             เลือก ({selectedItems.length})
+             นำออกรายงาน  <br className="hidden md:inline" /> {selectedItems.length} รายการ
           </Button>
         </div>
       </div>

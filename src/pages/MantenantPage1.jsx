@@ -139,7 +139,7 @@ const MantenantPage1 = () => {
                     }}
                     disabled={!isStatusChanged(item.id, currentStatus)}
                   >
-                    ดำเนินการต่อ
+                    กรอกข้อมูล
                   </Button>
                 ),
               };

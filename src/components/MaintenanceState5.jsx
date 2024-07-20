@@ -131,15 +131,15 @@ fetchData();
                 </Form.Item>
             </Form>
           </div>
-
+{/* 
           <Checkbox
             checked={componentDisabled}
             onChange={(e) => setComponentDisabled(e.target.checked)}
           >
             <p className='text-lg'>ต้องการกำหนดเสร็จสิ้นการซ่อมครุภัณฑ์หรือไม่</p>
-          </Checkbox>
+          </Checkbox> */}
 
-          {componentDisabled && (
+          {/* {componentDisabled && ( */}
             <div className='border-2 border-blue-500 rounded-md px-4 mt-2'>
               <Form onValuesChange={handleFormChange}>
                 <Form.Item name="dateFinishRepair" label="วันที่เสร็จสิ้นการซ่อมครุภัณฑ์">
@@ -147,7 +147,7 @@ fetchData();
                 </Form.Item>
               </Form>
             </div>
-          )}
+          {/* )} */}
         </div>
         <div>{/* ขอบขวา*/}</div>
       </div>

@@ -1056,10 +1056,12 @@ fetchDataC();
                           <Form.Item>
                             <button
                               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+                            
                               htmlType="submit"
                             >
                               ยืนยัน
                             </button>
+
                           </Form.Item>
                           <Form.Item>
                             <button
@@ -1142,7 +1144,9 @@ fetchDataC();
     <p className="text-red-500">***กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น***</p>
 
     <div className="flex justify-end">
-      <Button type="primary" htmlType="submit" className="mr-2">
+      <Button 
+      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+     htmlType="submit" >
         ยืนยัน
       </Button>
       <Button onClick={closeModal}>
@@ -1161,10 +1165,16 @@ fetchDataC();
   footer={null}
 >
   <div className="mb-4">
-    <Button onClick={() => setFormType('saveMaintenance')} className={formType === 'saveMaintenance' ? 'btn-primary text-blue-500' : 'default'}>
+    <Button 
+      onClick={() => setFormType('saveMaintenance')} 
+      className={formType === 'saveMaintenance' ? 'bg-blue-500 text-white' : 'bg-white text-blue-500 border-blue-500'}
+    >
       บันทึกข้อมูลบำรุงรักษา
     </Button>
-    <Button onClick={() => setFormType('addAppointment')} className={formType === 'addAppointment' ? 'btn-primary text-blue-500' : 'default'}>
+    <Button 
+      onClick={() => setFormType('addAppointment')} 
+      className={formType === 'addAppointment' ? 'bg-blue-500 text-white' : 'bg-white text-blue-500 border-blue-500'}
+    >
       เพิ่มนัดหมายบำรุงรักษา
     </Button>
   </div>
@@ -1243,15 +1253,15 @@ fetchDataC();
       </Upload>
     </Form.Item>
 
-    <Form.Item name="maintenanceDateCheckbox" valuePropName="checked">
+    {/* <Form.Item name="maintenanceDateCheckbox" valuePropName="checked">
       <Checkbox onChange={(e) => setIsMaintenanceDate(e.target.checked)}>ต้องการกำหนดวันที่ทำการบำรุงรักษา</Checkbox>
-    </Form.Item>
+    </Form.Item> */}
 
-    {isMaintenanceDate && (
+   
       <Form.Item name="dateToDo" label="วันที่บำรุงรักษา">
         <DatePicker />
       </Form.Item>
-    )}
+    
 
     {/* <Form.Item name="nextAppointmentCheckbox" valuePropName="checked">
       <Checkbox onChange={(e) => setIsNextAppointment(e.target.checked)}>มีนัดหมายบำรุงรักษารอบถัดไป</Checkbox>
@@ -1264,46 +1274,52 @@ fetchDataC();
             </Form.Item>
           )} */}
 
-          <Form.Item name="nextAppointmentCheckbox" valuePropName="checked">
+          {/* <Form.Item name="nextAppointmentCheckbox" valuePropName="checked">
             <Checkbox onChange={(e) => setIsNextAppointment(e.target.checked)}>มีนัดหมายบำรุงรักษารอบถัดไป</Checkbox>
-          </Form.Item>
+          </Form.Item> */}
 
-          {isNextAppointment && (
-  <>
-    <Form.Item name="newDueDateType" label="วันบำรุงรักษารอบถัดไป">
-      <Radio.Group onChange={(e) => setDateInputType(e.target.value)}>
-        <Radio value="formInput">กรอกจำนวนวันในการบำรุงรักษารอบถัดไป (วัน)</Radio>
-        <Radio value="datePicker">เลือกวันที่</Radio>
-      </Radio.Group>
-    </Form.Item>
+          {/* {isNextAppointment && (
+  // <>
+  //   <Form.Item name="newDueDateType" label="วันบำรุงรักษารอบถัดไป">
+  //     <Radio.Group onChange={(e) => setDateInputType(e.target.value)}>
+  //       <Radio value="formInput">กรอกจำนวนวันในการบำรุงรักษารอบถัดไป (วัน)</Radio>
+  //       <Radio value="datePicker">เลือกวันที่</Radio>
+  //     </Radio.Group>
+  //   </Form.Item>
 
-    {dateInputType === 'formInput' && (
-      <Form.Item name="formInputDate" >
-        <Input placeholder="ใส่จำนวนวัน" />
-      </Form.Item>
-    )}
+  //   {dateInputType === 'formInput' && (
+  //     <Form.Item name="formInputDate" >
+  //       <Input placeholder="ใส่จำนวนวัน" />
+  //     </Form.Item>
+  //   )}
 
-    {dateInputType === 'datePicker' && (
-      <Form.Item name="datePickerDate">
-        <DatePicker />
-      </Form.Item>
-    )}
-  </>
-)}
+  //   {dateInputType === 'datePicker' && (
+  //     <Form.Item name="datePickerDate">
+  //       <DatePicker />
+  //     </Form.Item>
+  //   )}
+  // </>
+)} */}
 
-          <div className="flex justify-end">
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                ยืนยัน
-              </Button>
-            </Form.Item>
-            <Form.Item>
-              <Button onClick={closeModalMan}>
-                ยกเลิก
-              </Button>
-            </Form.Item>
-          </div>
-          </Form>
+<div className="flex justify-end">
+        <Form.Item>
+          <Button 
+            type="primary" 
+            htmlType="submit"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+            style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6' }}
+          >
+            ยืนยัน
+          </Button>
+        </Form.Item>
+        <Form.Item>
+          <Button onClick={closeModalMan}>
+            ยกเลิก
+          </Button>
+        </Form.Item>
+      </div>
+    </Form>
+
   )}
 
   {formType === 'addAppointment' && (
@@ -1331,30 +1347,35 @@ fetchDataC();
     </Form.Item>
 
     {dateInputType === 'formInput' && (
-      <Form.Item name="formInputDate" label="กรอกจำนวนวันในการบำรุงรักษารอบถัดไป (วัน)" rules={[{ required: true, message: "กรุณากรอกจำนวนวัน" }]}>
+      <Form.Item name="formInputDate"  rules={[{ required: true, message: "กรุณากรอกจำนวนวัน" }]}>
         <Input placeholder="ใส่จำนวนวัน" type="number" />
       </Form.Item>
     )}
 
     {dateInputType === 'datePicker' && (
-      <Form.Item name="datePickerDate" label="เลือกวันที่" rules={[{ required: true, message: "กรุณาเลือกวันที่" }]}>
+      <Form.Item name="datePickerDate"  rules={[{ required: true, message: "กรุณาเลือกวันที่" }]}>
         <DatePicker />
       </Form.Item>
     )}
 
-          <div className="flex justify-end">
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                ยืนยัน
-              </Button>
-            </Form.Item>
-            <Form.Item>
-              <Button onClick={closeModalMan}>
-                ยกเลิก
-              </Button>
-            </Form.Item>
-          </div>
-          </Form>
+<div className="flex justify-end">
+        <Form.Item>
+          <Button 
+            type="primary" 
+            htmlType="submit"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
+            style={{ backgroundColor: '#3b82f6', borderColor: '#3b82f6' }}
+          >
+            ยืนยัน
+          </Button>
+        </Form.Item>
+        <Form.Item>
+          <Button onClick={closeModalMan}>
+            ยกเลิก
+          </Button>
+        </Form.Item>
+      </div>
+    </Form>
   )}
 </AntdModal>
 
@@ -1368,10 +1389,10 @@ fetchDataC();
 
           <div></div>
         </div>
-
+        <div className="w-full h-[50px]"></div>
         <div className=" w-full h-[300px] mt-10 grid grid-cols-8 ">
           <div className=""></div>
-
+      
           <div className="mt-8 col-span-6 border-2 border-blue-500 rounded-md">
             <div className="border-b-2 m-4 ">
               <h1 className="text-xl font-thin text-blue-800 ">วิธีได้มา</h1>

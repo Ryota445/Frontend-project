@@ -441,7 +441,7 @@ setTimeout(() => {
         type="primary"
         onClick={openModal}
       >
-        เปลี่ยนที่ตั้ง/ทำจำหน่าย <br/>({selectedItems.length}) รายการ
+        เปลี่ยนที่ตั้ง/ทำจำหน่าย <br className="hidden md:inline" /> {selectedItems.length} รายการ
       </Button>
     ) : null}
   </div>
