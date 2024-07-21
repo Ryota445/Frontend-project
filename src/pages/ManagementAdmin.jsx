@@ -13,6 +13,9 @@ const [selectedRows, setSelectedRows] = useState([]);
     const [inventoryList, setInventoryList] = useState([]); // เพิ่ม state สำหรับรายการทั้งหมด
     const [foundDataNumber, setFoundDataNumber] = useState(0)
     const [showSubInventoryColumns, setShowSubInventoryColumns] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+const [totalPages, setTotalPages] = useState(0);
+const [isLoading, setIsLoading] = useState(false);
 
     const { user } = useAuth();
 
@@ -42,6 +45,32 @@ const [selectedRows, setSelectedRows] = useState([]);
         });
 };
 
+useEffect(() => {
+    loadInitialData();
+}, []);
+
+const loadInitialData = async () => {
+    setIsLoading(true);
+    const result = await fetchItems(1);
+    setFilteredInventoryList(result.data);
+    setInventoryList(result.data);
+    setFoundDataNumber(result.pagination.total);
+    setTotalPages(result.pagination.pageCount);
+    setIsLoading(false);
+};
+
+const loadMoreData = async () => {
+    if (currentPage < totalPages && !isLoading) {
+        setIsLoading(true);
+        const nextPage = currentPage + 1;
+        const result = await fetchItems(nextPage);
+        setFilteredInventoryList(prevList => [...prevList, ...result.data]);
+        setInventoryList(prevList => [...prevList, ...result.data]);
+        setCurrentPage(nextPage);
+        setIsLoading(false);
+    }
+};
+
 
     // mode2
 
@@ -64,49 +93,42 @@ const [selectedRows, setSelectedRows] = useState([]);
 // };
 
 
-    const fetchItems = async () => {
-        try {
-            const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories&pagination[pageSize]=100`);
-            if (!response.ok) {
-                throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
-            }
-            const result = await response.json();
-
-
-            
-            // กรองรายการที่ isDisposal เป็น false ส่วนนี้
-            const filteredData = result.data.filter(inventory => 
-                inventory.attributes.isDisposal === false || inventory.attributes.isDisposal === null
-            );
-
-
-
-            setFilteredInventoryList(filteredData); // เซ็ตรายการทั้งหมดเป็นรายการที่ถูกกรองแล้ว
-            setInventoryList(filteredData); // เซ็ตรายการทั้งหมด
-            setFoundDataNumber(filteredData.length); // อัปเดตจำนวนรายการที่พบ
-            console.log("InventoryData :", filteredData);
-        } catch (error) {
-            console.error('Error fetching data:', error);
+const fetchItems = async (page = 1, pageSize = 100) => {
+    try {
+        const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories&pagination[page]=${page}&pagination[pageSize]=${pageSize}`);
+        if (!response.ok) {
+            throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
         }
-    };
+        const result = await response.json();
 
-    const handleSearch = (searchData) => {
-        setSearchData(searchData);
-        const tempSelectedItems = [...selectedItems];
-        const tempSelectedRows = [...selectedRows];
-        filterInventoryList(searchData);
-        setTimeout(() => {
-            updateSelectedItems(tempSelectedItems, tempSelectedRows);
-        }, 0);
-    };
-    const filterInventoryList = (searchData) => {
-        if (!searchData) {
-            setFilteredInventoryList(inventoryList);
-            setFoundDataNumber(inventoryList.length);
-            return;
-        }
-    
-        const filteredList = inventoryList.filter(inventory => {
+        const filteredData = result.data.filter(inventory => 
+            inventory.attributes.isDisposal === false || inventory.attributes.isDisposal === null
+        );
+
+        return {
+            data: filteredData,
+            pagination: result.meta.pagination
+        };
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return { data: [], pagination: null };
+    }
+};
+
+const handleSearch = async (searchData) => {
+    setSearchData(searchData);
+    setCurrentPage(1);
+    const result = await fetchItems(1);
+    const filteredData = filterInventoryList(result.data, searchData);
+    setFilteredInventoryList(filteredData);
+    setFoundDataNumber(filteredData.length);
+};
+const filterInventoryList = (inventoryList, searchData) => {
+    if (!searchData) {
+        return inventoryList;
+    }
+
+    return inventoryList.filter(inventory => {
             const subInventoryMatch = searchData.searchSubInventory
                 ? inventory.attributes.sub_inventories.data.length > 0 &&
                   (searchData.sub_inventory
@@ -192,7 +214,7 @@ const [selectedRows, setSelectedRows] = useState([]);
             </div>
 
             {/* {filteredInventoryList.length > 0 ? ( */}
-                <TableViewInventory
+            <TableViewInventory
     inventoryList={filteredInventoryList}
     onDeleteSuccess={handleDeleteSuccess}
     foundDataNumber={foundDataNumber}
@@ -202,6 +224,18 @@ const [selectedRows, setSelectedRows] = useState([]);
     onSelectionChange={updateSelectedItems}
     showSubInventoryColumns={showSubInventoryColumns}
 />
+
+{currentPage < totalPages && (
+    <div className="text-center mt-4">
+        <button 
+            className="btn btn-primary" 
+            onClick={loadMoreData}
+            disabled={isLoading}
+        >
+            {isLoading ? 'กำลังโหลด...' : 'โหลดเพิ่มเติม'}
+        </button>
+    </div>
+)}
             
             {/* ) : (
                 <div className='flex flex-col justify-center items-center h-full mt-10'>
