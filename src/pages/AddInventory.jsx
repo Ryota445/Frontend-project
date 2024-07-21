@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Form, Input, Button, DatePicker, Select, Upload, Space, message } from "antd";
 import { UploadOutlined, PlusOutlined, PrinterOutlined, DeleteOutlined } from "@ant-design/icons";
 import AddTest from "../components/AddTest";
-
+import debounce from 'lodash/debounce';
 const { Option } = Select;
 
 const normFile = (e) => {
@@ -31,6 +31,21 @@ function AddInventory() {
 
   const [activeButton, setActiveButton] = useState("single");
 
+  const [idInvExists, setIdInvExists] = useState(false);
+
+  const checkIdInv = useCallback(
+    debounce(async (id_inv) => {
+      try {
+        const response = await fetch(`${API_URL}/api/inventories/check-id-inv?id_inv=${id_inv}`);
+        const data = await response.json();
+        setIdInvExists(data.exists);
+      } catch (error) {
+        console.error("Error checking id_inv:", error);
+      }
+    }, 300),
+    []
+  );
+  
   useEffect(() => {
     // Generate inventory number based on the specified quantity
     const endInventoryNumber = parseInt(startInventoryNumber) + parseInt(inventoryCount) - 1; 
@@ -287,9 +302,24 @@ function AddInventory() {
 
               {/* ตรวจสอบสถานะของ activeButton เพื่อแสดงฟอร์มที่ถูกต้อง */}
               {activeButton === "single" ? (
-                <Form.Item name="id_inv" label="หมายเลขครุภัณฑ์">
-                  <Input />
-                </Form.Item>
+                 <Form.Item
+                 name="id_inv"
+                 label="หมายเลขครุภัณฑ์"
+                 validateStatus={idInvExists ? "error" : ""}
+                 help={idInvExists ? "หมายเลขครุภัณฑ์นี้มีอยู่แล้ว" : ""}
+               >
+                 <Input
+                   onChange={(e) => {
+                     const value = e.target.value;
+                     form.setFieldsValue({ id_inv: value });
+                     if (value) {
+                       checkIdInv(value);
+                     } else {
+                       setIdInvExists(false);
+                     }
+                   }}
+                 />
+               </Form.Item>
               ) : (
                 <>
                   <Form.Item name="inventory_count" label="จำนวนครุภัณฑ์">

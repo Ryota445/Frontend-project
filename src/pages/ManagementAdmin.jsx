@@ -66,7 +66,7 @@ const [selectedRows, setSelectedRows] = useState([]);
 
     const fetchItems = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories`);
+            const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories&pagination[pageSize]=100`);
             if (!response.ok) {
                 throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
             }
@@ -75,8 +75,9 @@ const [selectedRows, setSelectedRows] = useState([]);
 
             
             // กรองรายการที่ isDisposal เป็น false ส่วนนี้
-            const filteredData = result.data.filter(inventory => !inventory.attributes.isDisposal);
-            
+            const filteredData = result.data.filter(inventory => 
+                inventory.attributes.isDisposal === false || inventory.attributes.isDisposal === null
+            );
 
 
 
