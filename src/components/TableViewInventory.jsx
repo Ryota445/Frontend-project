@@ -436,13 +436,17 @@ setTimeout(() => {
       ค้นพบ {foundDataNumber} รายการ
     </h2>
     {isAdmin ? (
-      <Button
-        className="bg-gray-400 w-[150px] h-[50px] pl-2"
-        type="primary"
-        onClick={openModal}
-      >
-        เปลี่ยนที่ตั้ง/ทำจำหน่าย <br className="hidden md:inline" /> {selectedItems.length} รายการ
-      </Button>
+     <Button
+     className="bg-gray-400 w-[150px] h-[50px] pl-2"
+     type="primary"
+     onClick={openModal}
+   >
+     <span>
+       เปลี่ยนที่ตั้ง/ทำจำหน่าย
+       <br className="hidden md:inline" />
+       {selectedItems.length} รายการ
+     </span>
+   </Button>
     ) : null}
   </div>
 </div>

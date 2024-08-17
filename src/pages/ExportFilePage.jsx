@@ -15,6 +15,7 @@ function ExportFilePage() {
     const [foundDataNumber, setFoundDataNumber] = useState(0)
     const [showSubInventoryColumns, setShowSubInventoryColumns] = useState(false);
     const [modeSelected, setModeSelected] = useState('mode1'); // initial mode
+    const [showDisposalColumns, setShowDisposalColumns] = useState(false);
 
     useEffect(() => {
         fetchItems();
@@ -58,7 +59,7 @@ function ExportFilePage() {
 
     const fetchItems = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories,how_to_get,year_money_get`);
+            const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories,how_to_get,year_money_get,request_disposal.FileReasonDisposal`);
             if (!response.ok) {
                 throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
             }
@@ -126,10 +127,12 @@ function ExportFilePage() {
         const tempSelectedItems = [...selectedItems];
         const tempSelectedRows = [...selectedRows];
         filterInventoryList(searchData);
+        setShowDisposalColumns(searchData.statusInventory == '3');
         setTimeout(() => {
-            updateSelectedItems(tempSelectedItems, tempSelectedRows);
+          updateSelectedItems(tempSelectedItems, tempSelectedRows);
         }, 0);
-    };
+      };
+
     const handleDeleteSuccess = () => {
         fetchItems();
     };
@@ -165,6 +168,7 @@ function ExportFilePage() {
             selectedRows={selectedRows}
             onSelectionChange={updateSelectedItems}
             showSubInventoryColumns={showSubInventoryColumns}
+            showDisposalColumns={showDisposalColumns}
         />
     {/* ) : (
         <div className='flex flex-col justify-center items-center h-full mt-10'>

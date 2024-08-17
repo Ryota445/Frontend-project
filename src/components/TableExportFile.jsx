@@ -15,7 +15,8 @@ function TableExportFile({
   selectedItems, 
   selectedRows, 
   onSelectionChange,
-  showSubInventoryColumns 
+  showSubInventoryColumns,
+  showDisposalColumns
 }) {
   const API_URL = import.meta.env.VITE_API_URL;
     const [sortedInventoryList, setSortedInventoryList] = useState([]);
@@ -25,6 +26,7 @@ function TableExportFile({
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const navigate = useNavigate();
     const [exportType, setExportType] = useState('1');
+    
 
 
 
@@ -263,6 +265,74 @@ function TableExportFile({
           render: (text, record) => <DateDifferenceCalculator dateReceive={record.attributes.DateRecive} />,
         },
         {
+          title: 'วันที่ทำจำหน่าย',
+          key: 'disposalDate',
+          render: (text, record) => {
+            if (record.attributes.request_disposal?.data) {
+              const date = new Date(record.attributes.request_disposal.data.attributes.createdAt);
+              return date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              });
+            }
+            return '-';
+          },
+        },
+        {
+          title: 'ปีที่ทำจำหน่าย',
+          key: 'disposalYear',
+          render: (text, record) => {
+            if (record.attributes.request_disposal?.data) {
+              const date = new Date(record.attributes.request_disposal.data.attributes.createdAt);
+              return date.getFullYear() + 543; // แปลงเป็นปี พ.ศ.
+            }
+            return '-';
+          },
+        },
+        {
+          title: 'รายละเอียดการทำจำหน่าย',
+          key: 'disposalReason',
+          render: (text, record) => {
+            if (record.attributes.request_disposal?.data) {
+              return record.attributes.request_disposal.data.attributes.ReasonDisposal;
+            }
+            return '-';
+          },
+        },
+        {
+          title: 'ไฟล์ทำจำหน่าย',
+          key: 'disposalFile',
+          render: (text, record) => {
+            const fileData = record.attributes.request_disposal?.data?.attributes?.FileReasonDisposal?.data;
+            if (fileData) {
+              const fileUrl = fileData.attributes.url;
+              const fileName = fileData.attributes.name;
+              const truncatedFileName = fileName.length > 20 ? fileName.substring(0, 20) + '...' : fileName;
+              return (
+                <a onClick={() => handleViewDisposalReason(fileUrl)} title={fileName}>
+                  {truncatedFileName}
+                </a>
+              );
+            }
+            return '-';
+          },
+        },
+        {
+          title: 'ยกเลิกทำจำหน่าย',
+          key: 'cancelDisposal',
+          render: (text, record) => {
+            if (record.attributes.status_inventory?.data?.id === 3 && record.attributes.isDisposal) {
+              return (
+                <Button onClick={() => handleCancelDisposal(record.id, record.attributes.request_disposal?.data?.id)}>
+                  ยกเลิกทำจำหน่าย
+                </Button>
+              );
+            }
+            return null;
+          },
+        },
+        {
           title: 'ดู/แก้ไข',
           key: 'action',
           render: (text, record) => (
@@ -290,7 +360,11 @@ function TableExportFile({
             </Space>
           ),
         },
+       
+       
       ];
+
+      
     
       const filteredColumns = allColumns.filter(col => col.key !== 'action' && col.key !== 'delete');
     
@@ -307,7 +381,12 @@ function TableExportFile({
         ),
       });
     
-      const columns = allColumns.filter(col => visibleColumns.includes(col.key));
+      const columns = allColumns.filter(col => {
+        if (['disposalDate', 'disposalYear', 'disposalReason', 'disposalFile', 'cancelDisposal'].includes(col.key)) {
+          return showDisposalColumns;
+        }
+        return visibleColumns.includes(col.key);
+      });
     
       useEffect(() => {
         const sortedInventoryList = [...inventoryList].sort((a, b) => {
@@ -329,6 +408,69 @@ function TableExportFile({
     
         onSelectionChange(updatedSelectedItems, updatedSelectedRows);
         message.info(`เลือกแล้ว ${updatedSelectedItems.length} รายการ`);
+    };
+
+    const handleViewDisposalReason = (fileUrl) => {
+      if (fileUrl) {
+        window.open(`${API_URL}${fileUrl}`, '_blank');
+      } else {
+        message.info("ไม่พบไฟล์แนบ");
+      }
+    };
+
+    const handleCancelDisposal = async (inventoryId, disposalId) => {
+      try {
+        // อัพเดท request-disposal โดยลบครุภัณฑ์ออกจากรายการ
+        if (disposalId) {
+          const getDisposalResponse = await fetch(`${API_URL}/api/request-disposals/${disposalId}?populate=*`);
+          if (!getDisposalResponse.ok) throw new Error("ไม่สามารถดึงข้อมูลการทำจำหน่ายได้");
+          const disposalData = await getDisposalResponse.json();
+    
+          // ลบ inventoryId ออกจากรายการ inventories
+          const updatedInventories = disposalData.data.attributes.inventories.data
+            .filter(inv => inv.id !== inventoryId)
+            .map(inv => inv.id);
+    
+          const updateDisposalResponse = await fetch(`${API_URL}/api/request-disposals/${disposalId}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              data: {
+                inventories: updatedInventories
+              },
+            }),
+          });
+    
+          if (!updateDisposalResponse.ok) throw new Error("ไม่สามารถอัพเดทข้อมูลการทำจำหน่ายได้");
+        }
+    
+        // อัพเดท inventory
+        const updateInventoryResponse = await fetch(`${API_URL}/api/inventories/${inventoryId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            data: {
+              isDisposal: false,
+              status_inventory: 1,
+              request_disposal: null // ลบการอ้างอิงถึง request_disposal
+            },
+          }),
+        });
+    
+        if (!updateInventoryResponse.ok) throw new Error("ไม่สามารถอัพเดทสถานะครุภัณฑ์ได้");
+    
+        message.success("ยกเลิกการทำจำหน่ายสำเร็จ");
+        // รีโหลดข้อมูล
+        // ตรงนี้คุณอาจต้องเรียกฟังก์ชันที่ดึงข้อมูลครุภัณฑ์ใหม่
+        // เช่น fetchInventoryData();
+      } catch (error) {
+        console.error("Error:", error);
+        message.error("เกิดข้อผิดพลาดในการยกเลิกการทำจำหน่าย");
+      }
     };
     
       const handleDeleteFromSelected = (id) => {
@@ -499,6 +641,50 @@ function TableExportFile({
           title: 'อายุการใช้งานจริง',
           key: 'actualAge',
         },
+        {
+          title: 'วันที่ทำจำหน่าย',
+          key: 'disposalDate',
+          render: (record) => {
+            if (record.attributes.request_disposal?.data) {
+              const date = new Date(record.attributes.request_disposal.data.attributes.createdAt);
+              return date.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              });
+            }
+            return '';
+          },
+        },
+        {
+          title: 'ปีที่ทำจำหน่าย',
+          key: 'disposalYear',
+          render: (record) => {
+            if (record.attributes.request_disposal?.data) {
+              const date = new Date(record.attributes.request_disposal.data.attributes.createdAt);
+              return date.getFullYear() + 543; // แปลงเป็นปี พ.ศ.
+            }
+            return '';
+          },
+        },
+        {
+          title: 'รายละเอียดการทำจำหน่าย',
+          key: 'disposalReason',
+          render: (record) => {
+            return record.attributes.request_disposal?.data?.attributes.ReasonDisposal || '';
+          },
+        },
+        {
+          title: 'ไฟล์ทำจำหน่าย',
+          key: 'disposalFile',
+          render: (record) => {
+            const fileData = record.attributes.request_disposal?.data?.attributes?.FileReasonDisposal?.data?.[0];
+            if (fileData) {
+              return `${API_URL}${fileData.attributes.url}`;
+            }
+            return '';
+          },
+        },
       ];
 
 
@@ -574,6 +760,13 @@ function TableExportFile({
       if (col.key === 'actualAge') {
         return calculateAgeDifference(row.attributes.DateRecive);
       }
+       // เพิ่มเงื่อนไขสำหรับคอลัมน์ใหม่
+      if (col.key === 'disposalDate' || col.key === 'disposalYear' || col.key === 'disposalReason') {
+        return col.render(row);
+      }
+      if (col.key === 'disposalFile') {
+        return col.render(row);
+      }
       if (col.dataIndex) {
         return col.dataIndex.reduce((obj, key) => obj && obj[key], row) || '';
       }
@@ -587,6 +780,22 @@ function TableExportFile({
     column.width = 30;
   });
   worksheet.getRow(1).height = 50;
+
+  worksheet.getColumn('ไฟล์ทำจำหน่าย').eachCell((cell, rowNumber) => {
+    if (rowNumber > 1 && cell.value) {  // ข้ามแถวหัวคอลัมน์
+      const originalUrl = cell.value;
+      cell.value = {
+        text: "ดูไฟล์",
+        hyperlink: originalUrl,
+        tooltip: "คลิกเพื่อดูไฟล์"
+      };
+      cell.font = {
+        color: { argb: 'FF0000FF' },
+        underline: 'single'
+      };
+    }
+  })
+  
   break;
 
 case '2':
@@ -630,6 +839,13 @@ case '2':
             // ใช้ฟังก์ชันคำนวณอายุแทนการใช้ component โดยตรง
             return calculateAgeDifference(row.attributes.DateRecive);
           }
+           // เพิ่มเงื่อนไขสำหรับคอลัมน์ใหม่
+          if (col.key === 'disposalDate' || col.key === 'disposalYear' || col.key === 'disposalReason') {
+            return col.render(row);
+          }
+          if (col.key === 'disposalFile') {
+            return col.render(row);
+          }
           if (col.dataIndex) {
             return col.dataIndex.reduce((obj, key) => obj && obj[key], row) || '';
           }
@@ -644,6 +860,20 @@ case '2':
   });
   worksheet.getRow(1).height = 50; // กำหนดความสูงแถวหัวข้อ
 
+  // //  ออกลิงค์ไฟล์
+  // worksheet.getColumn('ไฟล์ทำจำหน่าย').eachCell((cell, rowNumber) => {
+  //   if (rowNumber > 1 && cell.value) {  // ข้ามแถวหัวคอลัมน์
+  //     cell.hyperlink = { 
+  //       text: "ดูไฟล์",
+  //       target: cell.value
+  //     };
+  //     cell.font = {
+  //       color: { argb: 'FF0000FF' },
+  //       underline: 'single'
+  //     };
+  //     cell.value = "ดูไฟล์";
+  //   }
+  // });
   
   break;
 }
@@ -832,12 +1062,17 @@ const calculateAgeDifference = (dateReceive) => {
           </h2>
           
           <Button
-            className="bg-gray-400 w-[120px] h-[40px]"
-            type="primary"
-            onClick={openModal}
-          >
-             นำออกรายงาน  <br className="hidden md:inline" /> {selectedItems.length} รายการ
-          </Button>
+  className="bg-gray-400 w-[150px] h-[50px]"
+  type="primary"
+  onClick={openModal}
+>
+  <span>
+    นำออกรายงาน
+    <br className="hidden md:inline" />
+    {selectedItems.length} รายการ
+  </span>
+</Button>
+
         </div>
       </div>
 
