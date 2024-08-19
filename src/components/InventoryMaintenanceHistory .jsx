@@ -89,19 +89,20 @@ function InventoryMaintenanceHistory({ dataInv, subInventories }) {
   useEffect(() => {
     const newData = fetchData();
     setCombinedData(newData);
-  }, [fetchData]);
+  }, [fetchData, selectedInventories]);
 
   const handleStatusChange = (newStatus) => setStatusBTN(newStatus);
 
   const handleInventorySelection = (index) => {
-    if (index === -1) {
-      setSelectedInventories(prev => ({ ...prev, main: !prev.main }));
-    } else {
-      setSelectedInventories(prev => ({
-        ...prev,
-        sub: prev.sub.map((item, idx) => idx === index ? !item : item)
-      }));
-    }
+    setSelectedInventories(prev => {
+      if (index === -1) {
+        return { ...prev, main: !prev.main };
+      } else {
+        const newSub = [...prev.sub];
+        newSub[index] = !newSub[index];
+        return { ...prev, sub: newSub };
+      }
+    });
   };
 
   const exportToExcel = () => {

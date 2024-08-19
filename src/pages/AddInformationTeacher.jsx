@@ -82,7 +82,7 @@ useEffect(() => {
   const handleRoleChange = (userId, roleId) => {
     setChangedRoles(prev => ({...prev, [userId]: roleId}));
     setData(prevData => prevData.map(user => 
-      user.id === userId ? {...user, roleChanged: true} : user
+      user.id === userId ? {...user, role_in_web: {id: roleId}, roleChanged: true} : user
     ));
   };
   
@@ -350,7 +350,7 @@ useEffect(() => {
       render: (role, record) => (
         <Space>
           <Select
-            value={role?.id || record.role?.id}
+            value={changedRoles[record.id] || role?.id || record.role?.id}
             style={{ width: 120 }}
             onChange={(value) => handleRoleChange(record.id, value)}
           >
@@ -362,7 +362,7 @@ useEffect(() => {
             icon={<SaveOutlined />} 
             onClick={() => handleSaveRole(record.id)}
             disabled={!record.roleChanged}
-          >บันทึก</Button >
+          >บันทึก</Button>
         </Space>
       ),
     },

@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Table, DatePicker, Radio } from 'antd';
-import { Link } from 'react-router-dom';
-import DateIsoToThai from '../components/DateIsoToThai';
 import moment from 'moment';
 
-const { RangePicker } = DatePicker;
-
 const FilteredMaintenanceTable = ({ data }) => {
-  const [filteredData, setFilteredData] = useState(data);
-  const [dateRange, setDateRange] = useState([null, null]);
+  const [filteredData, setFilteredData] = useState([]);
   const [selectedOption, setSelectedOption] = useState("7");
 
   const columns = [
-  
     {
       title: 'วันที่บำรุงรักษารอบถัดไป',
       dataIndex: 'appointmentDate',
       key: 'appointmentDate',
+      width: 200, // กำหนดความกว้างคอลัมน์วันที่ให้สม่ำเสมอ
+      sorter: (a, b) => moment(a.appointmentDate.props.isoDate).unix() - moment(b.appointmentDate.props.isoDate).unix(),
+      defaultSortOrder: 'ascend', // ทำการเรียงลำดับวันที่จากเก่าไปใหม่เมื่อโหลด
     },
     {
       title: 'หมายเลขครุภัณฑ์',
@@ -42,29 +39,34 @@ const FilteredMaintenanceTable = ({ data }) => {
   ];
 
   useEffect(() => {
-    let startDate, endDate;
-    if (selectedOption === 'range') {
-      [startDate, endDate] = dateRange;
+    let startDate = null;
+    let endDate = null;
+
+    if (selectedOption === 'all') {
+      // แสดงข้อมูลทั้งหมดที่ยังไม่เสร็จสิ้น
+      startDate = moment().subtract(365, 'days').startOf('day'); // ครอบคลุมวันก่อนหน้า
+      endDate = null; // ไม่มีการกรองวันสิ้นสุด
     } else {
+      // กรองตามช่วงเวลาที่กำหนด (7, 15, 30 วัน)
       const days = parseInt(selectedOption, 10);
-      startDate = moment().startOf('day');
-      endDate = moment().add(days, 'days').endOf('day');
+      startDate = moment().subtract(365, 'days').startOf('day'); // ครอบคลุมวันก่อนหน้า
+      endDate = moment().add(days, 'days').endOf('day'); // จนถึงวันที่กำหนด
     }
 
-    if (!startDate && !endDate) {
-      setFilteredData(data);
-    } else {
-      const filtered = data.filter(item => {
-        const dueDate = moment(item.appointmentDate.props.isoDate);
-        return (!startDate || dueDate.isSameOrAfter(startDate)) && (!endDate || dueDate.isSameOrBefore(endDate));
-      });
-      setFilteredData(filtered);
-    }
-  }, [dateRange, selectedOption, data]);
+    const filtered = data.filter(item => {
+      const dueDate = moment(item.appointmentDate.props.isoDate, "YYYY-MM-DD");
+      return (
+        (!startDate || dueDate.isSameOrAfter(startDate)) &&
+        (!endDate || dueDate.isSameOrBefore(endDate)) &&
+        !item.isDone // แสดงเฉพาะรายการที่ยังไม่เสร็จสิ้น
+      );
+    });
 
-  const handleRangeChange = (dates) => {
-    setDateRange(dates);
-  };
+    // จัดเรียงข้อมูลตามวันที่จากเก่าไปใหม่
+    filtered.sort((a, b) => moment(a.appointmentDate.props.isoDate).unix() - moment(b.appointmentDate.props.isoDate).unix());
+
+    setFilteredData(filtered);
+  }, [selectedOption, data]);
 
   const handleOptionChange = (e) => {
     setSelectedOption(e.target.value);
@@ -72,23 +74,22 @@ const FilteredMaintenanceTable = ({ data }) => {
 
   return (
     <div>
-    <div className='flex flex-col  border-2 border-gray-400 w-2/5 px-4 py-2 rounded-md mb-2'>
+      <div className='flex flex-col border-2 border-gray-400 w-2/5 px-4 py-2 rounded-md mb-2'>
         <h1 className='text-lg font-semibold '>บำรุงรักษาที่ต้องทำ : </h1>
-            <div className='flex flex-col items-center'>
-            <Radio.Group onChange={handleOptionChange} value={selectedOption}>
-                <Radio.Button value="7">ภายใน 7 วัน</Radio.Button>
-                <Radio.Button value="15">ภายใน 15 วัน</Radio.Button>
-                <Radio.Button value="30">ภายใน 30 วัน</Radio.Button>
-                <Radio.Button value="range">ภายในช่วงวันที่</Radio.Button>
-            </Radio.Group>
-            {selectedOption === "range" && <div className='w-2/3 mt-2'><RangePicker onChange={handleRangeChange} /></div>}
-            </div>     
+        <div className='flex flex-col items-center'>
+          <Radio.Group onChange={handleOptionChange} value={selectedOption}>
+            <Radio.Button value="7">ภายใน 7 วัน</Radio.Button>
+            <Radio.Button value="15">ภายใน 15 วัน</Radio.Button>
+            <Radio.Button value="30">ภายใน 30 วัน</Radio.Button>
+            <Radio.Button value="all">ทั้งหมด</Radio.Button>
+          </Radio.Group>
+        </div>
       </div>
       <div>
-              <h1 className='text-2xl font-semibold'>แจ้งเตือนบำรุงรักษาครุภัณฑ์</h1>
-              <p className='text-lg'>มีทั้งหมด {filteredData.length} รายการ</p>
-            </div>
-      <Table columns={columns} dataSource={filteredData} />
+        <h1 className='text-2xl font-semibold'>แจ้งเตือนบำรุงรักษาครุภัณฑ์</h1>
+        <p className='text-lg'>มีทั้งหมด {filteredData.length} รายการ</p>
+      </div>
+      <Table columns={columns} dataSource={filteredData} rowKey="id" />
     </div>
   );
 };

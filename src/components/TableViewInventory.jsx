@@ -476,7 +476,7 @@ setTimeout(() => {
         {!showLocationFields && !showDisposalFields && (
           <div className="flex justify-end mt-4 space-x-2">
             <Button className="bg-blue-300" type="primary" onClick={() => setShowLocationFields(true)}>เปลี่ยนที่ตั้งครุภัณฑ์</Button>
-            <Button className="bg-red-300" danger type="primary" onClick={() => setShowDisposalFields(true)}>ทำจำหน่ายครุภัณฑ์</Button>
+            <Button className="bg-red-300 text-white hover:bg-red-500" danger type="secondary"  onClick={() => setShowDisposalFields(true)}>ทำจำหน่ายครุภัณฑ์</Button>
           </div>
         )}
 

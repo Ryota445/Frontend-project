@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 const columns = [
   { title: 'วันที่แจ้งซ่อม', dataIndex: 'date', key: 'date', width: 120 },
+  { title: 'เลขที่ใบแจ้งซ่อม', dataIndex: 'numberRepairFaculty', key: 'numberRepairFaculty', width: 150 },
   { title: 'หมายเลขครุภัณฑ์', dataIndex: 'id', key: 'id', width: 150 },
   { title: 'ชื่อครุภัณฑ์', dataIndex: 'name', key: 'name', width: 200 },
   { title: 'แจ้งโดย', dataIndex: 'reportedBy', key: 'reportedBy', width: 120 },
@@ -19,13 +20,13 @@ const columns = [
 ];
 
 const RepairReportTable = ({ data }) => (
-  <> <div>
+  <>
+    <div>
       <h1 className='text-2xl font-semibold'>แจ้งเตือนซ่อมแซมครุภัณฑ์</h1>
       <p className='text-lg'>มีทั้งหมด {data.length} รายการ</p>
-  </div>
-  <Table columns={columns} dataSource={data} pagination={false} />
-</>
- 
+    </div>
+    <Table columns={columns} dataSource={data} pagination={false} />
+  </>
 );
 
 export default RepairReportTable;

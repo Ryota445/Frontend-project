@@ -175,6 +175,8 @@ function SearchBox({ onSearch, mode, onSubInventorySearchChange }) {
                   }
                   style={{ width: 200 }}
                   onKeyDown={(e) => handleKeyDown(e, categoryRef)}
+                  showSearch // เพิ่มคุณสมบัตินี้เพื่อให้สามารถค้นหาตัวเลือกได้
+                  optionFilterProp="children" // ใช้คุณสมบัตินี้เพื่อให้สามารถกรองตัวเลือกตามที่พิมพ์ได้
                   suffixIcon={
                     formData.responsible ? (
                       <Button
@@ -214,6 +216,8 @@ function SearchBox({ onSearch, mode, onSubInventorySearchChange }) {
                   }
                   style={{ width: 200 }}
                   onKeyDown={(e) => handleKeyDown(e, buildingRef)}
+                  showSearch 
+                  optionFilterProp="children" 
                   suffixIcon={
                     formData.category ? (
                       <Button
@@ -257,6 +261,8 @@ function SearchBox({ onSearch, mode, onSubInventorySearchChange }) {
                       }
                       style={{ width: 200 }}
                       onKeyDown={(e) => handleKeyDown(e, floorRef)}
+                      showSearch 
+                      optionFilterProp="children" 
                       suffixIcon={
                         formData.building ? (
                           <Button

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Select, Button, Modal, Form, Input, Upload, Checkbox, Radio, DatePicker, message } from 'antd';
 import { FileOutlined, PlusOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import SearchBox from '../components/SearchBox';
+import SearchBoxRM from '../components/SearchBoxRM';
 import DateIsoToThai from '../components/DateIsoToThai';
 import RepairReportTable from '../components/RepairReportTable'; 
 import FilteredMaintenanceTable from '../components/FilteredMaintenanceTable';
@@ -72,78 +72,78 @@ const MantenantPage1 = () => {
       .then(data => {
         if (data && data.data) {
           const formattedData = data.data
-            .filter(item => !item.attributes.isDone)
-            .map(item => {
-              const inventory = item.attributes.inventory?.data?.attributes;
-              const inventoryId = item.attributes.inventory?.data?.id;
-              const user = item.attributes.users_permissions_user?.data?.attributes;
-              const statusRepair = item.attributes.status_repair?.data?.attributes;
-              const currentStatus = item.attributes.status_repair?.data?.id;
+  .filter(item => !item.attributes.isDone)
+  .map(item => {
+    const inventory = item.attributes.inventory?.data?.attributes;
+    const inventoryId = item.attributes.inventory?.data?.id;
+    const user = item.attributes.users_permissions_user?.data?.attributes;
+    const statusRepair = item.attributes.status_repair?.data?.attributes;
+    const currentStatus = item.attributes.status_repair?.data?.id;
 
-              let subInventoryData = null;
-              if (item.attributes.isSubInventory) {
-                const idSubInventory = item.attributes.sub_inventory.data.id;
-                subInventoryData = item.attributes.inventory?.data?.attributes?.sub_inventories?.data?.find(subInv => subInv.id === idSubInventory);
-                console.log('item.attributes.sub_inventory.data',item?.attributes?.sub_inventory?.data?.attributes?.name)
-              }
+    let subInventoryData = null;
+    if (item.attributes.isSubInventory) {
+      const idSubInventory = item.attributes.sub_inventory.data.id;
+      subInventoryData = item.attributes.inventory?.data?.attributes?.sub_inventories?.data?.find(subInv => subInv.id === idSubInventory);
+    }
 
-              return {
-                key: item.id,
-                date: <DateIsoToThai isoDate={item.attributes.createdAt} typeTime={1} />,
-                id: <Link to={`/UserDetailInventory/${inventoryId}`}>
-                      {item.attributes.isSubInventory ? (
-                        <>
-                          {inventory?.id_inv} <span className='text-red-500'>{item?.attributes?.sub_inventory?.data?.attributes?.id_inv}</span>
-                        </>
-                      ) : (
-                        <> {inventory?.id_inv}</>
-                      )}
-                    </Link> ?? 'N/A',
-                name: <Link to={`/UserDetailInventory/${inventoryId}`}>
-                        {item.attributes.isSubInventory ? (
-                          <>
-                            {item?.attributes?.sub_inventory?.data?.attributes?.name} 
-                          </>
-                        ) : (
-                          <> {inventory?.name} </>
-                        )}
-                      </Link> ?? 'N/A',
-                reportedBy: item?.attributes?.reportedBy?.data?.attributes?.responsibleName || "N/A", // ใช้บรรทัดนี้เพื่อใส่ค่า reportedBy
-                description: item.attributes.RepairReasonByResponsible ?? 'N/A',
-                FileReport: <a href={`${API_URL}${item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url}`} target="_blank" rel="noopener noreferrer"><FileOutlined /><span className='ml-2'>{item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.name || "ไฟล์"}</span></a>,
-                appointmentDate: 'DueDateRepair',
-                maintenanceType: 'repair',
-                status: (
-                  <select
-                    className="select select-bordered w-40 mr-4"
-                    onChange={(e) => handleStatusChange(e, item.id)}
-                    value={selectedStatus[item.id] || currentStatus}
-                  >
-                    {statusRepair_inventoryOptions.map(status => (
-                      <option
-                        key={status.id}
-                        value={status.id}
-                      >
-                        {status.name}
-                      </option>
-                    ))}
-                  </select>
-                ),
-                action: (
-                  <Button
-                    className="bg-gray-300"
-                    type="primary"
-                    onClick={() => {
-                      setSelectedRepairReportId(item.id);
-                      setModalVisible(true);
-                    }}
-                    disabled={!isStatusChanged(item.id, currentStatus)}
-                  >
-                    กรอกข้อมูล
-                  </Button>
-                ),
-              };
-            });
+    return {
+      key: item.id,
+      date: <DateIsoToThai isoDate={item.attributes.createdAt} typeTime={1} />,
+      numberRepairFaculty: item.attributes.NumberRepairFaculty ?? 'N/A',
+      id: <Link to={`/UserDetailInventory/${inventoryId}`}>
+            {item.attributes.isSubInventory ? (
+              <>
+                {inventory?.id_inv} <span className='text-red-500'>{item?.attributes?.sub_inventory?.data?.attributes?.id_inv}</span>
+              </>
+            ) : (
+              <> {inventory?.id_inv}</>
+            )}
+          </Link> ?? 'N/A',
+      name: <Link to={`/UserDetailInventory/${inventoryId}`}>
+              {item.attributes.isSubInventory ? (
+                <>
+                  {item?.attributes?.sub_inventory?.data?.attributes?.name} 
+                </>
+              ) : (
+                <> {inventory?.name} </>
+              )}
+            </Link> ?? 'N/A',
+      reportedBy: item?.attributes?.reportedBy?.data?.attributes?.responsibleName || "N/A",
+      description: item.attributes.RepairReasonByResponsible ?? 'N/A',
+      FileReport: <a href={`${API_URL}${item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url}`} target="_blank" rel="noopener noreferrer"><FileOutlined /><span className='ml-2'>{item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.name || "ไฟล์"}</span></a>,
+      appointmentDate: 'DueDateRepair',
+      maintenanceType: 'repair',
+      status: (
+        <select
+          className="select select-bordered w-40 mr-4"
+          onChange={(e) => handleStatusChange(e, item.id)}
+          value={selectedStatus[item.id] || currentStatus}
+        >
+          {statusRepair_inventoryOptions.map(status => (
+            <option
+              key={status.id}
+              value={status.id}
+            >
+              {status.name}
+            </option>
+          ))}
+        </select>
+      ),
+      action: (
+        <Button
+          className="bg-gray-300"
+          type="primary"
+          onClick={() => {
+            setSelectedRepairReportId(item.id);
+            setModalVisible(true);
+          }}
+          disabled={!isStatusChanged(item.id, currentStatus)}
+        >
+          กรอกข้อมูล
+        </Button>
+      ),
+    };
+  });
             setData(formattedData);
           } else {
             console.error('Unexpected API response structure:', data);
@@ -335,7 +335,7 @@ const MantenantPage1 = () => {
         
       </div>
         <div className="bg-white shadow-md rounded-lg p-6 mb-2">
-          <SearchBox />
+          <SearchBoxRM mode={'repair'}/>
         </div>
 
         <div className='flex flex-row justify-end align-middle'>

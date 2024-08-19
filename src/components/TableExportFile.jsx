@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { message, Checkbox, Space, Button, Table, Modal, Dropdown, Menu, Select ,Input  } from "antd";
-import { EyeOutlined, EditOutlined, DeleteOutlined, CloseOutlined, SettingOutlined,DownloadOutlined } from "@ant-design/icons";
+import { message, Checkbox, Space, Button, Table, Modal, Dropdown, Menu, Select ,Input ,Popconfirm  } from "antd";
+import { EyeOutlined, EditOutlined, DeleteOutlined, CloseOutlined, SettingOutlined,DownloadOutlined ,StopOutlined  } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
 import * as ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -324,9 +324,17 @@ function TableExportFile({
           render: (text, record) => {
             if (record.attributes.status_inventory?.data?.id === 3 && record.attributes.isDisposal) {
               return (
-                <Button onClick={() => handleCancelDisposal(record.id, record.attributes.request_disposal?.data?.id)}>
-                  ยกเลิกทำจำหน่าย
-                </Button>
+                <Popconfirm
+                  title="คุณแน่ใจหรือไม่ว่าต้องการยกเลิกการทำจำหน่ายนี้?"
+                  onConfirm={() => handleCancelDisposal(record.id, record.attributes.request_disposal?.data?.id)}
+                  okButtonProps={{ className: "bg-blue-300 hover:bg-blue-600 text-white" }}
+                  okText="ยืนยัน"
+                  cancelText="ยกเลิก"
+                >
+                  <Button type="primary" danger icon={<StopOutlined />}>
+                    ยกเลิกทำจำหน่าย
+                  </Button>
+                </Popconfirm>
               );
             }
             return null;
@@ -674,17 +682,7 @@ function TableExportFile({
             return record.attributes.request_disposal?.data?.attributes.ReasonDisposal || '';
           },
         },
-        {
-          title: 'ไฟล์ทำจำหน่าย',
-          key: 'disposalFile',
-          render: (record) => {
-            const fileData = record.attributes.request_disposal?.data?.attributes?.FileReasonDisposal?.data?.[0];
-            if (fileData) {
-              return `${API_URL}${fileData.attributes.url}`;
-            }
-            return '';
-          },
-        },
+        
       ];
 
 
@@ -764,9 +762,7 @@ function TableExportFile({
       if (col.key === 'disposalDate' || col.key === 'disposalYear' || col.key === 'disposalReason') {
         return col.render(row);
       }
-      if (col.key === 'disposalFile') {
-        return col.render(row);
-      }
+      
       if (col.dataIndex) {
         return col.dataIndex.reduce((obj, key) => obj && obj[key], row) || '';
       }
@@ -781,20 +777,7 @@ function TableExportFile({
   });
   worksheet.getRow(1).height = 50;
 
-  worksheet.getColumn('ไฟล์ทำจำหน่าย').eachCell((cell, rowNumber) => {
-    if (rowNumber > 1 && cell.value) {  // ข้ามแถวหัวคอลัมน์
-      const originalUrl = cell.value;
-      cell.value = {
-        text: "ดูไฟล์",
-        hyperlink: originalUrl,
-        tooltip: "คลิกเพื่อดูไฟล์"
-      };
-      cell.font = {
-        color: { argb: 'FF0000FF' },
-        underline: 'single'
-      };
-    }
-  })
+  
   
   break;
 
@@ -843,9 +826,7 @@ case '2':
           if (col.key === 'disposalDate' || col.key === 'disposalYear' || col.key === 'disposalReason') {
             return col.render(row);
           }
-          if (col.key === 'disposalFile') {
-            return col.render(row);
-          }
+         
           if (col.dataIndex) {
             return col.dataIndex.reduce((obj, key) => obj && obj[key], row) || '';
           }
@@ -860,20 +841,6 @@ case '2':
   });
   worksheet.getRow(1).height = 50; // กำหนดความสูงแถวหัวข้อ
 
-  // //  ออกลิงค์ไฟล์
-  // worksheet.getColumn('ไฟล์ทำจำหน่าย').eachCell((cell, rowNumber) => {
-  //   if (rowNumber > 1 && cell.value) {  // ข้ามแถวหัวคอลัมน์
-  //     cell.hyperlink = { 
-  //       text: "ดูไฟล์",
-  //       target: cell.value
-  //     };
-  //     cell.font = {
-  //       color: { argb: 'FF0000FF' },
-  //       underline: 'single'
-  //     };
-  //     cell.value = "ดูไฟล์";
-  //   }
-  // });
   
   break;
 }

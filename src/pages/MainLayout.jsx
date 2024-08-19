@@ -28,7 +28,7 @@ function getItem(label, key, icon, children) {
 
 
   const MainLayout = ({ children, logout }) => {
-    const [collapsed, setCollapsed] = React.useState(false);
+    const [collapsed, setCollapsed] = React.useState(true);
     const { user } = useAuth(); 
 
     const isAdmin = user?.role_in_web?.RoleName === "Admin";
@@ -75,7 +75,8 @@ function getItem(label, key, icon, children) {
   margin: 'px 16px 0',  // เพิ่ม margin-top
   background: '#F7F7F8',
   padding: '16px'  // เพิ่มบรรทัดนี้
-}}>
+}} 
+    onClick={() => setCollapsed(true)}> {/* เพิ่ม onClick ตรงนี้ */}
           {children}
         </Content>
       </Layout>

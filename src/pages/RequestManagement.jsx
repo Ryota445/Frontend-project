@@ -415,14 +415,14 @@ const RequestManagement = () => {
       <div className="flex justify-end mb-4">
         <Button
           type="primary"
-          className="btn bg-blue-500 mx-2 text-white"
+          className={`text-md text-gray-700 ${showChangeLocation ? 'bg-blue-500 text-white' : 'bg-gray-300'} h-[40px] mx-2`}
           onClick={handleToggleChangeLocation}
         >
           แสดงคำร้องขอเปลี่ยนที่ตั้ง
         </Button>
         <Button
           type="secondary"
-          className="btn bg-blue-500 mx-2 text-white"
+          className={`text-md text-gray-700 ${showReturnEquipment ? 'bg-blue-500 text-white' : 'bg-gray-300'} h-[40px] mr-2`}
           onClick={handleToggleReturnEquipment}
         >
           แสดงคำร้องขอส่งคืนครุภัณฑ์
