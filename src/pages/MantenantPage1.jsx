@@ -32,6 +32,12 @@ const MantenantPage1 = () => {
   const [searchValue, setSearchValue] = useState("");
   const [companyOptions, setCompanyOptions] = useState([]);
   const [selectedMaintenanceReportId, setSelectedMaintenanceReportId] = useState(null);
+  const [searchParams, setSearchParams] = useState({});
+
+  const handleSearch = (searchData) => {
+    setSearchParams(searchData);
+  };
+
 
   useEffect(() => {
     fetchData();
@@ -66,10 +72,27 @@ const MantenantPage1 = () => {
     }
   };
 
-  useEffect(() => {
-    fetch(`${API_URL}/api/repair-reports?populate=*`)
-      .then(response => response.json())
-      .then(data => {
+ useEffect(() => {
+  const fetchDataR = async () => {
+    try {
+      let url = `${API_URL}/api/repair-reports?populate=*`;
+      
+      // เพิ่มพารามิเตอร์การค้นหาใน URL
+      if (searchParams.id_inv) {
+        url += `&filters[inventory][id_inv][$containsi]=${searchParams.id_inv}`;
+      }
+      if (searchParams.name) {
+        url += `&filters[inventory][name][$containsi]=${searchParams.name}`;
+      }
+      if (searchParams.reportedBy) {
+        url += `&filters[reportedBy][id]=${searchParams.reportedBy}`;
+      }
+      if (searchParams.NumberRepairFaculty) {
+        url += `&filters[NumberRepairFaculty][$containsi]=${searchParams.NumberRepairFaculty}`;
+      }
+
+      const response = await fetch(url);
+      const data = await response.json();
         if (data && data.data) {
           const formattedData = data.data
   .filter(item => !item.attributes.isDone)
@@ -148,16 +171,31 @@ const MantenantPage1 = () => {
           } else {
             console.error('Unexpected API response structure:', data);
           }
-        })
-        .catch(error => {
+        } catch (error) {
           console.error('Error fetching data:', error);
-        });
-    }, [statusRepair_inventoryOptions, selectedStatus]);
+        }
+      };
+
+ fetchDataR();
+}, [searchParams, statusRepair_inventoryOptions, selectedStatus]);
   
-    useEffect(() => {
-      fetch(`${API_URL}/api/maintenance-reports?populate=*`)
-        .then(response => response.json())
-        .then(data => {
+useEffect(() => {
+  const fetchMaintenanceData = async () => {
+    try {
+      let url = `${API_URL}/api/maintenance-reports?populate=*`;
+      
+      // เพิ่มพารามิเตอร์การค้นหาใน URL
+      if (searchParams.id_inv) {
+        url += `&filters[inventory][id_inv][$containsi]=${searchParams.id_inv}`;
+      }
+      if (searchParams.name) {
+        url += `&filters[inventory][name][$containsi]=${searchParams.name}`;
+      }
+      // ไม่ต้องใส่ reportedBy และ NumberRepairFaculty สำหรับ maintenance
+
+      const response = await fetch(url);
+      const data = await response.json();
+
           if (data && data.data) {
             const formattedData = data.data
             .filter(item => !item.attributes.isDone)
@@ -203,11 +241,13 @@ const MantenantPage1 = () => {
           } else {
             console.error('Unexpected API response structure:', data);
           }
-        })
-        .catch(error => {
-          console.error('Error fetching data:', error);
-        });
-    }, []);
+        } catch (error) {
+          console.error('Error fetching maintenance data:', error);
+        }
+      };
+    
+      fetchMaintenanceData();
+    }, [searchParams]);
 
     const handleStatusChange = (e, id) => {
       const newStatus = e.target.value;
@@ -335,7 +375,22 @@ const MantenantPage1 = () => {
         
       </div>
         <div className="bg-white shadow-md rounded-lg p-6 mb-2">
-          <SearchBoxRM mode={'repair'}/>
+        {isRepairActive && (
+  <>
+    <div className="bg-white shadow-md rounded-lg p-6 mb-2">
+      <SearchBoxRM onSearch={handleSearch} mode='repair' />
+    </div>
+    
+  </>
+)}
+{isMaintenanceActive && (
+  <>
+    <div className="bg-white shadow-md rounded-lg p-6 mb-2">
+      <SearchBoxRM onSearch={handleSearch} mode='maintenance' />
+    </div>
+    
+  </>
+)}
         </div>
 
         <div className='flex flex-row justify-end align-middle'>

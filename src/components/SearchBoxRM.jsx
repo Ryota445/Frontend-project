@@ -95,34 +95,35 @@ function SearchBoxRM({ onSearch, mode }) {
                 แจ้งโดย
               </label>
               <Select
-                ref={reportedByRef}
-                placeholder="เลือกผู้แจ้ง"
-                id="reportedBy"
-                name="reportedBy"
-                value={formData.reportedBy}
-                onChange={(value) => setFormData({ ...formData, reportedBy: value })}
-                onKeyDown={(e) => handleKeyDown(e, numberRepairFacultyRef)}
-                disabled={!isRepairMode}
-                showSearch
-                optionFilterProp="children"
-                suffixIcon={
-                  formData.reportedBy && isRepairMode ? (
-                    <Button
-                      type="text"
-                      onClick={() => setFormData({ ...formData, reportedBy: "" })}
-                      icon={<CloseOutlined />}
-                    />
-                  ) : (
-                    <DownOutlined />
-                  )
-                }
-              >
-                {reportedByOptions.map((reportedBy) => (
-                  <Option key={reportedBy.id} value={reportedBy.id}>
-                    {reportedBy.name}
-                  </Option>
-                ))}
-              </Select>
+  ref={reportedByRef}
+  placeholder="เลือกผู้แจ้ง"
+  id="reportedBy"
+  name="reportedBy"
+  value={formData.reportedBy}
+  onChange={(value) => setFormData({ ...formData, reportedBy: value })}
+  onKeyDown={(e) => handleKeyDown(e, numberRepairFacultyRef)}
+  disabled={!isRepairMode}
+  showSearch
+  optionFilterProp="children"
+  suffixIcon={
+    formData.reportedBy && isRepairMode ? (
+      <Button
+        type="text"
+        onClick={() => setFormData({ ...formData, reportedBy: "" })}
+        icon={<CloseOutlined />}
+      />
+    ) : (
+      <DownOutlined />
+    )
+  }
+  className="w-full"  // ใช้ w-full เพื่อให้ความกว้างเต็มที่
+>
+  {reportedByOptions.map((reportedBy) => (
+    <Option key={reportedBy.id} value={reportedBy.id}>
+      {reportedBy.name}
+    </Option>
+  ))}
+</Select>
             </div>
             <div>
               <label htmlFor="NumberRepairFaculty" className="block text-sm font-medium text-gray-700 mb-2">
