@@ -35,10 +35,12 @@ import ModalSentBack from "../components/ModalSentBack";
 import DateDifferenceCalculator from "../components/DateDifferenceCalculator";
 import ThaiDateFormat from "../components/ThaiDateFormat";
 import InventoryMaintenanceHistory from "../components/InventoryMaintenanceHistory ";
+import RepairReportSteps from "../components/RepairReportSteps";
 import no_image from "../assets/img/Image.png";
 import { differenceInDays } from "date-fns";
 const { TextArea } = Input;
 import { useAuth } from "../context/AuthContext";
+
 
 
 function formatNumber(num) {
@@ -87,6 +89,9 @@ function UserDetail() {
   const [searchValue, setSearchValue] = useState("");
   const [companyOptions, setCompanyOptions] = useState([]);
   const [subInventoriesM, setSubInventoriesM] = useState([]);
+  const [hasActiveReport, setHasActiveReport] = useState(false);
+  const [fileUploaded, setFileUploaded] = useState(false);
+
 
   const { user } = useAuth();
 
@@ -107,8 +112,7 @@ function UserDetail() {
       });
   };
 
-  // forModal reportMaintenance
-
+ 
   useEffect(() => {
     async function fetchDataC() {
       try {
@@ -445,10 +449,7 @@ function UserDetail() {
       }
       const dataA = await response.json();
       setDataInv(dataA.data);
-      console.log(
-        "dataInv?.attributes?.DateReceive:",
-        dataInv?.attributes?.DateReceive
-      );
+      
 
       // Check and fetch subInventories if they exist
       const subInventoriesData = dataA?.data?.attributes?.sub_inventories?.data;
@@ -545,6 +546,7 @@ function UserDetail() {
         JSON.stringify({
           inventory: id,
           RepairReasonByResponsible: values.repairReason,
+          NumberRepairFaculty: values.NumberRepairFaculty,
           status_repair: 1,
           reportedBy: user?.responsible?.id,
           isDone: false,
@@ -553,8 +555,8 @@ function UserDetail() {
             clickedButton === "sub" ? selectedSubInventoryId : null, // Include sub-inventory ID if applicable
         })
       );
-      if (values.file_repair) {
-        // กรณีมีการอัปโหลดไฟล์
+      if (values.file_repair && values.file_repair.length > 0) {
+        // ตรวจสอบว่ามีไฟล์ถูกอัปโหลดหรือไม่ก่อนเข้าถึง originFileObj
         formData.append(
           "files.ReportFileByResponsible",
           values.file_repair[0].originFileObj
@@ -567,8 +569,11 @@ function UserDetail() {
         body: formData,
       });
 
+     
+  
       if (!response.ok) {
         const errorResponse = await response.json();
+      
         throw new Error(
           `Response not OK: ${response.status} - ${errorResponse.message}`
         );
@@ -614,12 +619,14 @@ function UserDetail() {
           isDone: false,
         })
       );
-      if (values.file_repair) {
+      if (values.file_repair && values.file_repair.length > 0) {
+        // ตรวจสอบว่ามีไฟล์ถูกอัปโหลดหรือไม่ก่อนเข้าถึง originFileObj
         formData.append(
           "files.FileReasonSentBack", // เปลี่ยนจาก ReportFileByResponsible เป็น FileReasonSentBack
           values.file_repair[0].originFileObj
         );
       }
+      
 
       const response = await fetch(`${API_URL}/api/request-sent-backs`, {
         method: "POST",
@@ -679,6 +686,11 @@ function UserDetail() {
   // };
   const handleFileChange = ({ fileList }) => {
     setFileList(fileList);
+    if (fileList.length > 0) {
+      setFileUploaded(true);
+    } else {
+      setFileUploaded(false);
+    }
   };
 
   const normFile = (e) => {
@@ -711,6 +723,7 @@ function UserDetail() {
       <div className="" style={{ background: "#F7F7F8" }} ref={pageRef}>
         <div className="w-full ">
           <div className="flex  justify-between ">
+         
             <h1 className="text-4xl font-semibold">รายละเอียดครุภัณฑ์</h1>
 
             {user?.responsible?.id ===
@@ -798,7 +811,7 @@ function UserDetail() {
                     </div>
 
                     <div className="flex flex-col">
-                      <div className="flex flex-col w-3/4 mt-2 border-2 border-blue-500 rounded-md">
+                      <div className="flex flex-col w-3/4 mt-2 border-2 border-blue-500 rounded-md ">
                         <h1 className="text-lg text-gray-400 ">
                           ที่ตั้งครุภัณฑ์
                           {(isAdmin ||
@@ -806,6 +819,7 @@ function UserDetail() {
                               dataInv?.attributes?.responsible?.data?.id) && (
                             <Button
                               className="w-2/5 m-2 bg-blue-400 text-white"
+                              type="primary"
                               onClick={() => openModal2()}
                             >
                               เปลี่ยนที่ตั้ง
@@ -891,7 +905,7 @@ function UserDetail() {
                           user?.responsible?.id ===
                             dataInv?.attributes?.responsible?.data?.id) && (
                           <button
-                            className={`font-bold rounded-lg text-sm mt-2 mr-24 w-24 h-8 bg-blue-500  justify-center ${
+                            className={`font-bold text-white rounded-lg text-sm mt-2 mr-24 w-24 h-8 bg-blue-500  justify-center ${
                               selectedStatus === initialStatus
                                 ? "opacity-50 "
                                 : "opacity-100"
@@ -902,17 +916,18 @@ function UserDetail() {
                             บันทึก
                           </button>
                         )}
-                        {statusInventoryId === 2 && allowedRepair && (
+                        {statusInventoryId === 2 && allowedRepair && !hasActiveReport &&  (
                           <div className=" mr-2">
                             {(isAdmin ||
                               user?.responsible?.id ===
-                                dataInv?.attributes?.responsible?.data?.id) && (
+                                dataInv?.attributes?.responsible?.data?.id)  && (
                               <button
                                 className="   font-bold rounded-lg text-base w-36 h-10 bg-[#276ff4] text-[#ffffff]"
                                 onClick={() => openModal("main")}
                               >
                                 แจ้งซ่อม <SettingOutlined />
                               </button>
+                                  
                             )}
                           </div>
                         )}
@@ -935,6 +950,15 @@ function UserDetail() {
                       </div>
                     )}
 
+                      {(isAdmin ||
+                              user?.responsible?.id ===
+                                dataInv?.attributes?.responsible?.data?.id)  && (
+                      <div className="mx-5 mt-5 ">
+                      <RepairReportSteps id={id} setHasActiveReport={setHasActiveReport} />
+                      </div>
+                                )}
+                  
+
                     <div className="flex flex-row justify-center mr-36  "></div>
 
                     <div className="flex flex-row mt-4">
@@ -948,7 +972,7 @@ function UserDetail() {
                           <Button key="cancel" onClick={closeModal2}>
                             ยกเลิก
                           </Button>,
-                          <Button key="submit" onClick={handleLocationChange}>
+                          <Button className="bg-blue-300 hover:bg-blue-600 text-white" type="primary" key="submit" onClick={handleLocationChange}>
                             ยืนยัน
                           </Button>,
                         ]}
@@ -1035,16 +1059,7 @@ function UserDetail() {
                               name="file_repair"
                               valuePropName="fileList"
                               getValueFromEvent={normFile}
-                              rules={[
-                                {
-                                  validator: (rule, value) =>
-                                    value && value.length === 1
-                                      ? Promise.resolve()
-                                      : Promise.reject(
-                                          "กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น"
-                                        ),
-                                },
-                              ]}
+                              
                             >
                               <Upload
                                 name="file_repair" // ใช้ชื่อเหมือนกับใน Modal แจ้งซ่อม
@@ -1052,6 +1067,7 @@ function UserDetail() {
                                 beforeUpload={() => false}
                                 onChange={handleFileChange}
                               >
+                                 {!fileUploaded && (
                                 <button
                                   style={{ border: 0, background: "none" }}
                                   type="button"
@@ -1059,27 +1075,29 @@ function UserDetail() {
                                   <PlusOutlined />
                                   <div style={{ marginTop: 8 }}>เพิ่มไฟล์</div>
                                 </button>
+                                 )}
                               </Upload>
                             </Form.Item>
-                            <p className="text-red-500">
+                            <p className="text-black-500">
                               ***กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น***
                             </p>
                           </div>
                           <div className="flex justify-end">
+                            
                             <Form.Item>
                               <button
-                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
-                                htmlType="submit"
+                                onClick={closeModalSentBack}
+                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2"
                               >
-                                ยืนยัน
+                                ยกเลิก
                               </button>
                             </Form.Item>
                             <Form.Item>
                               <button
-                                onClick={closeModalSentBack}
-                                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                                className="bg-blue-300 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded "
+                                htmlType="submit"
                               >
-                                ยกเลิก
+                                ยืนยัน
                               </button>
                             </Form.Item>
                           </div>
@@ -1122,20 +1140,23 @@ function UserDetail() {
                           </Form.Item>
 
                           <Form.Item
+                              name="NumberRepairFaculty"
+                              label="เลขที่ใบแจ้งซ่อม"
+                              rules={[
+                                {
+                                  required: false,
+                                  message: "กรอกเลขที่ใบแจ้งซ่อม",
+                                },
+                              ]}
+                            >
+                              <Input />
+                            </Form.Item>
+
+                          <Form.Item
                             name="file_repair"
                             label="อัปโหลดไฟล์"
                             valuePropName="fileList"
                             getValueFromEvent={normFile}
-                            rules={[
-                              {
-                                validator: (rule, value) =>
-                                  value && value.length === 1
-                                    ? Promise.resolve()
-                                    : Promise.reject(
-                                        "กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น"
-                                      ),
-                              },
-                            ]}
                           >
                             <Upload
                               name="file_repair"
@@ -1143,6 +1164,7 @@ function UserDetail() {
                               beforeUpload={() => false}
                               onChange={handleFileChange}
                             >
+                              {!fileUploaded && (
                               <button
                                 style={{ border: 0, background: "none" }}
                                 type="button"
@@ -1150,20 +1172,23 @@ function UserDetail() {
                                 <PlusOutlined />
                                 <div style={{ marginTop: 8 }}>เพิ่มไฟล์</div>
                               </button>
+                               )}
                             </Upload>
                           </Form.Item>
-                          <p className="text-red-500">
+                          <p className="text-black-500">
                             ***กรุณาอัปโหลดไฟล์เพียงหนึ่งไฟล์เท่านั้น***
                           </p>
 
                           <div className="flex justify-end">
+                          <Button onClick={closeModal}>ยกเลิก</Button>
                             <Button
-                              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+                              className="bg-blue-300 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded ml-2"
+                              type='primary'
                               htmlType="submit"
                             >
                               ยืนยัน
                             </Button>
-                            <Button onClick={closeModal}>ยกเลิก</Button>
+                            
                           </div>
                         </Form>
                       </AntdModal>
@@ -1465,8 +1490,8 @@ function UserDetail() {
 
             <div></div>
           </div>
-          <div className="w-full h-[50px]"></div>
-          <div className=" w-full h-[300px] mt-10 grid grid-cols-8 ">
+          
+          <div className=" w-full h-[300px] mt-[120px] grid grid-cols-8 " >
             <div className=""></div>
 
             <div className="mt-8 col-span-6 border-2 border-blue-500 rounded-md">
@@ -1612,6 +1637,15 @@ function UserDetail() {
                       <p className="text-lg ml-2">-</p>
                     )}
                   </div>
+
+                  <div className="flex flex-row my-2">
+                    <h1 className="text-lg text-gray-400 mr-4">รหัสสินทรัพย์</h1>
+                    {dataInv?.attributes?.asset_code ? (
+                      <h1 className="text-lg">{dataInv?.attributes?.asset_code}</h1>
+                    ) : (
+                      <p className="text-lg ml-2">-</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1664,6 +1698,37 @@ function UserDetail() {
                   </div>
                 </div>
                 <div className="flex flex-col ">
+
+                <div className="flex flex-row gap-2">
+                       <div className="flex flex-row my-2">
+                    <h1 className="text-lg text-gray-400 mr-4">จำนวนรายการ/หน่วยนับ</h1>
+                    {dataInv?.attributes?.quantity ? (
+                      <h1 className="text-lg">
+                        {dataInv?.attributes?.quantity}
+                      </h1>
+                    ) : (
+                      <p className="text-lg ml-2"></p>
+                    )}
+                  </div>
+                       <div className="flex flex-row my-2">
+                    
+                       {dataInv?.attributes?.unit?.data?.attributes
+                        ?.name_unit ? (
+                        <h1 className="text-lg">
+                          {
+                            dataInv?.attributes?.unit?.data?.attributes
+                              ?.name_unit
+                          }
+                        </h1>
+                      ) : (
+                        <h1 className="text-lg">-</h1>
+                      )}
+                  </div>
+
+                  </div>
+
+
+
                   <div className="flex flex-row my-2">
                     <h1 className="text-lg text-gray-400 mr-4">
                       อายุการใช้งานโดยประเมิน
@@ -1707,6 +1772,10 @@ function UserDetail() {
                       <p className="text-lg ml-2">-</p>
                     )}
                   </div>
+
+
+                  
+
                 </div>
               </div>
             </div>
@@ -1801,16 +1870,18 @@ function UserDetail() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {statusInventoryId === 2 &&
-                            allowedRepair &&
+                            allowedRepair &&  !hasActiveReport && 
                             (isAdmin ||
                               user?.responsible?.id ===
-                                dataInv?.attributes?.responsible?.data?.id) && (
+                                dataInv?.attributes?.responsible?.data?.id)  && (
                               <button
                                 className="font-bold rounded-lg text-base w-28 h-8 bg-[#276ff4] text-[#ffffff]"
                                 onClick={() => openModal("sub", item.id)}
                               >
-                                <SettingOutlined /> แจ้งซ่อม
+                                 แจ้งซ่อม <SettingOutlined />
                               </button>
+                              
+                                  
                             )}
                           {allowedRepair && isAdmin && (
                             <button
@@ -1846,10 +1917,12 @@ function UserDetail() {
               subInventories={subInventoriesM}
             />
           </div>
+          
 
           <div>{/* col-3 */}</div>
         </div>
       </div>
+     
     </>
   );
 }

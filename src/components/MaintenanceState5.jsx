@@ -60,6 +60,7 @@ fetchData();
 
           <div className='border-2 border-blue-500 rounded-md px-4 pb-4 mb-2'>
             <Form
+              className='mt-2'
               labelCol={{ span: 4 }}
               wrapperCol={{ span: 14 }}
               layout="horizontal"
@@ -130,6 +131,13 @@ fetchData();
                   </Upload>
                 </Form.Item>
             </Form>
+            <div>
+            <Form onValuesChange={handleFormChange}>
+                <Form.Item name="dateFinishRepair" label="วันที่เสร็จสิ้นการซ่อมครุภัณฑ์">
+                  <DatePicker className="w-full" />
+                </Form.Item>
+              </Form>
+            </div>
           </div>
 {/* 
           <Checkbox
@@ -140,13 +148,13 @@ fetchData();
           </Checkbox> */}
 
           {/* {componentDisabled && ( */}
-            <div className='border-2 border-blue-500 rounded-md px-4 mt-2'>
+            {/* <div className='border-2 border-blue-500 rounded-md px-4 mt-2'>
               <Form onValuesChange={handleFormChange}>
                 <Form.Item name="dateFinishRepair" label="วันที่เสร็จสิ้นการซ่อมครุภัณฑ์">
                   <DatePicker className="w-full" />
                 </Form.Item>
               </Form>
-            </div>
+            </div> */}
           {/* )} */}
         </div>
         <div>{/* ขอบขวา*/}</div>

@@ -17,6 +17,7 @@ function AddInventory() {
   const [form] = Form.useForm();
 
   const [companyOptions, setCompanyOptions] = useState([]);
+  const [unitOptions, setUnitOptions] = useState([]);
   const [responsibleOptions, setResponsibleOptions] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [buildingOptions, setBuildingOptions] = useState([]);
@@ -80,6 +81,14 @@ function AddInventory() {
         setCategoryOptions(categoryData.data.map((item) => ({
           id: item.id,
           name: item.attributes.CategoryName,
+        })));
+
+        // Fetch unit
+        const unitResponse = await fetch(`${API_URL}/api/units`);
+        const unitData = await unitResponse.json();
+        setUnitOptions(unitData.data.map((item) => ({
+          id: item.id,
+          name: item.attributes.name_unit,
         })));
 
         // Fetch buildings
@@ -167,6 +176,9 @@ function AddInventory() {
           model: values.model,
           brand: values.brand,
           prize: values.prize,
+          asset_code: values.asset_code,
+          quantity: values.quantity,
+          unit: values.unit,
           status_inventory: 1,
           allowedRepair: true,
           age_use: values["age-use"],
@@ -368,6 +380,14 @@ function AddInventory() {
     ))}
   </Select>
 </Form.Item>
+
+<Form.Item
+                name="asset_code"
+                label="รหัสสินทรัพย์"
+                rules={[{ required: false, message: "กรุณากรอกรหัสสินทรัพย์" }]}
+              >
+                <Input />
+              </Form.Item>
             </div>
             <div>
               {/* คอลัมน์ขวา */}
@@ -528,6 +548,7 @@ function AddInventory() {
               >
                 <DatePicker />
               </Form.Item>
+              
             </div>
           </div>
 
@@ -582,6 +603,32 @@ function AddInventory() {
             </div>
             <div>
               {/* คอลัมน์ขวา */}
+
+              <div className="flex flex-row gap-2">
+              <Form.Item name="quantity" label="จำนวนรายการ" className="w-2/12">
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="unit"
+                  label="หน่วยนับ"
+                  className="w-6/12"
+                  rules={[{ required: false, message: "กรุณาเลือกหน่วยรับ" }]}
+                >
+                  <Select
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    {unitOptions.map((unit) => (
+                      <Option key={unit.id} value={unit.id}>
+                        {unit.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
 
               <Form.Item
                 name="age-use"

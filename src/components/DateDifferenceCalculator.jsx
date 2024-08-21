@@ -1,5 +1,5 @@
 const DateDifferenceCalculator = ({ dateReceive }) => {
-  console.log("DateDifferenceCalculator called with:", dateReceive);
+  // console.log("DateDifferenceCalculator called with:", dateReceive);
   
   if (!dateReceive) {
     return "ไม่มีข้อมูลวันที่";
@@ -27,7 +27,7 @@ const DateDifferenceCalculator = ({ dateReceive }) => {
   };
 
   const { years, months, days } = calculateTimeDifference(dateReceive);
-  console.log("Calculated time difference:", { years, months, days });
+  // console.log("Calculated time difference:", { years, months, days });
 
   // สร้างข้อความผลลัพธ์
   let result = [];

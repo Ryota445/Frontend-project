@@ -249,6 +249,15 @@ function TableExportFile({
           key: 'price',
         },
         {
+          title: 'จำนวนรายการ/หน่วยนับ',
+          key: 'quantityUnit',
+          render: (text, record) => {
+            const quantity = record.attributes.quantity || '';
+            const unit = record.attributes?.unit?.data?.attributes?.name_unit || '';
+            return `${quantity} ${unit}`;
+          },
+        },
+        {
           title: 'รายละเอียดเพิ่มเติม',
           dataIndex: ['attributes', 'information'],
           key: 'information',
@@ -549,6 +558,11 @@ function TableExportFile({
           key: 'id_inv',
         },
         {
+          title: 'รหัสสินทรัพย์',
+          dataIndex: ['attributes', 'asset_code'],
+          key: 'asset_code',
+        },
+        {
           title: 'ชื่อครุภัณฑ์',
           dataIndex: ['attributes', 'name'],
           key: 'name',
@@ -634,6 +648,10 @@ function TableExportFile({
           title: 'ราคาที่ซื้อ (บาท)',
           dataIndex: ['attributes', 'prize'],
           key: 'price',
+        },
+        {
+          title: 'จำนวนรายการ/หน่วยนับ',
+          key: 'quantityUnit',
         },
         {
           title: 'รายละเอียดเพิ่มเติม',
@@ -752,6 +770,11 @@ function TableExportFile({
         const companyName = row.attributes.company_inventory?.data?.attributes?.Cname || '';
         return `${contactName}/${companyName}`;
       }
+      if (col.key === 'quantityUnit') {
+        const quantity = row.attributes.quantity || '';
+        const unit = row.attributes?.unit?.data?.attributes?.name_unit || '';
+        return `${quantity} ${unit}`;
+      }
       if (col.key === 'estimatedAge') {
         return `${row.attributes.age_use} ปี`;
       }
@@ -814,6 +837,11 @@ case '2':
             const contactName = row.attributes.company_inventory?.data?.attributes?.contactName || '';
             const companyName = row.attributes.company_inventory?.data?.attributes?.Cname || '';
             return `${contactName}/${companyName}`;
+          }
+          if (col.key === 'quantityUnit') {
+            const quantity = row.attributes.quantity || '';
+            const unit = row.attributes?.unit?.data?.attributes?.name_unit || '';
+            return `${quantity} ${unit}`;
           }
           if (col.key === 'estimatedAge') {
             return `${row.attributes.age_use} ปี`;

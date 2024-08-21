@@ -19,6 +19,7 @@ function EditInventory() {
   const [form] = Form.useForm();
   const API_URL = import.meta.env.VITE_API_URL;
   const [companyOptions, setCompanyOptions] = useState([]);
+  const [unitOptions, setUnitOptions] = useState([]);
   const [responsibleOptions, setResponsibleOptions] = useState([]);
   const [categoryOptions, setCategoryOptions] = useState([]);
   const [buildingOptions, setBuildingOptions] = useState([]);
@@ -68,6 +69,14 @@ function EditInventory() {
           id: item.id,
           name: item.attributes.CategoryName,
         })));
+
+          // Fetch unit
+          const unitResponse = await fetch(`${API_URL}/api/units`);
+          const unitData = await unitResponse.json();
+          setUnitOptions(unitData.data.map((item) => ({
+            id: item.id,
+            name: item.attributes.name_unit,
+          })));
 
         // Fetch buildings
         const buildingResponse = await fetch(`${API_URL}/api/buildings`);
@@ -129,6 +138,9 @@ function EditInventory() {
           model: inventoryData.data.attributes.model,
           brand: inventoryData.data.attributes.brand,
           prize: inventoryData.data.attributes.prize,
+          asset_code: inventoryData.data.attributes.asset_code,
+          quantity: inventoryData.data.attributes.quantity,
+          unit: inventoryData.data.attributes.unit?.data?.id,
           information: inventoryData.data.attributes.information,
           age_use: inventoryData.data.attributes?.age_use +'ปี',
           // Add other fields as needed
@@ -214,6 +226,9 @@ const updateSubInventory = (index, field, value) => {
         model: values.model,
         brand: values.brand,
         prize: values.prize,
+        asset_code: values.asset_code,
+        quantity: values.quantity,
+        unit: values.unit,
         information: values.information,
         age_use: values.age_use ? parseInt(values.age_use) : 0,
         inventory_number_m_start: values.inventory_number_m_start,
@@ -416,6 +431,14 @@ const updateSubInventory = (index, field, value) => {
     ))}
   </Select>
 </Form.Item>
+
+<Form.Item
+                name="asset_code"
+                label="รหัสสินทรัพย์"
+                rules={[{ required: false, message: "กรุณากรอกรหัสสินทรัพย์" }]}
+              >
+                <Input />
+              </Form.Item>
           </div>
           <div>
             {/* คอลัมน์ขวา */}
@@ -629,6 +652,32 @@ const updateSubInventory = (index, field, value) => {
           </div>
           <div>
             {/* คอลัมน์ขวา */}
+
+            <div className="flex flex-row gap-2">
+              <Form.Item name="quantity" label="จำนวนรายการ" className="w-2/12">
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="unit"
+                  label="หน่วยนับ"
+                  className="w-6/12"
+                  rules={[{ required: false, message: "กรุณาเลือกหน่วยรับ" }]}
+                >
+                  <Select
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                  >
+                    {unitOptions.map((unit) => (
+                      <Option key={unit.id} value={unit.id}>
+                        {unit.name}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </div>
 
             <Form.Item
               name="age_use"

@@ -37,20 +37,7 @@ function MaintenanceState3({ onFormDataChange, onFormDataChangeFile }) {
               <label className="block text-lg font-medium mb-2">ผลการพิจารณาซ่อมแซมครุภัณฑ์จากคณะฯ</label>
               <Input name="ResultConsider" placeholder="ผลการพิจารณา" onChange={handleInputChange} />
             </div>
-          </div>
-
-          {/* <div>
-            <Checkbox
-              checked={componentDisabled}
-              onChange={(e) => setComponentDisabled(e.target.checked)}
-            >
-              <p className='text-lg'>มีรายละเอียดที่ต้องการเพิ่ม</p>
-            </Checkbox>
-          </div> */}
-
-          {/* {componentDisabled && ( */}
-            <div className='border-2 border-blue-500 rounded-md px-4 mt-2'>
-              <h1 className='text-2xl text-gray-500'>รายละเอียดและเอกสารเพิ่มเติมโดยเจ้าหน้าที่</h1>
+            {/* <h1 className='text-2xl text-gray-500'>รายละเอียดและเอกสารเพิ่มเติมโดยเจ้าหน้าที่ (หากมี)</h1> */}
               <Form
                 labelCol={{
                   span: 4,
@@ -99,7 +86,21 @@ function MaintenanceState3({ onFormDataChange, onFormDataChangeFile }) {
                   </Upload>
                 </Form.Item>
               </Form>
-            </div>
+          </div>
+
+          {/* <div>
+            <Checkbox
+              checked={componentDisabled}
+              onChange={(e) => setComponentDisabled(e.target.checked)}
+            >
+              <p className='text-lg'>มีรายละเอียดที่ต้องการเพิ่ม</p>
+            </Checkbox>
+          </div> */}
+
+          {/* {componentDisabled && ( */}
+            {/* <div className='border-2 border-blue-500 rounded-md px-4 mt-2'>
+              
+            </div> */}
           {/* )} */}
         </div>
         <div>{/* ขอบขวา */}</div>

@@ -18,10 +18,10 @@ const [selectedRows, setSelectedRows] = useState([]);
 
     const isAdmin = user?.role_in_web?.RoleName === "Admin";
 
-  if (user) {
-    console.log("user.responsible :",user.responsible);
-    console.log("user.RoleInWeb :",user.RoleInWeb);
-  }
+//   if (user) {
+//     console.log("user.responsible :",user.responsible);
+//     console.log("user.RoleInWeb :",user.RoleInWeb);
+//   }
 
 
 
@@ -84,7 +84,7 @@ const [selectedRows, setSelectedRows] = useState([]);
             setFilteredInventoryList(filteredData); // เซ็ตรายการทั้งหมดเป็นรายการที่ถูกกรองแล้ว
             setInventoryList(filteredData); // เซ็ตรายการทั้งหมด
             setFoundDataNumber(filteredData.length); // อัปเดตจำนวนรายการที่พบ
-            console.log("InventoryData :", filteredData);
+            // console.log("InventoryData :", filteredData);
         } catch (error) {
             console.error('Error fetching data:', error);
         }

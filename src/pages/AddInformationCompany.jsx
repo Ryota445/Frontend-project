@@ -210,6 +210,7 @@ function AddInformationCompany() {
           <Search
             placeholder="ค้นหาชื่อบริษัท ชื่อตัวแทน"
             onSearch={handleSearch}
+            onChange={(e) => handleSearch(e.target.value)}
             style={{ width: 300 }}
             allowClear
           />

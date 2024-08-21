@@ -164,11 +164,11 @@ function NavComponent({ collapsed, setCollapsed }) {
   </div>
 
       <div className="navbar-end mr-5">
-        <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
+        {/* <Dropdown overlay={menu} trigger={['click']} placement="bottomRight">
           <Badge count={filteredNotifications.length}>
             <Button type="ghost" shape="circle" icon={<BellOutlined />} className="text-2xl" />
           </Badge>
-        </Dropdown>
+        </Dropdown> */}
       </div>
     </div>
   );

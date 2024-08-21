@@ -97,6 +97,26 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
         body: formDataToSend,
       });
 
+      // ตรวจสอบสถานะซ่อมบำรุงและอัปเดต isReporting
+    // if (selectedStatus == 4) {
+    //   const formData2 = new FormData();
+    //   formData2.append(
+    //     "data",
+    //     JSON.stringify({
+    //       isReporting: false,
+    //     })
+    //   );
+
+    //   const response2 = await fetch(`${API_URL}/api/inventories/${inventoryId}`, {
+    //     method: "PUT",
+    //     body: formData2,
+    //   });
+
+    //   if (!response2.ok) {
+    //     throw new Error(`HTTP Error status: ${response2.status}`);
+    //   }
+    // }
+
       if (!response.ok) {
         throw new Error(`HTTP Error status: ${response.status}`);
         console.log(response);

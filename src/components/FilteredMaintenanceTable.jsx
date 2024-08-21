@@ -1,10 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Table, DatePicker, Radio } from 'antd';
+import { Table, DatePicker, Radio, Button,Popconfirm, message } from 'antd';
+import { DeleteOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 const FilteredMaintenanceTable = ({ data }) => {
+  const API_URL = import.meta.env.VITE_API_URL;
   const [filteredData, setFilteredData] = useState([]);
   const [selectedOption, setSelectedOption] = useState("7");
+
+  const handleDelete = async (id) => {
+    try {
+      const response = await fetch(`${API_URL}/api/maintenance-reports/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        message.success('ลบรายการแจ้งเตือนบำรุงรักษาสำเร็จ');
+        setFilteredData(filteredData.filter(item => item.key !== id));
+      } else {
+        message.error('เกิดข้อผิดพลาดในการลบรายการ');
+      }
+    } catch (error) {
+      console.error('Error deleting maintenance report:', error);
+      message.error('เกิดข้อผิดพลาดในการลบรายการ');
+    }
+  };
+
 
   const columns = [
     {
@@ -35,6 +56,27 @@ const FilteredMaintenanceTable = ({ data }) => {
       title: '',
       dataIndex: 'action',
       key: 'action',
+    },
+    {
+      title: '',
+      key: 'action3',
+      render: (_, record) => (
+        <Popconfirm
+          title="ยืนยันการลบ"
+          description="คุณต้องการลบรายการแจ้งเตือนบำรุงรักษานี้จริงหรือไม่?"
+          onConfirm={() => handleDelete(record.key)}
+          okText="ยืนยัน"
+          cancelText="ยกเลิก"
+          okButtonProps={{
+            className: 'bg-blue-300 text-white hover:bg-blue-500',
+          }}
+        >
+          <Button 
+            icon={<DeleteOutlined />} 
+            type="text"
+          />
+        </Popconfirm>
+      ),
     },
   ];
 
@@ -89,7 +131,7 @@ const FilteredMaintenanceTable = ({ data }) => {
         <h1 className='text-2xl font-semibold'>แจ้งเตือนบำรุงรักษาครุภัณฑ์</h1>
         <p className='text-lg'>มีทั้งหมด {filteredData.length} รายการ</p>
       </div>
-      <Table columns={columns} dataSource={filteredData} rowKey="id" />
+      <Table columns={columns} dataSource={filteredData} rowKey="key" />
     </div>
   );
 };

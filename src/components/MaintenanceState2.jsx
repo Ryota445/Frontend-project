@@ -67,21 +67,7 @@ function MaintenanceState2({ dataInvForCard, dataRepairReport, onFormDataChange,
             <a href={fileUrl} target="_blank" rel="noopener noreferrer">
               <FileOutlined /><span className='ml-2'>{fileName}</span>
             </a>
-          </div>
-
-          {/* <div>
-            <Checkbox
-              checked={componentDisabled}
-              onChange={(e) => setComponentDisabled(e.target.checked)}
-            >
-              <p className='text-lg'>มีรายละเอียดที่ต้องการเพิ่ม</p>
-            </Checkbox>
-          </div> */}
-
-          {/* {componentDisabled && ( */}
-            <div className='border-2 border-blue-500 rounded-md px-4 mt-2'>
-              <h1 className='text-2xl text-gray-500'>รายละเอียดและเอกสารเพิ่มเติมโดยเจ้าหน้าที่</h1>
-              <Form
+            <Form
                 labelCol={{ span: 4 }}
                 wrapperCol={{ span: 14 }}
                 layout="horizontal"
@@ -123,8 +109,18 @@ function MaintenanceState2({ dataInvForCard, dataRepairReport, onFormDataChange,
                   </Upload>
                 </Form.Item>
               </Form>
-            </div>
-          {/* )} */}
+          </div>
+
+          {/* <div>
+            <Checkbox
+              checked={componentDisabled}
+              onChange={(e) => setComponentDisabled(e.target.checked)}
+            >
+              <p className='text-lg'>มีรายละเอียดที่ต้องการเพิ่ม</p>
+            </Checkbox>
+          </div> */}
+
+          
         </div>
         <div>{/* ขอบขวา*/}</div>
       </div>

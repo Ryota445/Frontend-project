@@ -57,14 +57,15 @@ const RequestManagement = () => {
     const fetchReturnEquipmentData = async () => {
       try {
         const response = await fetch(
-          `${API_URL}/api/request-sent-backs?populate[inventory][populate]=*&populate=reportedBy`
+          `${API_URL}/api/request-sent-backs?populate[inventory][populate]&populate[reportedBy][populate]&populate[FileReasonSentBack][populate]`
         );
         const result = await response.json();
         const formattedData = result.data
           .filter((item) => !item.attributes.isDone)
           .map((item) => {
             const inventoryData = item.attributes.inventory.data;
-            const fileData = item.attributes.FileReasonSentBack?.data?.[0]?.attributes;
+            const fileData = item.attributes.FileReasonSentBack?.data?.attributes;
+            console.log("item.attributes.FileReasonSentBack",item.attributes.FileReasonSentBack)
             return {
               key: item.id,
               date: new Date(item.attributes.createdAt).toLocaleDateString("th-TH", {
@@ -378,6 +379,7 @@ const RequestManagement = () => {
       title: "ไฟล์",
       dataIndex: "file",
       key: "file",
+      ellipsis: true, // เพิ่ม ellipsis ที่นี่เพื่อให้ชื่อไฟล์ยาวเกินไปถูกตัด
     },
     {
       title: "",

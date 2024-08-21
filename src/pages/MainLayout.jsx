@@ -1,5 +1,5 @@
-import React from 'react';
-import { Layout, Menu, Typography } from 'antd';
+import React,{ useState } from 'react';
+import { Layout, Menu, Typography,Modal  } from 'antd';
 import { Link } from 'react-router-dom';
 import {
   DesktopOutlined,
@@ -9,6 +9,7 @@ import {
   UserOutlined,
   RollbackOutlined,
   FileExcelOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons';
 
 import NavComponent from '../components/NavComponent'; 
@@ -17,12 +18,13 @@ import { useAuth } from '../context/AuthContext';
 const { Sider, Header, Content } = Layout;
 const { Text } = Typography;
 
-function getItem(label, key, icon, children) {
+function getItem(label, key, icon, children, onClick) {
     return {
       key,
       icon,
       children,
       label,
+      onClick,
     };
   }
 
@@ -32,6 +34,22 @@ function getItem(label, key, icon, children) {
     const { user } = useAuth(); 
 
     const isAdmin = user?.role_in_web?.RoleName === "Admin";
+
+
+    const [isLogoutModalVisible, setIsLogoutModalVisible] = useState(false);
+
+const showLogoutModal = () => {
+  setIsLogoutModalVisible(true);
+};
+
+const handleLogoutCancel = () => {
+  setIsLogoutModalVisible(false);
+};
+
+const handleLogoutConfirm = () => {
+  setIsLogoutModalVisible(false);
+  logout();
+};
 
     const items = [
       getItem('จัดการครุภัณฑ์', '3', <Link to="/manageInventory"><DesktopOutlined /></Link>),
@@ -43,7 +61,7 @@ function getItem(label, key, icon, children) {
         getItem('จัดการข้อมูลตัวแทนบริษัท/ผู้บริจาค', '9', <Link to="/AddInformationCompany"><TeamOutlined /></Link>),
         getItem('ออกรายงาน', '11', <Link to="/ExportFilePage"><FileExcelOutlined /></Link>),
       ] : []),
-      { key: 'logout', icon: <UserOutlined />, label: 'Logout', onClick: logout },
+      getItem('Logout', 'logout', <LogoutOutlined />, null, showLogoutModal),
     ];
 
   return (
@@ -80,6 +98,22 @@ function getItem(label, key, icon, children) {
           {children}
         </Content>
       </Layout>
+      <Modal
+  title="ยืนยันการออกจากระบบ"
+  visible={isLogoutModalVisible}
+  onOk={handleLogoutConfirm}
+  onCancel={handleLogoutCancel}
+  okText="ยืนยัน"
+  cancelText="ยกเลิก"
+  okButtonProps={{
+    className: 'bg-blue-300 text-white hover:bg-blue-500',
+  }}
+>
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+    <LogoutOutlined style={{ fontSize: '48px', color: '#1890ff', marginBottom: '16px' }} />
+    <p>คุณต้องการออกจากระบบใช่หรือไม่?</p>
+  </div>
+</Modal>
     </Layout>
   );
 };
