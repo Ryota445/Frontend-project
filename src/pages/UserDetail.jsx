@@ -811,6 +811,16 @@ function UserDetail() {
                       )}
                     </div>
 
+                    <div className="flex flex-row my-1">
+                    <h1 className="text-lg text-gray-400 mr-4">รหัสสินทรัพย์</h1>
+                    {dataInv?.attributes?.asset_code ? (
+                      <h1 className="text-lg">{dataInv?.attributes?.asset_code}</h1>
+                    ) : (
+                      <p className="text-lg ml-2">-</p>
+                    )}
+                  </div>
+
+
                     <div className="flex flex-col">
                       <div className="flex flex-col w-3/4 mt-2 border-2 border-blue-500 rounded-md ">
                         <h1 className="text-lg text-gray-400 ">
@@ -1500,7 +1510,7 @@ function UserDetail() {
             <div></div>
           </div>
           
-          <div className=" w-full h-[300px] mt-[120px] grid grid-cols-8 " >
+          <div className=" w-full h-[300px] mt-[130px] grid grid-cols-8 " >
             <div className=""></div>
 
             <div className="mt-8 col-span-6 border-2 border-blue-500 rounded-md">
@@ -1647,14 +1657,7 @@ function UserDetail() {
                     )}
                   </div>
 
-                  <div className="flex flex-row my-2">
-                    <h1 className="text-lg text-gray-400 mr-4">รหัสสินทรัพย์</h1>
-                    {dataInv?.attributes?.asset_code ? (
-                      <h1 className="text-lg">{dataInv?.attributes?.asset_code}</h1>
-                    ) : (
-                      <p className="text-lg ml-2">-</p>
-                    )}
-                  </div>
+                 
                 </div>
               </div>
 
@@ -1710,7 +1713,7 @@ function UserDetail() {
 
                 <div className="flex flex-row gap-2">
                        <div className="flex flex-row my-2">
-                    <h1 className="text-lg text-gray-400 mr-4">จำนวนรายการ/หน่วยนับ</h1>
+                    <h1 className="text-lg text-gray-400 mr-4">จำนวนรายการตามทะเบียน/ตรวจสอบ</h1>
                     {dataInv?.attributes?.quantity ? (
                       <h1 className="text-lg">
                         {dataInv?.attributes?.quantity}

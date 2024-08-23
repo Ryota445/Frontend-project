@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Form, Input, Button, DatePicker, Select, Upload, Space, message } from "antd";
+import { Form, Input, Button, DatePicker, Select, Upload, Space, message,InputNumber  } from "antd";
 import { UploadOutlined, PlusOutlined, PrinterOutlined, DeleteOutlined } from "@ant-design/icons";
 import AddTest from "../components/AddTest";
 import debounce from 'lodash/debounce';
@@ -27,12 +27,26 @@ function AddInventory() {
 
   const [searchValue, setSearchValue] = useState("");
 
-  const [inventoryCount, setInventoryCount] = useState(1); // Number of inventories
-  const [startInventoryNumber, setStartInventoryNumber] = useState(""); // Starting inventory number
+  // const [inventoryCount, setInventoryCount] = useState(1); // Number of inventories
+  // const [startInventoryNumber, setStartInventoryNumber] = useState(""); // Starting inventory number
 
   const [activeButton, setActiveButton] = useState("single");
-
   const [idInvExists, setIdInvExists] = useState(false);
+
+  // ใหม่ AddCheck
+  const [inventoryCount, setInventoryCount] = useState(1);
+  const [idInvInput, setIdInvInput] = useState("");
+  const [inventoryPrefix, setInventoryPrefix] = useState({ number: 0, suffix: '' });
+
+  const [endInventoryNumber, setEndInventoryNumber] = useState("");
+
+  const splitInventoryNumber = (invNumber) => {
+    const match = invNumber.match(/^(\d+)(.*)$/);
+    if (match) {
+      return { number: parseInt(match[1]), suffix: match[2] };
+    }
+    return { number: 0, suffix: invNumber };
+  };
 
   const checkIdInv = useCallback(
     debounce(async (id_inv) => {
@@ -46,15 +60,62 @@ function AddInventory() {
     }, 300),
     []
   );
+
+  // NEW CHECK ID ยังไม่ได้ลอง แล้วก็มันต้องไปสร้าง API Endpoit   (check-id-inv-range) ที่สามารถตรวจสอบช่วงของหมายเลขครุภัณฑ์ได้
+  // const checkIdInv = useCallback(
+  //   debounce(async (id_inv) => {
+  //     try {
+  //       if (activeButton === "many") {
+  //         const { number, suffix } = splitInventoryNumber(id_inv);
+  //         const endNumber = number + parseInt(inventoryCount) - 1;
+  //         const endId = `${endNumber}${suffix}`;
+  //         const response = await fetch(`${API_URL}/api/inventories/check-id-inv-range?start=${id_inv}&end=${endId}`);
+  //         const data = await response.json();
+  //         setIdInvExists(data.exists);
+  //       } else {
+  //         const response = await fetch(`${API_URL}/api/inventories/check-id-inv?id_inv=${id_inv}`);
+  //         const data = await response.json();
+  //         setIdInvExists(data.exists);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking id_inv:", error);
+  //     }
+  //   }, 300),
+  //   [activeButton, inventoryCount]
+  // );
+
+  const handleInventoryInputChange = (e) => {
+    const value = e.target.value;
+    setIdInvInput(value);
+    const { number, suffix } = splitInventoryNumber(value);
+    setInventoryPrefix({ number, suffix });
+    if (activeButton === "single") {
+      form.setFieldsValue({ id_inv: value });
+    } else {
+      form.setFieldsValue({ inventory_number_m_start: value });
+      updateEndInventoryNumber(number, suffix);
+    }
+    if (value) {
+      checkIdInv(value);
+    } else {
+      setIdInvExists(false);
+    }
+  };
+
+  const updateEndInventoryNumber = (startNumber, suffix) => {
+    const endNumber = startNumber + inventoryCount - 1;
+    const formattedEndNumber = `${endNumber}${suffix}`;
+    setEndInventoryNumber(formattedEndNumber);
+    form.setFieldsValue({ inventory_number_m_end: formattedEndNumber });
+  };
   
   useEffect(() => {
-    // Generate inventory number based on the specified quantity
-    const endInventoryNumber = parseInt(startInventoryNumber) + parseInt(inventoryCount) - 1; 
-    form.setFieldsValue({
-      inventory_number_m_start: startInventoryNumber,
-      inventory_number_m_end: endInventoryNumber.toString(),
-    });
-  }, [inventoryCount, startInventoryNumber]);
+    if (activeButton === "many") {
+      const { number, suffix } = splitInventoryNumber(idInvInput);
+      updateEndInventoryNumber(number, suffix);
+    }
+  }, [inventoryCount, idInvInput, activeButton]);
+
 
   useEffect(() => {
     async function fetchData() {
@@ -137,7 +198,6 @@ function AddInventory() {
   }, []);
 
   const onFinish = async (values) => {
-   
     const subInventoryIds = [];
     console.log('Received values of form:', values);
     console.log('item-s:',items)
@@ -151,16 +211,18 @@ function AddInventory() {
         return;
       }
     }
+    const { number, suffix } = splitInventoryNumber(idInvInput);
 
     for (let i = 0; i < inventoryCount; i++) {
+      const currentNumber = number + i;
+      const formattedIdInv = `${currentNumber}${suffix}`;
+
       const formData = new FormData();
       formData.append(
         "data",
         JSON.stringify({
           name: values.name,
-          id_inv: (
-            (parseInt(startInventoryNumber) || parseInt(values.id_inv)) + i
-          ).toString(),
+          id_inv: formattedIdInv,
           category: values.category,
           building: values.building,
           floor: values.floor,
@@ -191,15 +253,88 @@ function AddInventory() {
         formData.append("files.img_inv", values.img_inv[0].originFileObj);
       }
 
-      const response = await postInventoryData(formData);
-      if (response) {
-        message.success("บันทึกข้อมูลสำเร็จ");
-        form.resetFields();
-      } else {
-        message.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+      try {
+        const response = await fetch(`${API_URL}/api/inventories`, {
+          method: "POST",
+          body: formData,
+        });
+        if (!response.ok) throw new Error("Response not OK");
+        const responseData = await response.json();
+        console.log("Response:", responseData);
+        message.success(`บันทึกข้อมูลสำเร็จ: ${formattedIdInv}`);
+      } catch (error) {
+        console.error("Error:", error);
+        message.error(`เกิดข้อผิดพลาดในการบันทึกข้อมูล: ${formattedIdInv}`);
       }
     }
+    form.resetFields();
   };
+
+  // OnFinish OLD
+  // const onFinish = async (values) => {
+   
+  //   const subInventoryIds = [];
+  //   console.log('Received values of form:', values);
+  //   console.log('item-s:',items)
+  //   for (const item of items) {
+  //     console.log('item:',item)
+  //     const subInventoryId = await postSubInventoryData(item);
+  //     if (subInventoryId) {
+  //       subInventoryIds.push(subInventoryId);
+  //     } else {
+  //       message.error("Failed to save sub-inventory item.");
+  //       return;
+  //     }
+  //   }
+
+  //   for (let i = 0; i < inventoryCount; i++) {
+  //     const formData = new FormData();
+  //     formData.append(
+  //       "data",
+  //       JSON.stringify({
+  //         name: values.name,
+  //         id_inv: (
+  //           (parseInt(startInventoryNumber) || parseInt(values.id_inv)) + i
+  //         ).toString(),
+  //         category: values.category,
+  //         building: values.building,
+  //         floor: values.floor,
+  //         room: values.room,
+  //         responsible: values.responsible,
+  //         how_to_get: values.howToGet,
+  //         sourceMoney: values.sourceMoney,
+  //         year_money_get: values.YearMoneyGet,
+  //         DateOrder: values.DateOrder ? values.DateOrder.format("YYYY-MM-DD") : null,
+  //         DateRecive: values.DateRecive ? values.DateRecive.format("YYYY-MM-DD") : null,
+  //         company_inventory: values.company_inventory,
+  //         serialNumber: values.serialNumber,
+  //         model: values.model,
+  //         brand: values.brand,
+  //         prize: values.prize,
+  //         asset_code: values.asset_code,
+  //         quantity: values.quantity,
+  //         unit: values.unit,
+  //         status_inventory: 1,
+  //         allowedRepair: true,
+  //         age_use: values["age-use"],
+  //         information: values.information,
+  //         sub_inventories: subInventoryIds,
+  //       })
+  //     );
+
+  //     if (values.img_inv && values.img_inv.length > 0) {
+  //       formData.append("files.img_inv", values.img_inv[0].originFileObj);
+  //     }
+
+  //     const response = await postInventoryData(formData);
+  //     if (response) {
+  //       message.success("บันทึกข้อมูลสำเร็จ");
+  //       form.resetFields();
+  //     } else {
+  //       message.error("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+  //     }
+  //   }
+  // };
 
   const postSubInventoryData = async (subItem) => {
     try {
@@ -295,6 +430,10 @@ function AddInventory() {
           onFinish={onFinish}
           layout="vertical"
           className="m-4"
+          initialValues={{
+            quantity: 1,
+           
+          }}
         >
           <div className="border-b-2 border-black mb-10 mt-10">
             <h1 className="text-lg text-blue-800">ข้อมูลครุภัณฑ์</h1>
@@ -312,54 +451,39 @@ function AddInventory() {
                 <Input />
               </Form.Item>
 
-              {/* ตรวจสอบสถานะของ activeButton เพื่อแสดงฟอร์มที่ถูกต้อง */}
-              {activeButton === "single" ? (
-                 <Form.Item
-                 name="id_inv"
-                 label="หมายเลขครุภัณฑ์"
-                 validateStatus={idInvExists ? "error" : ""}
-                 help={idInvExists ? "หมายเลขครุภัณฑ์นี้มีอยู่แล้ว" : ""}
-               >
-                 <Input
-                   onChange={(e) => {
-                     const value = e.target.value;
-                     form.setFieldsValue({ id_inv: value });
-                     if (value) {
-                       checkIdInv(value);
-                     } else {
-                       setIdInvExists(false);
-                     }
-                   }}
-                 />
-               </Form.Item>
-              ) : (
-                <>
-                  <Form.Item name="inventory_count" label="จำนวนครุภัณฑ์">
-                    <Input
-                      value={inventoryCount}
-                      onChange={(e) => setInventoryCount(e.target.value)}
-                    />
-                  </Form.Item>
+              {activeButton === "many" && (
+              <Form.Item name="inventory_count" label="จำนวนครุภัณฑ์">
+                <Input
+                  type="number"
+                  value={inventoryCount}
+                  onChange={(e) => setInventoryCount(parseInt(e.target.value) || 1)}
+                />
+              </Form.Item>
+            )}
 
-                  <Form.Item
-                    name="inventory_number_m_start"
-                    label="หมายเลขครุภัณฑ์ ตั้งแต่ ->"
-                  >
-                    <Input
-                      value={startInventoryNumber}
-                      onChange={(e) => setStartInventoryNumber(e.target.value)}
-                    />
-                  </Form.Item>
+              <Form.Item
+              name={activeButton === "single" ? "id_inv" : "inventory_number_m_start"}
+              label={activeButton === "single" ? "หมายเลขครุภัณฑ์" : "หมายเลขครุภัณฑ์เริ่มต้น"}
+              validateStatus={idInvExists ? "error" : ""}
+              help={idInvExists ? "หมายเลขครุภัณฑ์นี้มีอยู่แล้ว" : ""}
+            >
+              <Input onChange={handleInventoryInputChange} />
+            </Form.Item>
 
-                  <Form.Item name="inventory_number_m_end" label="ถึง: หมายเลข">
-                    <Input disabled />
-                  </Form.Item>
-                </>
-              )}
+            {activeButton === "many" && (
+                 <Form.Item name="inventory_number_m_end" label="ถึง: หมายเลข">
+      <Input disabled value={endInventoryNumber} />
+    </Form.Item>
+            )}
 
-              {/* <Form.Item name="Inventory_number_faculty" label="รหัสสินทรัพย์">
-              <Input />
-            </Form.Item> */}
+          
+<Form.Item
+                name="asset_code"
+                label="รหัสสินทรัพย์"
+                rules={[{ required: false, message: "กรุณากรอกรหัสสินทรัพย์" }]}
+              >
+                <Input />
+              </Form.Item>
 
 <Form.Item
   name="category"
@@ -381,13 +505,7 @@ function AddInventory() {
   </Select>
 </Form.Item>
 
-<Form.Item
-                name="asset_code"
-                label="รหัสสินทรัพย์"
-                rules={[{ required: false, message: "กรุณากรอกรหัสสินทรัพย์" }]}
-              >
-                <Input />
-              </Form.Item>
+
             </div>
             <div>
               {/* คอลัมน์ขวา */}
@@ -605,9 +723,14 @@ function AddInventory() {
               {/* คอลัมน์ขวา */}
 
               <div className="flex flex-row gap-2">
-              <Form.Item name="quantity" label="จำนวนรายการ" className="w-2/12">
-                  <Input />
-                </Form.Item>
+              <Form.Item 
+    name="quantity" 
+    label="จำนวนรายการตามทะเบียน/ตรวจสอบ" 
+    className="w-4/12"
+    rules={[{ required: false , message: 'กรุณาระบุจำนวน' }]}
+  >
+    <InputNumber min={1} style={{ width: '100%' }} />
+  </Form.Item>
                 <Form.Item
                   name="unit"
                   label="หน่วยนับ"

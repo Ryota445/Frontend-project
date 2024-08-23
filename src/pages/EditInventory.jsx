@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, DatePicker, Select, Upload, message } from "antd";
+import { Form, Input, Button, DatePicker, Select, Upload, message,InputNumber } from "antd";
 import { UploadOutlined, PlusOutlined, PrinterOutlined, DeleteOutlined } from "@ant-design/icons";
 import AddTest from "../components/AddTest";
 import { useParams } from "react-router-dom"; // Import useParams for getting ID from route
@@ -361,6 +361,7 @@ const updateSubInventory = (index, field, value) => {
         onFinish={onFinish}
         layout="vertical"
         className="m-4"
+       
       >
         <div className="border-b-2 border-black mb-10 mt-10">
           <h1 className="text-lg text-blue-800">ข้อมูลครุภัณฑ์</h1>
@@ -654,9 +655,14 @@ const updateSubInventory = (index, field, value) => {
             {/* คอลัมน์ขวา */}
 
             <div className="flex flex-row gap-2">
-              <Form.Item name="quantity" label="จำนวนรายการ" className="w-2/12">
-                  <Input />
-                </Form.Item>
+            <Form.Item 
+    name="quantity" 
+    label="จำนวนรายการตามทะเบียน/ตรวจสอบ" 
+    className="w-4/12"
+    rules={[{ required: false , message: 'กรุณาระบุจำนวน' }]}
+  >
+    <InputNumber min={1} style={{ width: '100%' }} />
+  </Form.Item>
                 <Form.Item
                   name="unit"
                   label="หน่วยนับ"
