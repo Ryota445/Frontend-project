@@ -95,40 +95,44 @@ function TableViewInventory({
   };
 
   const handleLocationChange = async () => {
-    const data = {
-      data: {
-        NewLocationRoom: newLocation.room,
-        NewLocationFloor: newLocation.floor,
-        building: newLocation.building,
-        inventories: selectedRows.map(row => row.id),
-        isDone:false,
-      },
-    };
-
-    try {
-      const response = await fetch(`${API_URL}/api/request-change-locations`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
+    const updatePromises = selectedRows.map(row => {
+      const formData = new FormData();
+      formData.append(
+        "data",
+        JSON.stringify({
+          room: newLocation.room,
+          floor: newLocation.floor,
+          building: newLocation.building,
+        })
+      );
+      
+      return fetch(`${API_URL}/api/inventories/${row.id}`, {
+        method: "PUT",
+        body: formData,
       });
-
-      if (!response.ok) throw new Error("ไม่สามารถเปลี่ยนที่ตั้งได้");
-
-      const responseData = await response.json();
-      console.log("Change Location Success:", responseData);
-      message.success("เปลี่ยนที่ตั้งสำเร็จ");
+    });
+  
+    try {
+      const responses = await Promise.all(updatePromises);
+      
+      // ตรวจสอบว่าทุก response สำเร็จ
+      const allSuccessful = responses.every(response => response.ok);
+      
+      if (!allSuccessful) {
+        throw new Error("บางรายการไม่สามารถเปลี่ยนที่ตั้งได้");
+      }
+  
+      console.log("Change Location Success for all items");
+      message.success("เปลี่ยนที่ตั้งสำเร็จทุกรายการ");
+      
       setTimeout(() => {
         window.location.reload();
-    }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
-      
-      
+      }, 1000);
     } catch (error) {
       console.error("Error:", error);
-      message.error("เกิดข้อผิดพลาดในการเปลี่ยนที่ตั้ง");
+      message.error("เกิดข้อผิดพลาดในการเปลี่ยนที่ตั้งบางรายการ");
     }
-
+  
     setIsModalVisible(false);
     setShowLocationFields(false);
   };
@@ -207,12 +211,14 @@ setTimeout(() => {
       title: 'หมายเลขครุภัณฑ์',
       dataIndex: ['attributes', 'id_inv'],
       key: 'id_inv',
+      render: (text) => text || '-',
     },
     {
       title: 'ชื่อครุภัณฑ์',
       width: 200,
       dataIndex: ['attributes', 'name'],
       key: 'name',
+      render: (text) => text || '-',
     },
     {
       title: 'เลของค์ประกอบในชุดครุภัณฑ์',
@@ -291,25 +297,36 @@ setTimeout(() => {
       title: 'ผู้ดูแล',
       dataIndex: ['attributes', 'responsible', 'data', 'attributes', 'responsibleName'],
       key: 'responsible',
+      render: (text, record) => {
+        return record.attributes?.responsible?.data?.attributes?.responsibleName || '-';
+      },
     },  
     {
       title: 'หมวดหมู่',
       dataIndex: ['attributes', 'category', 'data', 'attributes', 'CategoryName'],
       key: 'category',
+      render: (text, record) => {
+        return record.attributes?.category?.data?.attributes?.CategoryName || '-';
+      },
     },
     {
       title: 'ที่ตั้ง',
       key: 'location',
       children: [
-        { title: 'อาคาร', dataIndex: ['attributes', 'building', 'data', 'attributes', 'buildingName'], key: 'building' },
-        { title: 'ชั้น', dataIndex: ['attributes', 'floor'], key: 'floor' },
-        { title: 'ห้อง', dataIndex: ['attributes', 'room'], key: 'room' },
+        { title: 'อาคาร', dataIndex: ['attributes', 'building', 'data', 'attributes', 'buildingName'], key: 'building' ,render: (text, record) => {
+          return record.attributes?.building?.data?.attributes?.buildingName || '-';
+        }, },
+        { title: 'ชั้น', dataIndex: ['attributes', 'floor'], key: 'floor',render: (text) => text || '-', },
+        { title: 'ห้อง', dataIndex: ['attributes', 'room'], key: 'room'  ,render: (text) => text || '-',},
       ],
     },
     {
       title: 'สถานะครุภัณฑ์',
       dataIndex: ['attributes', 'status_inventory', 'data', 'attributes', 'StatusInventoryName'],
       key: 'status_inventory',
+      render: (text, record) => {
+        return record.attributes?.status_inventory?.data?.attributes?.StatusInventoryName || '-';
+      },
     },
     {
       title: isAdmin ? 'ดู/แก้ไข' : 'ดู',

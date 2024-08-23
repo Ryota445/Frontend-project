@@ -26,6 +26,7 @@ import {
   WarningOutlined,
   SafetyOutlined,
   CameraOutlined,
+  VerticalAlignBottomOutlined,
 } from "@ant-design/icons";
 import TableDetailMantenant from "../components/TableDetailMantenant";
 import TableDetailRepair from "../components/TableDetailRepair";
@@ -382,7 +383,7 @@ function UserDetail() {
       }
     } catch (error) {
       console.error("Error:", error);
-      message.error("เกิดข้อผิดพลาดในการดำเนินการ");
+      message.error("เกิดข้อผิดพลาดในการเปลี่ยนที่ตั้ง");
     }
   };
 
@@ -1126,6 +1127,14 @@ function UserDetail() {
                           layout="vertical"
                           className="m-4"
                         >
+                          <a
+  className="text-gray-400"
+  href="http://localhost:1337/uploads/Repair_Form_01_27af8d134f.docx"
+  download="แบบฟอร์มแจ้งซ่อม.docx"
+>
+  <VerticalAlignBottomOutlined /> คลิกที่นี่เพื่อดาวน์โหลดแบบฟอร์มแจ้งซ่อม
+</a>
+
                           <Form.Item
                             name="repairReason"
                             label="เหตุผลในการแจ้งซ่อม:"

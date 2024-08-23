@@ -743,7 +743,7 @@ function TableExportFile({
     default:
       // นำออกไฟล์ Excel ข้อมูลทั่วไปครุภัณฑ์ (ทุก column)
       workbook = new ExcelJS.Workbook();
-      worksheet = workbook.addWorksheet('ข้อมูลทั่วไปครุภัณฑ์');
+      worksheet = workbook.addWorksheet('ข้อมูลครุภัณฑ์ทุกคอลัมน์');
       
       // ใช้ทุก column
       const allHeaders = excelColumns.map(col => col.title);
@@ -879,7 +879,7 @@ const thaiDate = new Date().toLocaleDateString('th-TH', {
   month: 'long',
   day: 'numeric',
 });
-const defaultFileName = `รายงานข้อมูลทั่วไปครุภัณฑ์ - ${thaiDate}`;
+const defaultFileName = `รายงานข้อมูลครุภัณฑ์ทุกคอลัมน์ - ${thaiDate}`;
 finalFileName = `${fileName || defaultFileName}.xlsx`;
 
   // สร้างไฟล์ Excel
@@ -1062,7 +1062,7 @@ const calculateAgeDifference = (dateReceive) => {
   onClick={openModal}
 >
   <span>
-    นำออกรายงาน
+    เลือกข้อมูล
     <br className="hidden md:inline" />
     {selectedItems.length} รายการ
   </span>
@@ -1091,7 +1091,7 @@ const calculateAgeDifference = (dateReceive) => {
     onChange={handleExportTypeChange}
     value={exportType}
   >
-    <Option value="1">1. ข้อมูลทั่วไปครุภัณฑ์</Option>
+    <Option value="1">1. นำออกทุกคอลัมน์</Option>
     <Option value="2">2. ตามคอลัมน์ที่เลือก</Option>
   </Select>
 

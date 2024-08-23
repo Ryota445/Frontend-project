@@ -137,7 +137,7 @@ const MantenantPage1 = () => {
                 // date: <DateIsoToThai isoDate={item.attributes.createdAt} typeTime={1} />,
                 date: item.attributes.createdAt,
                 numberRepairFaculty:
-                  item.attributes.NumberRepairFaculty ?? "N/A",
+                  item.attributes.NumberRepairFaculty ?? " - ",
                 id:
                   (
                     <Link to={`/UserDetailInventory/${inventoryId}`}>
@@ -155,7 +155,7 @@ const MantenantPage1 = () => {
                         <> {inventory?.id_inv}</>
                       )}
                     </Link>
-                  ) ?? "N/A",
+                  ) ?? " - ",
                 name:
                   (
                     <Link to={`/UserDetailInventory/${inventoryId}`}>
@@ -170,11 +170,11 @@ const MantenantPage1 = () => {
                         <> {inventory?.name} </>
                       )}
                     </Link>
-                  ) ?? "N/A",
+                  ) ?? " - ",
                 reportedBy:
                   item?.attributes?.reportedBy?.data?.attributes
-                    ?.responsibleName || "N/A",
-                description: item.attributes.RepairReasonByResponsible ?? "N/A",
+                    ?.responsibleName || " - ",
+                description: item.attributes.RepairReasonByResponsible ?? " - ",
                 FileReport: (
                   <a
                     href={`${API_URL}${item?.attributes?.ReportFileByResponsible?.data?.[0]?.attributes?.url}`}
@@ -285,7 +285,7 @@ const MantenantPage1 = () => {
                         <> {inventory?.id_inv}</>
                       )}
                     </Link>
-                  ) ?? "N/A",
+                  ) ?? " - ",
                 name:
                   (
                     <Link to={`/UserDetailInventory/${inventoryId}`}>
@@ -300,8 +300,8 @@ const MantenantPage1 = () => {
                         <> {inventory?.name} </>
                       )}
                     </Link>
-                  ) ?? "N/A",
-                description: item.attributes.DetailMaintenance ?? "N/A",
+                  ) ?? " - ",
+                description: item.attributes.DetailMaintenance ?? " - ",
                 action: (
                   <Button
                     className="bg-green-400 hover:bg-green-500 text-white"
