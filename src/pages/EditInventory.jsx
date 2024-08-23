@@ -127,7 +127,7 @@ function EditInventory() {
           building: inventoryData.data.attributes.building?.data?.id,
           floor: inventoryData.data.attributes.floor,
           room: inventoryData.data.attributes.room,
-          responsible: inventoryData.data.attributes.responsible?.data?.id,
+          responsibles: inventoryData.data.attributes.responsibles?.data?.map(resp => resp.id) || [],
           howToGet: inventoryData.data.attributes?.how_to_get?.data?.id,
           sourceMoney: inventoryData.data.attributes.sourceMoney,
           YearMoneyGet: inventoryData.data.attributes?.year_money_get?.data?.id,
@@ -215,7 +215,7 @@ const updateSubInventory = (index, field, value) => {
         building: values.building,
         floor: values.floor,
         room: values.room,
-        responsible: values.responsible,
+        responsibles: values.responsibles, // เปลี่ยนจาก responsible เป็น responsibles
         how_to_get: values.howToGet,
         sourceMoney: values.sourceMoney,
         year_money_get: values.YearMoneyGet,
@@ -481,11 +481,12 @@ const updateSubInventory = (index, field, value) => {
             </div>
 
             <Form.Item
-  name="responsible"
+  name="responsibles"
   label="ผู้ดูแล"
   rules={[{ required: false, message: "กรุณาเลือกผู้รับผิดชอบ" }]}
 >
   <Select
+    mode="multiple"
     showSearch
     optionFilterProp="children"
     filterOption={(input, option) =>

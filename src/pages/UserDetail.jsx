@@ -97,6 +97,9 @@ function UserDetail() {
   const { user } = useAuth();
 
   const isAdmin = user?.role_in_web?.RoleName === "Admin";
+  const isResponsible = dataInv?.attributes?.responsibles?.data?.some(
+    responsible => responsible.id === user?.responsible?.id
+  );
 
   const pageRef = useRef(null);
 
@@ -727,8 +730,7 @@ function UserDetail() {
          
             <h1 className="text-4xl font-semibold">รายละเอียดครุภัณฑ์</h1>
 
-            {user?.responsible?.id ===
-              dataInv?.attributes?.responsible?.data?.id && (
+            {isResponsible && (
               <button
                 onClick={openModalSentBack}
                 className="font-bold rounded text-sm mt-2 w-40 h-10 bg-red-500 text-white"
@@ -825,9 +827,7 @@ function UserDetail() {
                       <div className="flex flex-col w-3/4 mt-2 border-2 border-blue-500 rounded-md ">
                         <h1 className="text-lg text-gray-400 ">
                           ที่ตั้งครุภัณฑ์
-                          {(isAdmin ||
-                            user?.responsible?.id ===
-                              dataInv?.attributes?.responsible?.data?.id) && (
+                          {(isAdmin ||isResponsible) && (
                             <Button
                               className="w-2/5 m-2 bg-blue-400 text-white"
                               type="primary"
@@ -870,19 +870,17 @@ function UserDetail() {
                       </div>
 
                       <div className="flex flex-row mt-4">
-                        <h1 className="text-lg text-gray-400 ">ผู้ดูแล</h1>{" "}
-                        {dataInv?.attributes?.responsible?.data?.attributes
-                          ?.responsibleName ? (
-                          <h1 className="text-lg ml-2">
-                            {
-                              dataInv?.attributes?.responsible?.data?.attributes
-                                ?.responsibleName
-                            }
-                          </h1>
-                        ) : (
-                          <h1 className="text-lg">-</h1>
-                        )}
-                      </div>
+  <h1 className="text-lg text-gray-400 ">ผู้ดูแล</h1>{" "}
+  {dataInv?.attributes?.responsibles?.data ? (
+    <h1 className="text-lg ml-2">
+      {dataInv.attributes.responsibles.data
+        .map(responsible => responsible.attributes.responsibleName)
+        .join(", ")}
+    </h1>
+  ) : (
+    <h1 className="text-lg">-</h1>
+  )}
+</div>
                     </div>
 
                     {allowedRepair ? (
@@ -896,11 +894,7 @@ function UserDetail() {
                           onChange={handleChange}
                           value={selectedStatus}
                           disabled={
-                            !(
-                              isAdmin ||
-                              user?.responsible?.id ===
-                                dataInv?.attributes?.responsible?.data?.id
-                            )
+                            !(isAdmin ||isResponsible)
                           }
                         >
                           {status_inventoryOptions
@@ -912,9 +906,7 @@ function UserDetail() {
                             ))}
                         </select>
 
-                        {(isAdmin ||
-                          user?.responsible?.id ===
-                            dataInv?.attributes?.responsible?.data?.id) && (
+                        {(isAdmin ||isResponsible) && (
                           <button
                             className={`font-bold text-white rounded-lg text-sm mt-2 mr-24 w-24 h-8 bg-blue-500  justify-center ${
                               selectedStatus === initialStatus
@@ -929,9 +921,7 @@ function UserDetail() {
                         )}
                         {statusInventoryId === 2 && allowedRepair && !hasActiveReport &&  (
                           <div className=" mr-2">
-                            {(isAdmin ||
-                              user?.responsible?.id ===
-                                dataInv?.attributes?.responsible?.data?.id)  && (
+                            {(isAdmin ||isResponsible)  && (
                               <button
                                 className="   font-bold rounded-lg text-base w-36 h-10 bg-[#276ff4] text-[#ffffff]"
                                 onClick={() => openModal("main")}
@@ -961,9 +951,7 @@ function UserDetail() {
                       </div>
                     )}
 
-                      {(isAdmin ||
-                              user?.responsible?.id ===
-                                dataInv?.attributes?.responsible?.data?.id)  && (
+                      {(isAdmin ||isResponsible)  && (
                       <div className="mx-5 mt-5 ">
                       <RepairReportSteps id={id} setHasActiveReport={setHasActiveReport} />
                       </div>
@@ -1883,9 +1871,7 @@ function UserDetail() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {statusInventoryId === 2 &&
                             allowedRepair &&  !hasActiveReport && 
-                            (isAdmin ||
-                              user?.responsible?.id ===
-                                dataInv?.attributes?.responsible?.data?.id)  && (
+                            (isAdmin ||isResponsible)  && (
                               <button
                                 className="font-bold rounded-lg text-base w-28 h-8 bg-[#276ff4] text-[#ffffff]"
                                 onClick={() => openModal("sub", item.id)}

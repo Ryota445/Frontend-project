@@ -227,7 +227,7 @@ function AddInventory() {
           building: values.building,
           floor: values.floor,
           room: values.room,
-          responsible: values.responsible,
+          responsibles: values.responsibles, // เปลี่ยนจาก responsible เป็น responsibles
           how_to_get: values.howToGet,
           sourceMoney: values.sourceMoney,
           year_money_get: values.YearMoneyGet,
@@ -431,7 +431,8 @@ function AddInventory() {
           layout="vertical"
           className="m-4"
           initialValues={{
-            quantity: 1,
+            quantity: 1, 
+            responsibles: [], // เริ่มต้นด้วยอาร์เรย์ว่าง
            
           }}
         >
@@ -548,11 +549,12 @@ function AddInventory() {
               </div>
 
               <Form.Item
-  name="responsible"
+  name="responsibles"
   label="ผู้ดูแล"
   rules={[{ required: false, message: "กรุณาเลือกผู้รับผิดชอบ" }]}
 >
   <Select
+    mode="multiple"
     showSearch
     optionFilterProp="children"
     filterOption={(input, option) =>

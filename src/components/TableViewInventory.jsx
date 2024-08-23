@@ -288,19 +288,39 @@ setTimeout(() => {
         );
       },
     },
-
-
-
-
-
     {
       title: 'ผู้ดูแล',
-      dataIndex: ['attributes', 'responsible', 'data', 'attributes', 'responsibleName'],
       key: 'responsible',
       render: (text, record) => {
-        return record.attributes?.responsible?.data?.attributes?.responsibleName || '-';
+        const responsibles = record.attributes?.responsibles?.data;
+        if (!responsibles || responsibles.length === 0) {
+          return "-";
+        }
+        const columns = [
+          {
+            title: 'ชื่อผู้ดูแล',
+            dataIndex: ['attributes', 'responsibleName'],
+            key: 'responsibleName',
+            render: (text) => (
+              <div className="max-w-[150px] whitespace-nowrap overflow-hidden overflow-ellipsis">
+                {text}
+              </div>
+            ),
+          },
+        ];
+        return (
+          <Table
+            columns={columns}
+            dataSource={responsibles}
+            pagination={false}
+            showHeader={false}
+            size="small"
+            rowKey="id"
+            className="w-full"
+          />
+        );
       },
-    },  
+    }, 
     {
       title: 'หมวดหมู่',
       dataIndex: ['attributes', 'category', 'data', 'attributes', 'CategoryName'],

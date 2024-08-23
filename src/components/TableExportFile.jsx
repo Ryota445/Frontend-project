@@ -177,8 +177,36 @@ function TableExportFile({
         },
         {
           title: 'ผู้ดูแล',
-          dataIndex: ['attributes', 'responsible', 'data', 'attributes', 'responsibleName'],
           key: 'responsible',
+          render: (text, record) => {
+            const responsibles = record.attributes?.responsibles?.data;
+            if (!responsibles || responsibles.length === 0) {
+              return "-";
+            }
+            const columns = [
+              {
+                title: 'ชื่อผู้ดูแล',
+                dataIndex: ['attributes', 'responsibleName'],
+                key: 'responsibleName',
+                render: (text) => (
+                  <div className="max-w-[150px] whitespace-nowrap overflow-hidden overflow-ellipsis">
+                    {text}
+                  </div>
+                ),
+              },
+            ];
+            return (
+              <Table
+                columns={columns}
+                dataSource={responsibles}
+                pagination={false}
+                showHeader={false}
+                size="small"
+                rowKey="id"
+                className="w-full"
+              />
+            );
+          },
         },  
         {
           title: 'หมวดหมู่',
@@ -577,8 +605,14 @@ function TableExportFile({
         },
         {
           title: 'ผู้ดูแล',
-          dataIndex: ['attributes', 'responsible', 'data', 'attributes', 'responsibleName'],
           key: 'responsible',
+          render: (record) => {
+            const responsibles = record.attributes.responsibles?.data;
+            if (responsibles && responsibles.length > 0) {
+              return responsibles.map(resp => resp.attributes.responsibleName).join(', ');
+            }
+            return '-';
+          },
         },
         {
           title: 'หมวดหมู่',
@@ -765,6 +799,13 @@ function TableExportFile({
         }
         return '-';
       }
+      if (col.key === 'responsible') {
+        const responsibles = row.attributes.responsibles?.data;
+        if (responsibles && responsibles.length > 0) {
+          return responsibles.map(resp => resp.attributes.responsibleName).join(', ');
+        }
+        return '-';
+      }
       if (col.key === 'companyContact') {
         const contactName = row.attributes.company_inventory?.data?.attributes?.contactName || '';
         const companyName = row.attributes.company_inventory?.data?.attributes?.Cname || '';
@@ -830,6 +871,13 @@ case '2':
               return subInventories.map(subInv => 
                 col.key === 'sub_inventories_id' ? subInv.attributes.id_inv : subInv.attributes.name
               ).join(', ');
+            }
+            return '-';
+          }
+          if (col.key === 'responsible') {
+            const responsibles = row.attributes.responsibles?.data;
+            if (responsibles && responsibles.length > 0) {
+              return responsibles.map(resp => resp.attributes.responsibleName).join(', ');
             }
             return '-';
           }

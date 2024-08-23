@@ -66,7 +66,7 @@ const [selectedRows, setSelectedRows] = useState([]);
 
     const fetchItems = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories&pagination[pageSize]=100`);
+            const response = await fetch(`${API_URL}/api/inventories?populate=responsibles,category,company_inventory,building,status_inventory,sub_inventories&pagination[pageSize]=100`);
             if (!response.ok) {
                 throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
             }
@@ -116,9 +116,11 @@ const [selectedRows, setSelectedRows] = useState([]);
                     : true)
                 : true;
                 
-            const responsibleMatch = searchData.responsible
-            ? inventory?.attributes?.responsible?.data?.id === parseInt(searchData.responsible)
-            : true;
+                const responsibleMatch = searchData.responsible
+                ? inventory.attributes.responsibles.data.some(
+                    (resp) => resp.id === parseInt(searchData.responsible)
+                  )
+                : true;
 
             return (
                 (searchData.id_inv && inventory.attributes.id_inv

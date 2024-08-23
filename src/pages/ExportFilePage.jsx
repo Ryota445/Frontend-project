@@ -59,7 +59,7 @@ function ExportFilePage() {
 
     const fetchItems = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/inventories?populate=responsible,category,company_inventory,building,status_inventory,sub_inventories,how_to_get,year_money_get,request_disposal.FileReasonDisposal`);
+            const response = await fetch(`${API_URL}/api/inventories?populate=responsibles,category,company_inventory,building,status_inventory,sub_inventories,how_to_get,year_money_get,request_disposal.FileReasonDisposal`);
             if (!response.ok) {
                 throw new Error('เกิดข้อผิดพลาดในการดึงข้อมูลครุภัณฑ์');
             }
@@ -102,8 +102,10 @@ function ExportFilePage() {
                 : true;
     
             const responsibleMatch = searchData.responsible
-                ? inventory?.attributes?.responsible?.data?.id === parseInt(searchData.responsible)
-                : true;
+            ? inventory.attributes.responsibles.data.some(
+                (resp) => resp.id === parseInt(searchData.responsible)
+                )
+            : true;
     
             return (
                 isDisposalMatch &&
