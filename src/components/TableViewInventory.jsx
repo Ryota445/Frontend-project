@@ -211,23 +211,58 @@ setTimeout(() => {
       title: 'หมายเลขครุภัณฑ์',
       dataIndex: ['attributes', 'id_inv'],
       key: 'id_inv',
-      render: (text) => text || '-',
+      align: 'center',
+      render: (text) => {
+        if (text) {
+          return (
+            <div style={{ textAlign: 'left' }}>
+              {text}
+            </div>
+          );
+        } else {
+          return (
+            <div style={{ textAlign: 'center' }}>
+              -
+            </div>
+          );
+        }
+      },
     },
     {
       title: 'ชื่อครุภัณฑ์',
       width: 200,
       dataIndex: ['attributes', 'name'],
       key: 'name',
-      render: (text) => text || '-',
+      align: 'center',
+      render: (text) => {
+        if (text) {
+          return (
+            <div style={{ textAlign: 'left' }}>
+              {text}
+            </div>
+          );
+        } else {
+          return (
+            <div style={{ textAlign: 'center' }}>
+              -
+            </div>
+          );
+        }
+      },
     },
     {
       title: 'เลของค์ประกอบในชุดครุภัณฑ์',
       key: 'sub_inventories_id',
       width: 100,
+      align: 'center',
       render: (text, record) => {
         const subInventories = record.attributes.sub_inventories?.data;
         if (!subInventories || subInventories.length === 0) {
-          return "- ";
+          return (
+            <div style={{ textAlign: 'center' }}>
+              -
+            </div>
+          );
         }
         const columns = [
           {
@@ -257,11 +292,15 @@ setTimeout(() => {
     {
       title: 'ชื่อองค์ประกอบในชุดครุภัณฑ์',
       key: 'sub_inventories_name',
-     
+      align: 'center',
       render: (text, record) => {
         const subInventories = record.attributes.sub_inventories?.data;
         if (!subInventories || subInventories.length === 0) {
-          return "-";
+          return (
+            <div style={{ textAlign: 'center' }}>
+              -
+            </div>
+          );
         }
         const columns = [
           {
@@ -291,10 +330,15 @@ setTimeout(() => {
     {
       title: 'ผู้ดูแล',
       key: 'responsible',
+      align: 'center', // Centers the title "ผู้ดูแล"
       render: (text, record) => {
         const responsibles = record.attributes?.responsibles?.data;
         if (!responsibles || responsibles.length === 0) {
-          return "-";
+            return (
+              <div style={{ textAlign: 'center' }}> 
+                -
+              </div>
+            );
         }
         const columns = [
           {
@@ -325,28 +369,63 @@ setTimeout(() => {
       title: 'หมวดหมู่',
       dataIndex: ['attributes', 'category', 'data', 'attributes', 'CategoryName'],
       key: 'category',
-      render: (text, record) => {
-        return record.attributes?.category?.data?.attributes?.CategoryName || '-';
-      },
+      align: 'center',
+      render: (text, record) => (
+        <div style={{ textAlign: 'center' }}>
+          {record.attributes?.category?.data?.attributes?.CategoryName || '-'}
+        </div>
+      ),
     },
     {
       title: 'ที่ตั้ง',
       key: 'location',
+      align: 'center',
       children: [
-        { title: 'อาคาร', dataIndex: ['attributes', 'building', 'data', 'attributes', 'buildingName'], key: 'building' ,render: (text, record) => {
-          return record.attributes?.building?.data?.attributes?.buildingName || '-';
-        }, },
-        { title: 'ชั้น', dataIndex: ['attributes', 'floor'], key: 'floor',render: (text) => text || '-', },
-        { title: 'ห้อง', dataIndex: ['attributes', 'room'], key: 'room'  ,render: (text) => text || '-',},
+        {
+          title: 'อาคาร',
+          dataIndex: ['attributes', 'building', 'data', 'attributes', 'buildingName'],
+          key: 'building',
+          align: 'center',
+          render: (text, record) => (
+            <div style={{ textAlign: 'center' }}>
+              {record.attributes?.building?.data?.attributes?.buildingName || '-'}
+            </div>
+          ),
+        },
+        {
+          title: 'ชั้น',
+          dataIndex: ['attributes', 'floor'],
+          key: 'floor',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
+        },
+        {
+          title: 'ห้อง',
+          dataIndex: ['attributes', 'room'],
+          key: 'room',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
+        },
       ],
     },
     {
       title: 'สถานะครุภัณฑ์',
       dataIndex: ['attributes', 'status_inventory', 'data', 'attributes', 'StatusInventoryName'],
       key: 'status_inventory',
-      render: (text, record) => {
-        return record.attributes?.status_inventory?.data?.attributes?.StatusInventoryName || '-';
-      },
+      align: 'center',
+      render: (text, record) => (
+        <div style={{ textAlign: 'center' }}>
+          {record.attributes?.status_inventory?.data?.attributes?.StatusInventoryName || '-'}
+        </div>
+      ),
     },
     {
       title: isAdmin ? 'ดู/แก้ไข' : 'ดู',
