@@ -32,8 +32,10 @@ function EditInventory() {
   const [inventoryCount, setInventoryCount] = useState(1); // Number of inventories
   const [startInventoryNumber, setStartInventoryNumber] = useState(""); // Starting inventory number
   const [subInventories, setSubInventories] = useState([]);
-  
+
   const [activeButton, setActiveButton] = useState("single");
+
+  const [selectedResponsibles, setSelectedResponsibles] = useState([]);
 
   useEffect(() => {
     const endInventoryNumber = parseInt(startInventoryNumber) + parseInt(inventoryCount) - 1; 
@@ -42,6 +44,12 @@ function EditInventory() {
       inventory_number_m_end: endInventoryNumber.toString(),
     });
   }, [inventoryCount, startInventoryNumber]);
+
+  useEffect(() => {
+    // เมื่อโหลดข้อมูลครั้งแรก
+    const initialResponsibles = form.getFieldValue('responsibles') || [];
+    setSelectedResponsibles(initialResponsibles);
+  }, [form]);
 
   useEffect(() => {
     async function fetchData() {
@@ -492,9 +500,26 @@ const updateSubInventory = (index, field, value) => {
     filterOption={(input, option) =>
       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
     }
+    onChange={(values) => {
+      let newValues = [...values];
+      if (newValues.includes(1) && newValues.length > 1) {
+        // ถ้ามีการเลือก 1 และมีตัวเลือกอื่นด้วย ให้ลบ 1 ออก
+        newValues = newValues.filter(v => v !== 1);
+      } else if (newValues.includes(1)) {
+        // ถ้าเลือกแค่ 1 ให้เหลือแค่ 1
+        newValues = [1];
+      }
+      setSelectedResponsibles(newValues);
+      form.setFieldsValue({ responsibles: newValues });
+    }}
+    value={selectedResponsibles}
   >
     {responsibleOptions.map((responsible) => (
-      <Option key={responsible.id} value={responsible.id}>
+      <Option 
+        key={responsible.id} 
+        value={responsible.id}
+        disabled={responsible.id === 1 && selectedResponsibles.length > 0 && !selectedResponsibles.includes(1)}
+      >
         {responsible.name}
       </Option>
     ))}

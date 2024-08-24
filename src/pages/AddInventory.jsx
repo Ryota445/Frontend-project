@@ -39,6 +39,8 @@ function AddInventory() {
   const [inventoryPrefix, setInventoryPrefix] = useState({ number: 0, suffix: '' });
 
   const [endInventoryNumber, setEndInventoryNumber] = useState("");
+  const [selectedResponsibles, setSelectedResponsibles] = useState([]);
+
 
   const splitInventoryNumber = (invNumber) => {
     const match = invNumber.match(/^(\d+)(.*)$/);
@@ -108,6 +110,12 @@ function AddInventory() {
     setEndInventoryNumber(formattedEndNumber);
     form.setFieldsValue({ inventory_number_m_end: formattedEndNumber });
   };
+
+  useEffect(() => {
+    // เมื่อโหลดข้อมูลครั้งแรก
+    const initialResponsibles = form.getFieldValue('responsibles') || [];
+    setSelectedResponsibles(initialResponsibles);
+  }, [form]);
   
   useEffect(() => {
     if (activeButton === "many") {
@@ -560,9 +568,26 @@ function AddInventory() {
     filterOption={(input, option) =>
       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
     }
+    onChange={(values) => {
+      let newValues = [...values];
+      if (newValues.includes(1) && newValues.length > 1) {
+        // ถ้ามีการเลือก 1 และมีตัวเลือกอื่นด้วย ให้ลบ 1 ออก
+        newValues = newValues.filter(v => v !== 1);
+      } else if (newValues.includes(1)) {
+        // ถ้าเลือกแค่ 1 ให้เหลือแค่ 1
+        newValues = [1];
+      }
+      setSelectedResponsibles(newValues);
+      form.setFieldsValue({ responsibles: newValues });
+    }}
+    value={selectedResponsibles}
   >
     {responsibleOptions.map((responsible) => (
-      <Option key={responsible.id} value={responsible.id}>
+      <Option 
+        key={responsible.id} 
+        value={responsible.id}
+        disabled={responsible.id === 1 && selectedResponsibles.length > 0 && !selectedResponsibles.includes(1)}
+      >
         {responsible.name}
       </Option>
     ))}
