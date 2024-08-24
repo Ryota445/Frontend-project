@@ -163,11 +163,30 @@ const RequestManagement = () => {
         throw new Error('Invalid inventory ID');
       }
   
+      // ดึงข้อมูล request-sent-back
+      const requestResponse = await fetch(`${API_URL}/api/request-sent-backs/${key}?populate=reportedBy`);
+      const requestData = await requestResponse.json();
+      const reportedById = requestData.data.attributes.reportedBy.data.id;
+  
+      // ดึงข้อมูลครุภัณฑ์ปัจจุบัน
+      const inventoryResponse = await fetch(`${API_URL}/api/inventories/${id_backend_inventory}?populate=responsibles`);
+      const inventoryData = await inventoryResponse.json();
+      const currentResponsibles = inventoryData.data.attributes.responsibles.data.map(r => r.id);
+  
+      let updatedResponsibles;
+      if (currentResponsibles.length > 1) {
+        // ถ้ามีผู้ดูแลมากกว่า 1 คน ให้ลบ reportedBy ออกจากรายการ
+        updatedResponsibles = currentResponsibles.filter(id => id !== reportedById);
+      } else {
+        // ถ้ามีผู้ดูแลคนเดียว ให้ตั้งค่าเป็น 1
+        updatedResponsibles = [1];
+      }
+  
       const formData = new FormData();
       formData.append(
         "data",
         JSON.stringify({
-          responsible: 1, // ตั้งค่า responsible เป็น 1 หรือค่าที่ต้องการ
+          responsibles: updatedResponsibles,
         })
       );
   
@@ -193,12 +212,59 @@ const RequestManagement = () => {
       message.success(`อนุมัติคำร้องหมายเลข ${key}`);
       setTimeout(() => {
         window.location.reload();
-    }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
+      }, 1000);
     } catch (error) {
       console.error("Error approving return equipment request:", error);
       message.error("เกิดข้อผิดพลาดในการอนุมัติคำร้องส่งคืนครุภัณฑ์");
     }
   };
+
+  // สำหรับผู้ดูแลคนเดียว ยังไม่ลบเดียวกลับมาดูหากเกิดError
+  // const handleApproveReturnEquipment = async (key, id_backend_inventory) => {
+  //   try {
+  //     if (!id_backend_inventory) {
+  //       throw new Error('Invalid inventory ID');
+  //     }
+  
+  //     const formData = new FormData();
+  //     formData.append(
+  //       "data",
+  //       JSON.stringify({
+  //         responsible: 1, // ตั้งค่า responsible เป็น 1 หรือค่าที่ต้องการ
+  //       })
+  //     );
+  
+  //     await fetch(`${API_URL}/api/inventories/${id_backend_inventory}`, {
+  //       method: "PUT",
+  //       body: formData,
+  //     });
+  
+  //     const data = {
+  //       data: {
+  //         isDone: true,
+  //       },
+  //     };
+  
+  //     await fetch(`${API_URL}/api/request-sent-backs/${key}`, {
+  //       method: "PUT",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(data),
+  //     });
+  
+  //     message.success(`อนุมัติคำร้องหมายเลข ${key}`);
+  //     setTimeout(() => {
+  //       window.location.reload();
+  //   }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
+  //   } catch (error) {
+  //     console.error("Error approving return equipment request:", error);
+  //     message.error("เกิดข้อผิดพลาดในการอนุมัติคำร้องส่งคืนครุภัณฑ์");
+  //   }
+  // };
+
+
+
 
   const handleDisapprove = (key) => {
     message.error(`ไม่อนุญาตคำร้องหมายเลข ${key}`);
@@ -330,7 +396,7 @@ const RequestManagement = () => {
       ],
     },
     {
-      title: "การกระทำ",
+      title: "",
       key: "action",
       render: (_, record) => (
         <div className="flex space-x-2">
