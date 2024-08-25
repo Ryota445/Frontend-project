@@ -100,17 +100,28 @@ function TableExportFile({
           title: 'หมายเลขครุภัณฑ์',
           dataIndex: ['attributes', 'id_inv'],
           key: 'id_inv',
+          render: (text) => (
+            <div style={{ textAlign: text ? 'left' : 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'ชื่อครุภัณฑ์',
           width: 200,
           dataIndex: ['attributes', 'name'],
           key: 'name',
+          render: (text) => (
+            <div style={{ textAlign: text ? 'left' : 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'เลของค์ประกอบในชุดครุภัณฑ์',
           key: 'sub_inventories_id',
           width: 100,
+          align: 'center',
           render: (text, record) => {
             const subInventories = record.attributes.sub_inventories?.data;
             if (!subInventories || subInventories.length === 0) {
@@ -144,7 +155,7 @@ function TableExportFile({
         {
           title: 'ชื่อองค์ประกอบในชุดครุภัณฑ์',
           key: 'sub_inventories_name',
-         
+          align: 'center',
           render: (text, record) => {
             const subInventories = record.attributes.sub_inventories?.data;
             if (!subInventories || subInventories.length === 0) {
@@ -178,6 +189,7 @@ function TableExportFile({
         {
           title: 'ผู้ดูแล',
           key: 'responsible',
+          align: 'center',
           render: (text, record) => {
             const responsibles = record.attributes?.responsibles?.data;
             if (!responsibles || responsibles.length === 0) {
@@ -212,34 +224,90 @@ function TableExportFile({
           title: 'หมวดหมู่',
           dataIndex: ['attributes', 'category', 'data', 'attributes', 'CategoryName'],
           key: 'category',
+          align: 'center',
+          render: (text, record) => (
+            <div style={{ textAlign: 'center' }}>
+              {record.attributes?.category?.data?.attributes?.CategoryName || '-'}
+            </div>
+          ),
         },
         {
           title: 'ที่ตั้ง',
           key: 'location',
+          align: 'center',
           children: [
-            { title: 'อาคาร', dataIndex: ['attributes', 'building', 'data', 'attributes', 'buildingName'], key: 'building' },
-            { title: 'ชั้น', dataIndex: ['attributes', 'floor'], key: 'floor' },
-            { title: 'ห้อง', dataIndex: ['attributes', 'room'], key: 'room' },
+            {
+              title: 'อาคาร',
+              dataIndex: ['attributes', 'building', 'data', 'attributes', 'buildingName'],
+              key: 'building',
+              align: 'center',
+              render: (text, record) => (
+                <div style={{ textAlign: 'center' }}>
+                  {record.attributes?.building?.data?.attributes?.buildingName || '-'}
+                </div>
+              ),
+            },
+            {
+              title: 'ชั้น',
+              dataIndex: ['attributes', 'floor'],
+              key: 'floor',
+              align: 'center',
+              render: (text) => (
+                <div style={{ textAlign: 'center' }}>
+                  {text || '-'}
+                </div>
+              ),
+            },
+            {
+              title: 'ห้อง',
+              dataIndex: ['attributes', 'room'],
+              key: 'room',
+              align: 'center',
+              render: (text) => (
+                <div style={{ textAlign: 'center' }}>
+                  {text || '-'}
+                </div>
+              ),
+            },
           ],
         },
         {
           title: 'สถานะครุภัณฑ์',
           dataIndex: ['attributes', 'status_inventory', 'data', 'attributes', 'StatusInventoryName'],
           key: 'status_inventory',
+          align: 'center',
+          render: (text, record) => (
+            <div style={{ textAlign: 'center' }}>
+              {record.attributes?.status_inventory?.data?.attributes?.StatusInventoryName || '-'}
+            </div>
+          ),
         },
         {
           title: 'วิธีได้มา',
           dataIndex: ['attributes', 'how_to_get', 'data', 'attributes', 'howToGetName'],
           key: 'howToGet',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'ปีงบประมาณ',
           dataIndex: ['attributes', 'year_money_get', 'data', 'attributes', 'yearMoneyGetName'],
           key: 'yearMoneyGet',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'ตัวแทนบริษัท/ผู้บริจาค',
           key: 'companyContact',
+          align: 'center',
           render: (text, record) => {
             const contactName = record.attributes.company_inventory?.data?.attributes?.contactName || '';
             const companyName = record.attributes.company_inventory?.data?.attributes?.Cname || '';
@@ -250,35 +318,72 @@ function TableExportFile({
           title: 'วันที่สั่งซื้อ',
           dataIndex: ['attributes', 'DateOrder'],
           key: 'dateOrder',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'วันที่ตรวจรับ/วันที่รับโอน',
           dataIndex: ['attributes', 'DateRecive'],
           key: 'dateReceive',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'ยี่ห้อ',
           dataIndex: ['attributes', 'brand'],
           key: 'brand',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'รุ่น',
           dataIndex: ['attributes', 'model'],
           key: 'model',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'หมายเลข SN',
           dataIndex: ['attributes', 'serialNumber'],
           key: 'serialNumber',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'ราคาที่ซื้อ (บาท)',
           dataIndex: ['attributes', 'prize'],
           key: 'price',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'จำนวนรายการ/หน่วยนับ',
           key: 'quantityUnit',
+          align: 'center',
           render: (text, record) => {
             const quantity = record.attributes.quantity || '';
             const unit = record.attributes?.unit?.data?.attributes?.name_unit || '';
@@ -289,21 +394,39 @@ function TableExportFile({
           title: 'รายละเอียดเพิ่มเติม',
           dataIndex: ['attributes', 'information'],
           key: 'information',
+          align: 'center',
+          render: (text) => (
+            <div style={{ textAlign: 'center' }}>
+              {text || '-'}
+            </div>
+          ),
         },
         {
           title: 'อายุการใช้งานโดยประเมิน',
           dataIndex: ['attributes', 'age_use'],
           key: 'estimatedAge',
-          render: (text) => `${text} ปี`,
+          align: 'center',
+          render: (text) => {
+            if(text){
+              return(<div>
+                `${text} ปี`
+              </div>);
+            }
+            else{
+              return '-';
+            }
+          },
         },
         {
           title: 'อายุการใช้งานจริง',
           key: 'actualAge',
+          align: 'center',
           render: (text, record) => <DateDifferenceCalculator dateReceive={record.attributes.DateRecive} />,
         },
         {
           title: 'วันที่ทำจำหน่าย',
           key: 'disposalDate',
+          align: 'center',
           render: (text, record) => {
             if (record.attributes.request_disposal?.data) {
               const date = new Date(record.attributes.request_disposal.data.attributes.createdAt);
@@ -319,6 +442,7 @@ function TableExportFile({
         {
           title: 'ปีที่ทำจำหน่าย',
           key: 'disposalYear',
+          align: 'center',
           render: (text, record) => {
             if (record.attributes.request_disposal?.data) {
               const date = new Date(record.attributes.request_disposal.data.attributes.createdAt);
@@ -330,6 +454,7 @@ function TableExportFile({
         {
           title: 'รายละเอียดการทำจำหน่าย',
           key: 'disposalReason',
+          align: 'center',
           render: (text, record) => {
             if (record.attributes.request_disposal?.data) {
               return record.attributes.request_disposal.data.attributes.ReasonDisposal;
@@ -340,6 +465,7 @@ function TableExportFile({
         {
           title: 'ไฟล์ทำจำหน่าย',
           key: 'disposalFile',
+          align: 'center',
           render: (text, record) => {
             const fileData = record.attributes.request_disposal?.data?.attributes?.FileReasonDisposal?.data;
             if (fileData) {

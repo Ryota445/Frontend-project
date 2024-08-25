@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 function ManagementAdmin() {
     const API_URL = import.meta.env.VITE_API_URL;
     const [selectedItems, setSelectedItems] = useState([]);
-const [selectedRows, setSelectedRows] = useState([]);
+    const [selectedRows, setSelectedRows] = useState([]);
     const [searchData, setSearchData] = useState(null);
     const [filteredInventoryList, setFilteredInventoryList] = useState([]);
     const [inventoryList, setInventoryList] = useState([]); // เพิ่ม state สำหรับรายการทั้งหมด
