@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,useLocation } from "react-router-dom";
 import { message, Checkbox, Space, Button, Table, Modal, Dropdown, Menu, Select ,Input ,Popconfirm  } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined, CloseOutlined, SettingOutlined,DownloadOutlined ,StopOutlined  } from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
@@ -12,11 +12,14 @@ function TableExportFile({
   inventoryList, 
   onDeleteSuccess, 
   foundDataNumber, 
+  totalDataNumber, 
   selectedItems, 
   selectedRows, 
   onSelectionChange,
   showSubInventoryColumns,
-  showDisposalColumns
+  showDisposalColumns,
+  onPageChange,
+  currentPage
 }) {
   const API_URL = import.meta.env.VITE_API_URL;
     const [sortedInventoryList, setSortedInventoryList] = useState([]);
@@ -26,6 +29,7 @@ function TableExportFile({
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const navigate = useNavigate();
     const [exportType, setExportType] = useState('1');
+    const location = useLocation();
     
 
 
@@ -566,6 +570,7 @@ function TableExportFile({
         setSortedInventoryList(sortedInventoryList);
       }, [inventoryList]);
     
+    
       const handleCheckboxChange = (id, inventory) => {
         let updatedSelectedItems, updatedSelectedRows;
     
@@ -1091,135 +1096,6 @@ const calculateAgeDifference = (dateReceive) => {
 };
 
 
-// const exportMaintenanceAndRepairHistory = (worksheet) => {
-//   // กำหนดหัวข้อคอลัมน์
-//   worksheet.columns = [
-//     { header: 'วันที่', key: 'date', width: 15 },
-//     { header: 'หมายเลขครุภัณฑ์', key: 'id_inv', width: 20 },
-//     { header: 'ชื่อครุภัณฑ์', key: 'name', width: 30 },
-//     { header: 'รายละเอียด', key: 'details', width: 40 },
-//     { header: 'ค่าใช้จ่าย (บาท)', key: 'price', width: 15 },
-//     { header: 'ประเภท', key: 'type', width: 15 }
-//   ];
-
-//   // สร้างข้อมูลรายงาน
-//   const reportData = generateMaintenanceRepairReport(selectedRows);
-
-//   // เพิ่มข้อมูลลงในแผ่นงาน
-//   worksheet.addRows(reportData);
-
-//   // จัดรูปแบบหัวข้อคอลัมน์
-//   worksheet.getRow(1).font = { bold: true };
-//   worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
-// };
-
-// const generateMaintenanceRepairReport = (selectedRows) => {
-//   let reportData = [];
-
-//   selectedRows.forEach(inventory => {
-//     // ตรวจสอบว่า inventory และ attributes มีอยู่จริง
-//     if (inventory && inventory.attributes) {
-//       // ข้อมูลซ่อมแซมของครุภัณฑ์หลัก
-//       if (inventory.attributes.repair_reports && inventory.attributes.repair_reports.data) {
-//         inventory.attributes.repair_reports.data.forEach(report => {
-//           if (report && report.attributes && report.attributes.isDone && report.attributes.isCanRepair) {
-//             reportData.push({
-//               date: report.attributes.dateFinishRepair,
-//               id_inv: inventory.attributes.id_inv,
-//               name: inventory.attributes.name,
-//               details: report.attributes.ListDetailRepair,
-//               price: report.attributes.RepairPrice,
-//               type: 'ซ่อมแซม'
-//             });
-//           }
-//         });
-//       }
-
-//       // ข้อมูลบำรุงรักษาของครุภัณฑ์หลัก
-//       if (inventory.attributes.maintenance_reports && inventory.attributes.maintenance_reports.data) {
-//         inventory.attributes.maintenance_reports.data.forEach(report => {
-//           if (report && report.attributes && report.attributes.isDone) {
-//             reportData.push({
-//               date: report.attributes.DateToDo,
-//               id_inv: inventory.attributes.id_inv,
-//               name: inventory.attributes.name,
-//               details: report.attributes.DetailMaintenance,
-//               price: report.attributes.prize,
-//               type: 'บำรุงรักษา'
-//             });
-//           }
-//         });
-//       }
-
-//       // ข้อมูลซ่อมแซมและบำรุงรักษาของครุภัณฑ์ย่อย
-//       if (inventory.attributes.sub_inventories && inventory.attributes.sub_inventories.data) {
-//         inventory.attributes.sub_inventories.data.forEach(subInventory => {
-//           if (subInventory && subInventory.attributes) {
-//             if (subInventory.attributes.repair_reports && subInventory.attributes.repair_reports.data) {
-//               subInventory.attributes.repair_reports.data.forEach(report => {
-//                 if (report && report.attributes && report.attributes.isDone && report.attributes.isCanRepair) {
-//                   reportData.push({
-//                     date: report.attributes.dateFinishRepair,
-//                     id_inv: `${inventory.attributes.id_inv} ${subInventory.attributes.id_inv}`,
-//                     name: `(องค์ประกอบในชุดครุภัณฑ์) ${subInventory.attributes.name}`,
-//                     details: report.attributes.ListDetailRepair,
-//                     price: report.attributes.RepairPrice,
-//                     type: 'ซ่อมแซม'
-//                   });
-//                 }
-//               });
-//             }
-
-//             if (subInventory.attributes.maintenance_reports && subInventory.attributes.maintenance_reports.data) {
-//               subInventory.attributes.maintenance_reports.data.forEach(report => {
-//                 if (report && report.attributes && report.attributes.isDone) {
-//                   reportData.push({
-//                     date: report.attributes.DateToDo,
-//                     id_inv: `${inventory.attributes.id_inv} ${subInventory.attributes.id_inv}`,
-//                     name: `(องค์ประกอบในชุดครุภัณฑ์) ${subInventory.attributes.name}`,
-//                     details: report.attributes.DetailMaintenance,
-//                     price: report.attributes.prize,
-//                     type: 'บำรุงรักษา'
-//                   });
-//                 }
-//               });
-//             }
-//           }
-//         });
-//       }
-//     }
-//   });
-
-//   // เรียงข้อมูลตามวันที่
-//   reportData.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-//   return reportData;
-// };
-
-
-
-
-  //  // เพิ่มข้อมูล
-  //  selectedRows.forEach(row => {
-  //   const rowData = columns.map(col => {
-  //     if (col.key === 'sub_inventories_id' || col.key === 'sub_inventories_name') {
-  //       const subInventories = row.attributes.sub_inventories?.data;
-  //       if (subInventories && subInventories.length > 0) {
-  //         return subInventories.map(subInv => 
-  //           col.key === 'sub_inventories_id' ? subInv.attributes.id_inv : subInv.attributes.name
-  //         ).join('\n');
-  //       }
-  //       return '-';
-  //     }
-  //     if (col.dataIndex) {
-  //       return col.dataIndex.reduce((obj, key) => obj && obj[key], row) || '';
-  //     }
-  //     return '';
-  //   });
-  //   worksheet.addRow(rowData);
-  // });
-
-
 
   return (
     <>
@@ -1227,7 +1103,8 @@ const calculateAgeDifference = (dateReceive) => {
     <div>
         <div className="flex justify-between mr-4">
           <h2 className="ml-4 text-xl font-bold ">
-            ค้นพบ {foundDataNumber} รายการ
+            ค้นพบ {foundDataNumber} รายการ 
+            {/* จากทั้งหมด {totalDataNumber} รายการ */}
           </h2>
           
           <Button
@@ -1309,7 +1186,13 @@ const calculateAgeDifference = (dateReceive) => {
       <Table
   columns={columns}
   dataSource={sortedInventoryList}
-  pagination={{ pageSize: 10 }}
+  pagination={{
+    pageSize: 20,
+    total: foundDataNumber,
+    current: currentPage,
+    onChange: onPageChange,
+    showSizeChanger: false, // ปิดการแสดงปุ่มเลือก PageSize
+  }}  
   scroll={{ x: 'max-content' }}
   rowKey="id"
   rowSelection={{
@@ -1317,7 +1200,8 @@ const calculateAgeDifference = (dateReceive) => {
     onChange: (selectedRowKeys, selectedRows) => {
       onSelectionChange(selectedRowKeys, selectedRows);
     },
-  }}
+    preserveSelectedRowKeys: true, // เพิ่มบรรทัดนี้
+  }}  
   className="w-full overflow-x-auto"
 />  
     

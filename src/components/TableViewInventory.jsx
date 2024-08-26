@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { message, Checkbox, Space, Button, Table, Modal, Upload, Dropdown, Menu, Select, Input } from "antd";
 import { EyeOutlined, EditOutlined, DeleteOutlined, CloseOutlined, UploadOutlined, DownOutlined, SettingOutlined} from "@ant-design/icons";
 import { Option } from "antd/lib/mentions";
@@ -8,15 +8,15 @@ import { useAuth } from '../context/AuthContext';
 function TableViewInventory({ 
   inventoryList, 
   onDeleteSuccess, 
-  foundDataNumber, 
+  foundDataNumber,
+  totalDataNumber, 
   selectedItems, 
   selectedRows, 
   onSelectionChange,
-  showSubInventoryColumns 
+  showSubInventoryColumns,
+  onPageChange,
+  currentPage
 }) {
-  // const [selectedItems, setSelectedItems] = useState([]);
-  // const [selectedRows, setSelectedRows] = useState([]);
-
   const API_URL = import.meta.env.VITE_API_URL;
   const [sortedInventoryList, setSortedInventoryList] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -28,6 +28,7 @@ function TableViewInventory({
   const [visibleColumns, setVisibleColumns] = useState(['id_inv', 'name', 'responsible', 'category','location','action','status_inventory']);
   const [buildingOptions, setBuildingOptions] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { user } = useAuth();
 
@@ -547,25 +548,26 @@ setTimeout(() => {
   return (
     <>
       <div>
-  <div className="flex justify-between mr-4">
-    <h2 className="ml-4 text-xl font-bold ">
-      ค้นพบ {foundDataNumber} รายการ
-    </h2>
-    {isAdmin ? (
-     <Button
-     className="bg-gray-400 w-[150px] h-[50px] pl-2"
-     type="primary"
-     onClick={openModal}
-   >
-     <span>
-       เปลี่ยนที่ตั้ง/ทำจำหน่าย
-       <br className="hidden md:inline" />
-       {selectedItems.length} รายการ
-     </span>
-   </Button>
-    ) : null}
-  </div>
-</div>
+        <div className="flex justify-between mr-4">
+          <h2 className="ml-4 text-xl font-bold ">
+            ค้นพบ {foundDataNumber} รายการ 
+            {/* จากทั้งหมด {totalDataNumber} รายการ */}
+          </h2>
+          {isAdmin ? (
+            <Button
+              className="bg-gray-400 w-[150px] h-[50px] pl-2"
+              type="primary"
+              onClick={openModal}
+            >
+              <span>
+                เปลี่ยนที่ตั้ง/ทำจำหน่าย
+                <br className="hidden md:inline" />
+                {selectedItems.length} รายการ
+              </span>
+            </Button>
+          ) : null}
+        </div>
+      </div>
 
       <Modal
         title="จัดการครุภัณฑ์"
@@ -649,19 +651,26 @@ setTimeout(() => {
       </div>
 
       <Table
-  columns={columns}
-  dataSource={sortedInventoryList}
-  pagination={{ pageSize: 10 }}
-  scroll={{ x: 'max-content' }}
-  rowKey="id"
-  rowSelection={{
-    selectedRowKeys: selectedItems,
-    onChange: (selectedRowKeys, selectedRows) => {
-      onSelectionChange(selectedRowKeys, selectedRows);
-    },
-  }}
-  className="w-full overflow-x-auto"
-/>  
+        columns={columns}
+        dataSource={sortedInventoryList}
+        pagination={{
+          pageSize: 20,
+          total: foundDataNumber,
+          current: currentPage,
+          onChange: onPageChange,
+          showSizeChanger: false, // ปิดการแสดงปุ่มเลือก PageSize
+        }}
+        scroll={{ x: 'max-content' }}
+        rowKey="id"
+        rowSelection={{
+          selectedRowKeys: selectedItems,
+          onChange: (selectedRowKeys, selectedRows) => {
+            onSelectionChange(selectedRowKeys, selectedRows);
+          },
+          preserveSelectedRowKeys: true, // เพิ่มบรรทัดนี้
+        }}
+        className="w-full overflow-x-auto"
+      />   
     </>
   );
 }

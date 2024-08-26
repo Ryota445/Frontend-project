@@ -470,19 +470,19 @@ const MantenantPage1 = () => {
         <div className="border-b-2 border-black mb-10 flex justify-between items-center">
           <h1 className="text-3xl text-blue-800">ดูแลครุภัณฑ์</h1>
         </div>
-        <div className="bg-white shadow-md rounded-lg p-6 mb-2">
+        <div className="bg-white shadow-md rounded-lg p-4 mb-2">
           {isRepairActive && (
             <>
-              <div className="bg-white shadow-md rounded-lg p-6 mb-2">
+            
                 <SearchBoxRM onSearch={handleSearch} mode="repair" />
-              </div>
+            
             </>
           )}
           {isMaintenanceActive && (
             <>
-              <div className="bg-white shadow-md rounded-lg p-6 mb-2">
+              
                 <SearchBoxRM onSearch={handleSearch} mode="maintenance" />
-              </div>
+              
             </>
           )}
         </div>

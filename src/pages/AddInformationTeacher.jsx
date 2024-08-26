@@ -175,7 +175,7 @@ useEffect(() => {
   };
 
   const filteredData = data.filter(item =>
-    item.username.toLowerCase().includes(searchText.toLowerCase()) ||
+    item.responsible?.employee_id?.toLowerCase().includes(searchText.toLowerCase()) ||
     item.responsible?.responsibleName?.toLowerCase().includes(searchText.toLowerCase())
   );
 
@@ -329,9 +329,15 @@ useEffect(() => {
   const columns = [
     {
       title: 'เลขประจำตัวพนักงาน',
-      dataIndex: 'username',
-      key: 'username',
+      dataIndex: ['responsible', 'employee_id'],
+      key: 'employee_id',
+      render: (text, record) => record.responsible?.employee_id || text,
     },
+    // {
+    //   title: 'เลขประจำตัวพนักงาน',
+    //   dataIndex: 'username',
+    //   key: 'username',
+    // },
     // {
     //   title: 'อีเมล',
     //   dataIndex: 'email',
