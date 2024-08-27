@@ -27,6 +27,8 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
     }
   }, [selectedStatus]);
 
+
+
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -144,7 +146,7 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
     ];
 
   const getContent = () => {
-    switch (parseInt(selectedStatus, 10) - 1) {
+    switch (current) {
       case 0:
         return <MaintenanceState1 dataInvForCard={dataInv} dataRepairReport={dataRepairReport} onFormDataChange={handleFormDataChange} onFormDataChangeFile={handleFormDataChangeFile} />;
       case 1:
@@ -162,21 +164,50 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
 
   const items = steps.map(item => ({ key: item.title, title: item.title }));
 
+  const handlePrevious = () => {
+    setCurrent(prev => Math.max(0, prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrent(prev => Math.min(steps.length - 1, prev + 1));
+  };
+
+  const isCurrentStatusSelected = current === parseInt(selectedStatus, 10) - 1;
+  const canGoNext = current < Math.min(steps.length - 1, parseInt(selectedStatus, 10) - 1);
+
   return (
     <Modal visible={visible} onCancel={onClose} footer={null} width={1200}>
-      <Steps current={current} items={items} />
-      <div style={{ padding: '10px', minHeight: '500px', marginTop: 16 }}>
-        {getContent()}
+    <Steps current={current} items={items} />
+    <div style={{ padding: '10px', minHeight: '500px', marginTop: 16 }}>
+      {getContent()}
+    </div>
+    <div className='flex flex-row justify-between' style={{ marginTop: 24 }}>
+      <div>
+      {current !== 4 && (
+  <>
+    <Button onClick={handlePrevious} disabled={current === 0}>
+      หน้าก่อนหน้า
+    </Button>
+    {canGoNext && (
+      <Button onClick={handleNext} style={{ marginLeft: 8 }}>
+        หน้าถัดไป
+      </Button>
+    )}
+  </>
+)}
       </div>
-      <div className='flex flex-row justify-end' style={{ marginTop: 24 }}>
+      <div>
         <Button style={{ margin: '0 8px' }} onClick={onClose}>
           ยกเลิก
         </Button>
-        <Button className="bg-blue-300" type="primary" onClick={submitForm}>
-          บันทึก
-        </Button>
+        {isCurrentStatusSelected && (
+          <Button className="bg-blue-300" type="primary" onClick={submitForm}>
+            บันทึก
+          </Button>
+        )}
       </div>
-    </Modal>
+    </div>
+  </Modal>
   );
 }
 
