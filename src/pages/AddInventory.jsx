@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback,useRef } from "react";
 import { Form, Input, Button, DatePicker, Select, Upload, Space, message,InputNumber  } from "antd";
 import { UploadOutlined, PlusOutlined, PrinterOutlined, DeleteOutlined } from "@ant-design/icons";
 import AddTest from "../components/AddTest";
@@ -41,6 +41,38 @@ function AddInventory() {
   const [endInventoryNumber, setEndInventoryNumber] = useState("");
   const [selectedResponsibles, setSelectedResponsibles] = useState([]);
 
+  // Create refs for each input field
+  const nameRef = useRef(null);
+  const countRef = useRef(null);
+  const idInvRef = useRef(null);
+  const assetCodeRef = useRef(null);
+  const categoryRef = useRef(null);
+  const buildingRef = useRef(null);
+  const floorRef = useRef(null);
+  const roomRef = useRef(null);
+  const responsibleRef = useRef(null);
+  const imgInvRef = useRef(null);
+  const howToGetRef = useRef(null);
+  const yearMoneyGetRef = useRef(null);
+  const companyInventoryRef = useRef(null);
+  const dateOrderRef = useRef(null);
+  const dateReceiveRef = useRef(null);
+  const serialNumberRef = useRef(null);
+  const brandRef = useRef(null);
+  const modelRef = useRef(null);
+  const prizeRef = useRef(null);
+  const quantityRef = useRef(null);
+  const unitRef = useRef(null);
+  const ageUseRef = useRef(null);
+  const informationRef = useRef(null);
+
+  // Function to handle Enter key press
+  const handleEnterKey = (e, nextRef) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      nextRef.current.focus();
+    }
+  };
 
   const splitInventoryNumber = (invNumber) => {
     const match = invNumber.match(/^(\d+)(.*)$/);
@@ -439,7 +471,7 @@ function AddInventory() {
           layout="vertical"
           className="m-4"
           initialValues={{
-            quantity: 1, 
+            quantity: "1/1", 
             responsibles: [], // เริ่มต้นด้วยอาร์เรย์ว่าง
            
           }}
@@ -456,16 +488,28 @@ function AddInventory() {
                 name="name"
                 label="ชื่อครุภัณฑ์"
                 rules={[{ required: true, message: "กรุณากรอกชื่ออุปกรณ์" }]}
+                
               >
-                <Input />
+                 <Input
+    ref={nameRef}
+    onKeyDown={(e) => {
+      if (activeButton === "many") {
+        handleEnterKey(e, countRef);
+      } else {
+        handleEnterKey(e, idInvRef);
+      }
+    }}
+  />
               </Form.Item>
 
               {activeButton === "many" && (
               <Form.Item name="inventory_count" label="จำนวนครุภัณฑ์">
                 <Input
+                  ref={countRef}
                   type="number"
                   value={inventoryCount}
                   onChange={(e) => setInventoryCount(parseInt(e.target.value) || 1)}
+                  onKeyDown={(e) => handleEnterKey(e, idInvRef)}
                 />
               </Form.Item>
             )}
@@ -475,8 +519,13 @@ function AddInventory() {
               label={activeButton === "single" ? "หมายเลขครุภัณฑ์" : "หมายเลขครุภัณฑ์เริ่มต้น"}
               validateStatus={idInvExists ? "error" : ""}
               help={idInvExists ? "หมายเลขครุภัณฑ์นี้มีอยู่แล้ว" : ""}
+              
             >
-              <Input onChange={handleInventoryInputChange} />
+              <Input 
+              ref={idInvRef}
+              onChange={handleInventoryInputChange} 
+              onKeyDown={(e) => handleEnterKey(e, assetCodeRef)}
+              />
             </Form.Item>
 
             {activeButton === "many" && (
@@ -491,7 +540,7 @@ function AddInventory() {
                 label="รหัสสินทรัพย์"
                 rules={[{ required: false, message: "กรุณากรอกรหัสสินทรัพย์" }]}
               >
-                <Input />
+                 <Input ref={assetCodeRef} onKeyDown={(e) => handleEnterKey(e, categoryRef)} />
               </Form.Item>
 
 <Form.Item
@@ -500,11 +549,14 @@ function AddInventory() {
   rules={[{ required: false, message: "กรุณาเลือกหมวดหมู่" }]}
 >
   <Select
+    ref={categoryRef}
     showSearch
     optionFilterProp="children"
     filterOption={(input, option) =>
       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
     }
+    onKeyDown={(e) => handleEnterKey(e, buildingRef)}
+
   >
     {categoryOptions.map((category) => (
       <Option key={category.id} value={category.id}>
@@ -528,11 +580,13 @@ function AddInventory() {
   rules={[{ required: false, message: "กรุณาเลือกอาคาร" }]}
 >
   <Select
+    ref={buildingRef}
     showSearch
     optionFilterProp="children"
     filterOption={(input, option) =>
       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
     }
+    onKeyDown={(e) => handleEnterKey(e, floorRef )}
   >
     {buildingOptions.map((building) => (
       <Option key={building.id} value={building.id}>
@@ -548,11 +602,11 @@ function AddInventory() {
                   className="w-full"
                   // rules={[{ required: false, message: "กรุณาเลือกชั้น" }]}
                 >
-                  <Input />
+                  <Input ref={floorRef} onKeyDown={(e) => handleEnterKey(e, roomRef)} />
                 </Form.Item>
 
                 <Form.Item name="room" label="ห้อง" className="w-full">
-                  <Input />
+                <Input ref={roomRef} onKeyDown={(e) => handleEnterKey(e, responsibleRef )} />
                 </Form.Item>
               </div>
 
@@ -562,6 +616,7 @@ function AddInventory() {
   rules={[{ required: false, message: "กรุณาเลือกผู้รับผิดชอบ" }]}
 >
   <Select
+    ref={responsibleRef}
     mode="multiple"
     showSearch
     optionFilterProp="children"
@@ -581,6 +636,7 @@ function AddInventory() {
       form.setFieldsValue({ responsibles: newValues });
     }}
     value={selectedResponsibles}
+    onKeyDown={(e) => handleEnterKey(e, howToGetRef )}
   >
     {responsibleOptions.map((responsible) => (
       <Option 
@@ -633,7 +689,10 @@ function AddInventory() {
                 className="w-full"
                 rules={[{ required: false, message: "กรุณาเลือกวิธีได้มา" }]}
               >
-                <Select>
+                <Select
+                ref={howToGetRef}
+                onKeyDown={(e) => handleEnterKey(e, yearMoneyGetRef)}
+                >
                   {howToGetOptions.map((howToget) => (
                     <Option key={howToget.id} value={howToget.id}>
                       {howToget.name}
@@ -656,7 +715,10 @@ function AddInventory() {
                 className="w-full"
                 rules={[{ required: false, message: "กรุณาเลือกปีงบประมาณ" }]}
               >
-                <Select>
+                <Select
+                ref={yearMoneyGetRef}
+                onKeyDown={(e) => handleEnterKey(e, dateOrderRef)}
+                >
                   {yearMoneyGetOptions.map((yearMoneyGet) => (
                     <Option key={yearMoneyGet.id} value={yearMoneyGet.id}>
                       {yearMoneyGet.name}
@@ -678,7 +740,10 @@ function AddInventory() {
                   },
                 ]}
               >
-                <DatePicker />
+                <DatePicker 
+                ref={dateOrderRef}
+                onKeyDown={(e) => handleEnterKey(e, dateReceiveRef)}
+                />
               </Form.Item>
 
               <Form.Item
@@ -691,7 +756,10 @@ function AddInventory() {
                   },
                 ]}
               >
-                <DatePicker />
+                <DatePicker
+                 ref={dateReceiveRef}
+                 onKeyDown={(e) => handleEnterKey(e, companyInventoryRef)}
+                />
               </Form.Item>
               
             </div>
@@ -704,6 +772,7 @@ function AddInventory() {
             rules={[{ required: false, message: "กรุณาเลือกตัวแทน" }]}
           >
             <Select
+              ref={companyInventoryRef}
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
@@ -714,6 +783,7 @@ function AddInventory() {
               onChange={(value) => {
                 setSearchValue(value);
               }}
+              onKeyDown={(e) => handleEnterKey(e, serialNumberRef )}
             >
               {companyOptions.map((company) => (
                 <Option key={company.id} value={company.id}>
@@ -731,19 +801,19 @@ function AddInventory() {
             <div>
               {/* คอลัมน์ซ้าย */}
               <Form.Item name="serialNumber" label="หมายเลข SN">
-                <Input />
+                <Input  ref={serialNumberRef } onKeyDown={(e) => handleEnterKey(e, brandRef)} />
               </Form.Item>
 
               <Form.Item name="brand" label="ยี่ห้อ">
-                <Input />
+                <Input ref={brandRef } onKeyDown={(e) => handleEnterKey(e, modelRef )} />
               </Form.Item>
 
               <Form.Item name="model" label="รุ่น">
-                <Input />
+              <Input ref={modelRef } onKeyDown={(e) => handleEnterKey(e, prizeRef  )} />
               </Form.Item>
 
               <Form.Item name="prize" label="ราคาที่ซื้อ (บาท)">
-                <Input type="number" />
+                <Input  ref={prizeRef } onKeyDown={(e) => handleEnterKey(e, quantityRef   )} />
               </Form.Item>
             </div>
             <div>
@@ -756,7 +826,11 @@ function AddInventory() {
     className="w-4/12"
     rules={[{ required: false , message: 'กรุณาระบุจำนวน' }]}
   >
-    <InputNumber min={1} style={{ width: '100%' }} />
+    <Input
+  ref={quantityRef}
+  onKeyDown={(e) => handleEnterKey(e, unitRef)}
+  style={{ width: '100%' }}
+/>
   </Form.Item>
                 <Form.Item
                   name="unit"
@@ -765,22 +839,26 @@ function AddInventory() {
                   rules={[{ required: false, message: "กรุณาเลือกหน่วยรับ" }]}
                 >
                   <Select
+                    ref={unitRef }
                     showSearch
                     optionFilterProp="children"
                     filterOption={(input, option) =>
                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                     }
+                    onKeyDown={(e) => handleEnterKey(e, ageUseRef)}
                   >
                     {unitOptions.map((unit) => (
                       <Option key={unit.id} value={unit.id}>
                         {unit.name}
                       </Option>
                     ))}
+                   
                   </Select>
                 </Form.Item>
               </div>
 
               <Form.Item
+               
                 name="age-use"
                 label="อายุการใช้งานโดยประเมิน"
                 className="w-full"
@@ -788,17 +866,30 @@ function AddInventory() {
                   { required: false, message: "กรุณาเลือกเลือกอายุการใช้งาน" },
                 ]}
               >
-                <Select>
-                  <Option value="1">1ปี</Option>
-                  <Option value="2">2ปี</Option>
-                  <Option value="3">3ปี</Option>
-                  <Option value="4">4ปี</Option>
-                  <Option value="6">5ปี</Option>
-                  <Option value="7">7ปี</Option>
-                  <Option value="8">8ปี</Option>
-                  <Option value="9">9ปี</Option>
-                  <Option value="10">10ปี</Option>
-                  <Option value="10++">10ปี++</Option>
+                <Select
+                 ref={ageUseRef }
+                 onKeyDown={(e) => handleEnterKey(e, informationRef )}
+                >
+                  <Option value="1">1 ปี</Option>
+                  <Option value="2">2 ปี</Option>
+                  <Option value="3">3 ปี</Option>
+                  <Option value="4">4 ปี</Option>
+                  <Option value="6">5 ปี</Option>
+                  <Option value="7">7 ปี</Option>
+                  <Option value="8">8 ปี</Option>
+                  <Option value="9">9 ปี</Option>
+                  <Option value="10">10 ปี</Option>
+                  <Option value="11">11 ปี</Option>
+                  <Option value="12">12 ปี</Option>
+                  <Option value="13">13 ปี</Option>
+                  <Option value="14">14 ปี</Option>
+                  <Option value="15">15 ปี</Option>
+                  <Option value="16">16 ปี</Option>
+                  <Option value="17">17 ปี</Option>
+                  <Option value="18">18 ปี</Option>
+                  <Option value="19">19 ปี</Option>
+                  <Option value="20">20 ปี</Option>
+                  <Option value="20++">20 ปี++</Option>
 
                   {/* ... ตัวเลือกอื่นๆ */}
                 </Select>
@@ -812,7 +903,7 @@ function AddInventory() {
             </div> */}
 
               <Form.Item name="information" label="รายละเอียดเพิ่มเติม">
-                <Input className="pb-10" />
+                <Input ref={informationRef} className="pb-10" />
               </Form.Item>
             </div>
           </div>
