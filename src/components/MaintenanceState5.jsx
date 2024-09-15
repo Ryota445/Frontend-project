@@ -51,12 +51,12 @@ fetchData();
         <div className='col-span-3'>
           <h1 className='text-2xl text-gray-500 my-2 mb-2'>บันทึกเสร็จสิ้นการซ่อมครุภัณฑ์</h1>
           
-          <Checkbox className='my-2'
+          {/* <Checkbox className='my-2'
             checked={componentDisabled2}
             onChange={(e) => setComponentDisabled2(e.target.checked)}
           >
             <p className='text-lg'>ต้องการเพิ่มหรือแก้ไขข้อมูลการซ่อมแซมครุภัณฑ์หรือไม่</p>
-          </Checkbox>
+          </Checkbox> */}
 
           <div className='border-2 border-blue-500 rounded-md px-4 pb-4 mb-2'>
             <Form
@@ -64,7 +64,7 @@ fetchData();
               labelCol={{ span: 4 }}
               wrapperCol={{ span: 14 }}
               layout="horizontal"
-              disabled={!componentDisabled2}
+              // disabled={!componentDisabled2}
               onValuesChange={handleFormChange}
             >
               <Form.Item name="NumberRepairFaculty" label="เลขที่ใบแจ้งซ่อมที่ส่งมาจากคณะฯ">

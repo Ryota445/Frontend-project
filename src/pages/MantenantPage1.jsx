@@ -192,16 +192,25 @@ const MantenantPage1 = () => {
                 maintenanceType: "repair",
                 status: (
                   <select
-                    className="select select-bordered w-40 mr-4"
-                    onChange={(e) => handleStatusChange(e, item.id)}
-                    value={selectedStatus[item.id] || currentStatus}
-                  >
-                    {statusRepair_inventoryOptions.map((status) => (
-                      <option key={status.id} value={status.id}>
-                        {status.name}
-                      </option>
-                    ))}
-                  </select>
+  className="select select-bordered w-40 mr-4"
+  onChange={(e) => handleStatusChange(e, item.id)}
+  value={selectedStatus[item.id] || currentStatus}
+>
+  {statusRepair_inventoryOptions
+    .map((status) => (
+      <option
+        key={status.id}
+        value={status.id}
+        disabled={
+          (currentStatus === 1 && status.id <= 1) ||
+          (currentStatus === 2 && status.id <= 2) ||
+          (currentStatus === 3 && (status.id !== 4 && status.id !== currentStatus))
+        }
+      >
+        {status.name}
+      </option>
+    ))}
+</select>
                 ),
                 action: (
                   <Button

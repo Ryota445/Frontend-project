@@ -171,16 +171,19 @@ const RequestManagement = () => {
       // ดึงข้อมูลครุภัณฑ์ปัจจุบัน
       const inventoryResponse = await fetch(`${API_URL}/api/inventories/${id_backend_inventory}?populate=responsibles`);
       const inventoryData = await inventoryResponse.json();
-      const currentResponsibles = inventoryData.data.attributes.responsibles.data.map(r => r.id);
-  
-      let updatedResponsibles;
-      if (currentResponsibles.length > 1) {
-        // ถ้ามีผู้ดูแลมากกว่า 1 คน ให้ลบ reportedBy ออกจากรายการ
-        updatedResponsibles = currentResponsibles.filter(id => id !== reportedById);
-      } else {
-        // ถ้ามีผู้ดูแลคนเดียว ให้ตั้งค่าเป็น 1
-        updatedResponsibles = [1];
-      }
+
+      // เปลี่ยนผู้รับผิดชอบเป็น 1 เสมอ
+      const updatedResponsibles = [1];
+      
+      // const currentResponsibles = inventoryData.data.attributes.responsibles.data.map(r => r.id);
+      // let updatedResponsibles;
+      // if (currentResponsibles.length > 1) {
+      //   // ถ้ามีผู้ดูแลมากกว่า 1 คน ให้ลบ reportedBy ออกจากรายการ
+      //   updatedResponsibles = currentResponsibles.filter(id => id !== reportedById);
+      // } else {
+      //   // ถ้ามีผู้ดูแลคนเดียว ให้ตั้งค่าเป็น 1
+      //   updatedResponsibles = [1];
+      // }
   
       const formData = new FormData();
       formData.append(

@@ -27,8 +27,6 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
     }
   }, [selectedStatus]);
 
-
-
   const fetchData = async () => {
     setIsLoading(true);
     try {
@@ -42,6 +40,13 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
       if (!inventoryResponse.ok) throw new Error(`HTTP Error status: ${inventoryResponse.status}`);
       const inventoryData = await inventoryResponse.json();
       setDataInv(inventoryData.data);
+
+      setFormData(repairReportData.data.attributes);
+      setFormDataFile({
+        FileRepairByAdmin: repairReportData.data.attributes.FileRepairByAdmin?.data || [],
+        FileRepairDone: repairReportData.data.attributes.FileRepairDone?.data || [],
+        FileConsider: repairReportData.data.attributes.FileConsider?.data || [],
+      });
     } catch (error) {
       console.error("Error Fetching data:", error);
     } finally {
@@ -51,12 +56,10 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
 
   const handleFormDataChange = (newData) => {
     setFormData((prevData) => ({ ...prevData, ...newData }));
-    console.log('formData', newData);
   };
 
   const handleFormDataChangeFile = (newData) => {
     setFormDataFile((prevData) => ({ ...prevData, ...newData }));
-    console.log('formDataFile', newData);
   };
 
   const submitForm = async () => {
@@ -75,53 +78,21 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
 
       formDataToSend.append('data', JSON.stringify(requestBody));
 
-      if (formDataFile.FileRepairByAdmin && formDataFile.FileRepairByAdmin.length > 0) {
-        formDataFile.FileRepairByAdmin.forEach((file) => {
-          formDataToSend.append('files.FileRepairByAdmin', file.originFileObj);
-        });
-      }
+      Object.entries(formDataFile).forEach(([key, fileList]) => {
+        if (fileList && fileList.length > 0) {
+          fileList.forEach((file) => {
+            formDataToSend.append(`files.${key}`, file.originFileObj);
+          });
+        }
+      });
 
-      if (formDataFile.FileRepairDone && formDataFile.FileRepairDone.length > 0) {
-        formDataFile.FileRepairDone.forEach((file) => {
-          formDataToSend.append('files.FileRepairDone', file.originFileObj);
-        });
-      }
-
-      if (formDataFile.FileConsider && formDataFile.FileConsider.length > 0) {
-        formDataFile.FileConsider.forEach((file) => {
-          formDataToSend.append('files.FileConsider', file.originFileObj);
-        });
-      }
-
-      console.log("formDataToSend", formDataToSend);
       const response = await fetch(`${API_URL}/api/repair-reports/${repairReportId}`, {
         method: 'PUT',
         body: formDataToSend,
       });
 
-      // ตรวจสอบสถานะซ่อมบำรุงและอัปเดต isReporting
-    // if (selectedStatus == 4) {
-    //   const formData2 = new FormData();
-    //   formData2.append(
-    //     "data",
-    //     JSON.stringify({
-    //       isReporting: false,
-    //     })
-    //   );
-
-    //   const response2 = await fetch(`${API_URL}/api/inventories/${inventoryId}`, {
-    //     method: "PUT",
-    //     body: formData2,
-    //   });
-
-    //   if (!response2.ok) {
-    //     throw new Error(`HTTP Error status: ${response2.status}`);
-    //   }
-    // }
-
       if (!response.ok) {
         throw new Error(`HTTP Error status: ${response.status}`);
-        console.log(response);
       }
 
       message.success('บันทึกข้อมูลสำเร็จ');
@@ -146,17 +117,26 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
     ];
 
   const getContent = () => {
+    const commonProps = {
+      dataInvForCard: dataInv,
+      dataRepairReport: dataRepairReport,
+      onFormDataChange: handleFormDataChange,
+      onFormDataChangeFile: handleFormDataChangeFile,
+      initialFormData: formData,
+      initialFormDataFile: formDataFile,
+    };
+
     switch (current) {
       case 0:
-        return <MaintenanceState1 dataInvForCard={dataInv} dataRepairReport={dataRepairReport} onFormDataChange={handleFormDataChange} onFormDataChangeFile={handleFormDataChangeFile} />;
+        return <MaintenanceState1 {...commonProps} />;
       case 1:
-        return <MaintenanceState2 dataInvForCard={dataInv} dataRepairReport={dataRepairReport} onFormDataChange={handleFormDataChange} onFormDataChangeFile={handleFormDataChangeFile} />;
+        return <MaintenanceState2 {...commonProps} />;
       case 2:
-        return <MaintenanceState4 onFormDataChange={handleFormDataChange} onFormDataChangeFile={handleFormDataChangeFile} />;
+        return <MaintenanceState4 {...commonProps} />;
       case 3:
         return <MaintenanceState5 onFormDataChange={handleFormDataChange} onFormDataChangeFile={handleFormDataChangeFile} />;
       case 4:
-        return <MaintenanceState3 onFormDataChange={handleFormDataChange} onFormDataChangeFile={handleFormDataChangeFile} />;
+        return <MaintenanceState3 {...commonProps} />;
       default:
         return null;
     }
@@ -177,37 +157,37 @@ function MaintenancePage3({ visible, onClose, repairReportId, selectedStatus }) 
 
   return (
     <Modal visible={visible} onCancel={onClose} footer={null} width={1200}>
-    <Steps current={current} items={items} />
-    <div style={{ padding: '10px', minHeight: '500px', marginTop: 16 }}>
-      {getContent()}
-    </div>
-    <div className='flex flex-row justify-between' style={{ marginTop: 24 }}>
-      <div>
-      {current !== 4 && (
-  <>
-    <Button onClick={handlePrevious} disabled={current === 0}>
-      หน้าก่อนหน้า
-    </Button>
-    {canGoNext && (
-      <Button onClick={handleNext} style={{ marginLeft: 8 }}>
-        หน้าถัดไป
-      </Button>
-    )}
-  </>
-)}
+      <Steps current={current} items={items} />
+      <div style={{ padding: '10px', minHeight: '500px', marginTop: 16 }}>
+        {getContent()}
       </div>
-      <div>
-        <Button style={{ margin: '0 8px' }} onClick={onClose}>
-          ยกเลิก
-        </Button>
-        {isCurrentStatusSelected && (
-          <Button className="bg-blue-300" type="primary" onClick={submitForm}>
-            บันทึก
+      <div className='flex flex-row justify-between' style={{ marginTop: 24 }}>
+        <div>
+          {current !== 4 && (
+            <>
+              <Button onClick={handlePrevious} disabled={current === 0}>
+                หน้าก่อนหน้า
+              </Button>
+              {canGoNext && (
+                <Button onClick={handleNext} style={{ marginLeft: 8 }}>
+                  หน้าถัดไป
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+        <div>
+          <Button style={{ margin: '0 8px' }} onClick={onClose}>
+            ยกเลิก
           </Button>
-        )}
+          {isCurrentStatusSelected && (
+            <Button className="bg-blue-300" type="primary" onClick={submitForm}>
+              บันทึก
+            </Button>
+          )}
+        </div>
       </div>
-    </div>
-  </Modal>
+    </Modal>
   );
 }
 

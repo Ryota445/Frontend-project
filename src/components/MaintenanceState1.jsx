@@ -58,7 +58,7 @@ function MaintenanceState1( {dataInvForCard ,dataRepairReport} ) {
 
                 <h1 className='text-lg text-gray-500 my-2'>เหตุผลในการแจ้งซ่อม : </h1>
                 <p>{dataRepairReport?.attributes?.RepairReasonByResponsible}</p>
-                <h1 className='text-lg text-gray-500 my-2 '>ไฟล์แจ้งซ่อมโดย :<span>นาย สมชาย ใจดี</span></h1>
+                <h1 className='text-lg text-gray-500 my-2 '>ไฟล์แจ้งซ่อมโดย :<span className='text-black'>{dataRepairReport?.attributes?.reportedBy?.data?.attributes?.responsibleName }</span></h1>
                 
                 <a href={fileUrl} target="_blank" rel="noopener noreferrer"><FileOutlined /><span className='ml-2'>{fileName}</span></a>
       </div>

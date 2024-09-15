@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, DatePicker, Select, Upload, message,InputNumber } from "antd";
-import { UploadOutlined, PlusOutlined, PrinterOutlined, DeleteOutlined } from "@ant-design/icons";
+import { UploadOutlined, PlusOutlined, PrinterOutlined, DeleteOutlined,FileOutlined } from "@ant-design/icons";
 import AddTest from "../components/AddTest";
 import { useParams } from "react-router-dom"; // Import useParams for getting ID from route
 import moment from 'moment';
@@ -36,6 +36,9 @@ function EditInventory() {
   const [activeButton, setActiveButton] = useState("single");
 
   const [selectedResponsibles, setSelectedResponsibles] = useState([]);
+
+  const [fileList, setFileList] = useState([]);
+  const [haveImg, setHaveImg] = useState(false)
 
   useEffect(() => {
     const endInventoryNumber = parseInt(startInventoryNumber) + parseInt(inventoryCount) - 1; 
@@ -153,6 +156,10 @@ function EditInventory() {
           age_use: inventoryData.data.attributes?.age_use +'ปี',
           // Add other fields as needed
         });
+        if (inventoryData.data.attributes.img_inv?.data) {
+          setFileList({name:inventoryData.data.attributes.img_inv?.data.attributes.name,url:API_URL+inventoryData.data.attributes.img_inv?.data.attributes.url});
+          setHaveImg(true)
+        }
         setSubInventories(inventoryData?.data?.attributes?.sub_inventories?.data)
       
       } catch (error) {
@@ -161,6 +168,14 @@ function EditInventory() {
     }
     fetchData();
   }, [id, form]);
+
+  useEffect(() => {
+    console.log("name-file : ",fileList.name)
+    console.log("name-url : ",fileList.url)
+  
+  
+  }, [fileList])
+  
 
 
 // subsetInventory 
@@ -549,6 +564,7 @@ const updateSubInventory = (index, field, value) => {
                 </button>
               </Upload>
             </Form.Item>
+            {haveImg && <a href={fileList.url} target="_blank" rel="noopener noreferrer"><FileOutlined /><span className='ml-2'>รูปเดิม :{fileList.name}</span></a>}
           </div>
         </div>
 
