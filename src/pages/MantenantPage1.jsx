@@ -18,6 +18,7 @@ import DateIsoToThai from "../components/DateIsoToThai";
 import RepairReportTable from "../components/RepairReportTable";
 import FilteredMaintenanceTable from "../components/FilteredMaintenanceTable";
 import MaintenancePage3 from "./MaintenancePage3";
+import { useAuth } from '../context/AuthContext';
 
 const { Option } = Select;
 
@@ -46,6 +47,10 @@ const MantenantPage1 = () => {
   const [selectedMaintenanceReportId, setSelectedMaintenanceReportId] =
     useState(null);
   const [searchParams, setSearchParams] = useState({});
+
+  const { user } = useAuth();
+
+  const isAdmin = user?.role_in_web?.RoleName === "Admin";
 
   const handleSearch = (searchData) => {
     setSearchParams(searchData);
@@ -102,7 +107,16 @@ const MantenantPage1 = () => {
         if (searchParams.name) {
           url += `&filters[inventory][name][$containsi]=${searchParams.name}`;
         }
-        if (searchParams.reportedBy) {
+        // แก้ให้ผู้ดูแลค้นได้เฉพาะตัวเองเท่านั้น
+        // if (searchParams.reportedBy) {
+        //   url += `&filters[reportedBy][id]=${searchParams.reportedBy}`;
+        // }
+        // ถ้าไม่ใช่ Admin ให้ดูได้แค่ข้อมูลของตัวเอง
+        if (!isAdmin) {
+          url += `&filters[reportedBy][id]=${user?.responsible?.id}`;
+        } 
+        // ถ้าเป็น Admin และมีการค้นหาด้วย reportedBy
+        else if (searchParams.reportedBy) {
           url += `&filters[reportedBy][id]=${searchParams.reportedBy}`;
         }
         if (searchParams.NumberRepairFaculty) {
@@ -497,6 +511,7 @@ const MantenantPage1 = () => {
         </div>
 
         <div className="flex flex-row justify-end align-middle">
+        {isAdmin && (
           <div>
             <Button
               className={`text-md text-gray-700 ${
@@ -510,6 +525,8 @@ const MantenantPage1 = () => {
             >
               แสดงคำร้องซ่อมแซมครุภัณฑ์
             </Button>
+
+            
             <Button
               className={`text-md text-gray-700 ${
                 isMaintenanceActive ? "bg-blue-500 text-white" : "bg-gray-300"
@@ -523,6 +540,7 @@ const MantenantPage1 = () => {
               แสดงแจ้งเตือนบำรุงรักษาครุภัณฑ์
             </Button>
           </div>
+        )}
         </div>
 
         {isRepairActive && <RepairReportTable data={data} />}

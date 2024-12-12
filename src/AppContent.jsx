@@ -41,8 +41,9 @@ const AppContent = () => {
         <Route path="/AddInformationTeacher" element={<ProtectedRoute adminOnly><AddInformationTeacher /></ProtectedRoute>} />
         <Route path="/AddInventory" element={<ProtectedRoute adminOnly><AddInventory /></ProtectedRoute>} />
         <Route path="/UserDetailInventory/:id" element={<UserDetail />} />
-        <Route path="/MantenantPage1" element={<ProtectedRoute adminOnly><MantenantPage1 /></ProtectedRoute>} />
-        <Route path="/MantenantPage2/:id" element={<ProtectedRoute adminOnly><MantenantPage2 /></ProtectedRoute>} />
+        <Route path="/MantenantPage1" element={<MantenantPage1 />} />
+        {/* <Route path="/MantenantPage1" element={<ProtectedRoute adminOnly><MantenantPage1 /></ProtectedRoute>} /> */}
+        {/* <Route path="/MantenantPage2/:id" element={<ProtectedRoute adminOnly><MantenantPage2 /></ProtectedRoute>} /> */}
         <Route path="/MaintenancePage3/:id" element={<ProtectedRoute adminOnly><MaintenancePage3 /></ProtectedRoute>} />
         <Route path="/RequestManagement" element={<ProtectedRoute adminOnly><RequestManagement /></ProtectedRoute>} />
         <Route path="/RequestChangeLocation" element={<ProtectedRoute adminOnly><RequestChangeLocation /></ProtectedRoute>} />

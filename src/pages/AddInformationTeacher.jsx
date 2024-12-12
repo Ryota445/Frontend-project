@@ -385,16 +385,16 @@ useEffect(() => {
       //   key: 'responsibleEmail',
       //   render: (text, record) => record.responsible?.responsibleEmail || text,
       // },
-    // {
-    //   title: '',
-    //   key: 'actions',
-    //   render: (_, record) => (
-    //     <Space>
-    //       <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
-    //       <Button icon={<DeleteOutlined />} onClick={() => handleDeleteUser(record.id)} danger />
-    //     </Space>
-    //   ),
-    // },
+    {
+      title: '',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
+          <Button icon={<DeleteOutlined />} onClick={() => handleDeleteUser(record.id)} danger />
+        </Space>
+      ),
+    },
    
   ];
 
@@ -413,18 +413,18 @@ useEffect(() => {
         />
       </Space>
 
-      {/* <div className='flex flex-row justify-end'>
+      <div className='flex flex-row justify-end'>
       <div className='flex flex-col justify-end'>
         <Button className='w-32 h-12 mr-10 mb-2' style={{ backgroundColor: '#1890ff', borderColor: '#1890ff', color: 'white' }} type="primary" onClick={() => setIsAddUserModalVisible(true)} icon={<UserAddOutlined />}>
           เพิ่มบัญชีผู้ใช้
         </Button>
 
-        <Button className='w-32 h-12 mr-10 mb-2' style={{ backgroundColor: '#52c41a', borderColor: '#52c41a', color: 'white' }} type="primary" onClick={() => setIsAddResponsibleModalVisible(true)} >
+        {/* <Button className='w-32 h-12 mr-10 mb-2' style={{ backgroundColor: '#52c41a', borderColor: '#52c41a', color: 'white' }} type="primary" onClick={() => setIsAddResponsibleModalVisible(true)} >
           เพิ่มผู้ดูแล
-        </Button>
+        </Button> */}
 
       </div>
-      </div> */}
+      </div>
       
       <Table
         columns={columns}
@@ -514,11 +514,12 @@ useEffect(() => {
   </Form.Item>
   
   <div className="text-lg font-semibold mt-6 mb-2">ข้อมูลผู้ดูแล</div>
-      <Form.Item name="useExistingResponsible" valuePropName="checked">
+  
+      {/* <Form.Item name="useExistingResponsible" valuePropName="checked">
         <Checkbox onChange={(e) => setUseExistingResponsibleForNewUser(e.target.checked)}>
           ใช้ข้อมูลผู้ดูแลที่มีอยู่
         </Checkbox>
-      </Form.Item>
+      </Form.Item> */}
       
       {useExistingResponsibleForNewUser ? (
         <Form.Item name="responsibleId" rules={[{ required: true, message: 'กรุณาเลือกผู้ดูแล!' }]}>
@@ -535,6 +536,8 @@ useEffect(() => {
          <Form.Item name="responsibleName" rules={[{ required: true, message: 'กรุณากรอกชื่อผู้ดูแล!' }]}>
     <Input id="add-responsibleName" placeholder="ชื่อผู้ดูแล" className="rounded-md" />
   </Form.Item>
+
+  
   <Form.Item name="responsiblePhone" rules={[{ required: true, message: 'กรุณากรอกเบอร์โทรศัพท์ผู้ดูแล!' }]}>
     <Input id="add-responsiblePhone" placeholder="เบอร์โทรศัพท์ผู้ดูแล" className="rounded-md" />
   </Form.Item>

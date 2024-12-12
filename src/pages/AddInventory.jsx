@@ -302,12 +302,18 @@ function AddInventory() {
         const responseData = await response.json();
         console.log("Response:", responseData);
         message.success(`บันทึกข้อมูลสำเร็จ: ${formattedIdInv}`);
+        
       } catch (error) {
         console.error("Error:", error);
         message.error(`เกิดข้อผิดพลาดในการบันทึกข้อมูล: ${formattedIdInv}`);
       }
     }
     form.resetFields();
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
+    
   };
 
   // OnFinish OLD
@@ -416,6 +422,9 @@ function AddInventory() {
 
   const handleReset = () => {
     form.resetFields();
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000); // หน่วงเวลา 1,000 มิลลิวินาที หรือ 1 วินาที
   };
 
   const handleClickMenuAdd = (buttonName) => {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Dropdown, Badge, Card, List } from 'antd';
 import { MenuUnfoldOutlined, MenuFoldOutlined, BellOutlined, ToolOutlined, ToolFilled, SyncOutlined, DeleteOutlined } from '@ant-design/icons';
-import logo_1 from '../assets/img/logo_1.jpg';
+import logo_1 from '../assets/img/logo.png';
 import { Link } from 'react-router-dom';
 
 function NavComponent({ collapsed, setCollapsed }) {
@@ -155,7 +155,7 @@ function NavComponent({ collapsed, setCollapsed }) {
       <div className="navbar-center">
     <a className="btn btn-ghost p-0">  
       <img src={logo_1} alt="โลโก้" style={{
-        width: '120px',
+        width: '95px',
         height: 'auto',
         borderRadius: '5px',
         maxHeight: '64px'  // เพิ่มบรรทัดนี้

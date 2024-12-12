@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Form, Input, Button, Select } from "antd";
 import { SearchOutlined, CloseOutlined, DownOutlined } from "@ant-design/icons";
+import { useAuth } from '../context/AuthContext'; // เพิ่ม import useAuth
 
 const { Option } = Select;
 
@@ -13,6 +14,10 @@ function SearchBoxRM({ onSearch, mode }) {
     reportedBy: "",
     NumberRepairFaculty: "",
   });
+
+  
+  const { user } = useAuth(); // เพิ่ม user context
+  const isAdmin = user?.role_in_web?.RoleName === "Admin"; // เช็คว่าเป็น Admin หรือไม่
 
   // Refs for input fields
   const idInvRef = useRef(null);
@@ -102,11 +107,11 @@ function SearchBoxRM({ onSearch, mode }) {
   value={formData.reportedBy}
   onChange={(value) => setFormData({ ...formData, reportedBy: value })}
   onKeyDown={(e) => handleKeyDown(e, numberRepairFacultyRef)}
-  disabled={!isRepairMode}
+  disabled={!isRepairMode || !isAdmin} // เพิ่มเงื่อนไข !isAdmin
   showSearch
   optionFilterProp="children"
   suffixIcon={
-    formData.reportedBy && isRepairMode ? (
+    formData.reportedBy && isRepairMode && isAdmin ? ( // เพิ่มเงื่อนไข isAdmin
       <Button
         type="text"
         onClick={() => setFormData({ ...formData, reportedBy: "" })}

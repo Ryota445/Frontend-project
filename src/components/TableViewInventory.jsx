@@ -633,7 +633,7 @@ setTimeout(() => {
             <div className="flex flex-col space-y-4">
               <Input placeholder="เหตุผลในการจำหน่าย" onChange={(e) => setDisposalReason(e.target.value)} />
               <Upload fileList={disposalFileList} onChange={({ fileList }) => setDisposalFileList(fileList)}>
-                <Button icon={<UploadOutlined />}>อัพโหลดไฟล์</Button>
+                <Button icon={<UploadOutlined />}>อัปโหลดไฟล์</Button>
               </Upload>
             </div>
             <div className="flex justify-end mt-4 space-x-2">

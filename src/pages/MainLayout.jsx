@@ -53,9 +53,9 @@ const handleLogoutConfirm = () => {
 
     const items = [
       getItem('จัดการครุภัณฑ์', '3', <Link to="/manageInventory"><DesktopOutlined /></Link>),
-      
+      getItem('ดูแลครุภัณฑ์', '4', <Link to="/MantenantPage1"><MonitorOutlined /></Link>),
       ...(isAdmin ? [
-        getItem('ดูแลครุภัณฑ์', '4', <Link to="/MantenantPage1"><MonitorOutlined /></Link>),
+      
         getItem('เปลี่ยนที่ตั้ง/ส่งคืนครุภัณฑ์', '5', <Link to="/RequestManagement"><RollbackOutlined /></Link>),
         getItem('จัดการข้อมูลผู้ดูแล', '10', <Link to="/AddInformationTeacher"><IdcardOutlined /></Link>),
         getItem('จัดการข้อมูลตัวแทนบริษัท/ผู้บริจาค', '9', <Link to="/AddInformationCompany"><TeamOutlined /></Link>),
